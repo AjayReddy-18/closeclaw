@@ -1,6 +1,27 @@
 import { defineConfig } from "vitest/config";
+import { resolve } from "node:path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@closeclaw/shared-types": resolve(
+        __dirname,
+        "packages/shared-types/src/index.ts",
+      ),
+      "@closeclaw/bot-adapters": resolve(
+        __dirname,
+        "packages/bot-adapters/src/index.ts",
+      ),
+      "@closeclaw/gateway": resolve(
+        __dirname,
+        "packages/gateway/src/index.ts",
+      ),
+      "@closeclaw/cli": resolve(
+        __dirname,
+        "packages/cli/src/index.ts",
+      ),
+    },
+  },
   test: {
     globals: true,
     root: ".",

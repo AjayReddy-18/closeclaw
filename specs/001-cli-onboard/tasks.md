@@ -46,29 +46,29 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T012 [P] Unit test for BotPlatform and DmPolicy enums in tests/unit/shared-types/enums.test.ts
-- [ ] T013 [P] Unit test for BotIntegration type validation in tests/unit/shared-types/bot-integration.test.ts
-- [ ] T014 [P] Unit test for GatewayConfig type validation in tests/unit/shared-types/gateway-config.test.ts
-- [ ] T015 [P] Unit test for Configuration type validation in tests/unit/shared-types/configuration.test.ts
-- [ ] T016 [P] Unit test for PairingRequest and PairingStore types in tests/unit/shared-types/pairing.test.ts
-- [ ] T017 [P] Unit test for config-reader in tests/unit/cli/config-reader.test.ts
-- [ ] T018 [P] Unit test for config-writer (atomic write pattern) in tests/unit/cli/config-writer.test.ts
-- [ ] T019 [P] Unit test for config-detector in tests/unit/cli/config-detector.test.ts
-- [ ] T020 [P] Contract test for configuration JSON schema in tests/contract/config-schema.test.ts
+- [x] T012 [P] Unit test for BotPlatform and DmPolicy enums in tests/unit/shared-types/enums.test.ts
+- [x] T013 [P] Unit test for BotIntegration type validation in tests/unit/shared-types/bot-integration.test.ts
+- [x] T014 [P] Unit test for GatewayConfig type validation in tests/unit/shared-types/gateway-config.test.ts
+- [x] T015 [P] Unit test for Configuration type validation in tests/unit/shared-types/configuration.test.ts
+- [x] T016 [P] Unit test for PairingRequest and PairingStore types in tests/unit/shared-types/pairing.test.ts
+- [x] T017 [P] Unit test for config-reader in tests/unit/cli/config-reader.test.ts
+- [x] T018 [P] Unit test for config-writer (atomic write pattern) in tests/unit/cli/config-writer.test.ts
+- [x] T019 [P] Unit test for config-detector in tests/unit/cli/config-detector.test.ts
+- [x] T020 [P] Contract test for configuration JSON schema in tests/contract/config-schema.test.ts
 
 ### Implementation for Foundational
 
-- [ ] T021 [P] Implement BotPlatform enum in packages/shared-types/src/bot-platform.ts
-- [ ] T022 [P] Implement DmPolicy enum in packages/shared-types/src/dm-policy.ts
-- [ ] T023 [P] Implement BotIntegration interface and validation in packages/shared-types/src/bot-integration.ts
-- [ ] T024 [P] Implement GatewayConfig interface and validation in packages/shared-types/src/gateway-config.ts
-- [ ] T025 [P] Implement Configuration interface and validation in packages/shared-types/src/configuration.ts
-- [ ] T026 [P] Implement PairingRequest, PairingStatus, PairingStore, ApprovedSender types in packages/shared-types/src/pairing-request.ts
-- [ ] T027 Create packages/shared-types/src/index.ts barrel export for all types
-- [ ] T028 Implement BotAdapter interface (connect, disconnect, healthCheck, onMessage) in packages/bot-adapters/src/adapter.ts
-- [ ] T029 Implement config-reader with JSON parsing and malformed file handling in packages/cli/src/config/config-reader.ts
-- [ ] T030 Implement config-writer with atomic write pattern (write to .tmp then rename) in packages/cli/src/config/config-writer.ts
-- [ ] T031 Implement config-detector (first-time vs existing config detection) in packages/cli/src/config/config-detector.ts
+- [x] T021 [P] Implement BotPlatform enum in packages/shared-types/src/bot-platform.ts
+- [x] T022 [P] Implement DmPolicy enum in packages/shared-types/src/dm-policy.ts
+- [x] T023 [P] Implement BotIntegration interface and validation in packages/shared-types/src/bot-integration.ts
+- [x] T024 [P] Implement GatewayConfig interface and validation in packages/shared-types/src/gateway-config.ts
+- [x] T025 [P] Implement Configuration interface and validation in packages/shared-types/src/configuration.ts
+- [x] T026 [P] Implement PairingRequest, PairingStatus, PairingStore, ApprovedSender types in packages/shared-types/src/pairing-request.ts
+- [x] T027 Create packages/shared-types/src/index.ts barrel export for all types
+- [x] T028 Implement BotAdapter interface (connect, disconnect, healthCheck, onMessage) in packages/bot-adapters/src/adapter.ts
+- [x] T029 Implement config-reader with JSON parsing and malformed file handling in packages/cli/src/config/config-reader.ts
+- [x] T030 Implement config-writer with atomic write pattern (write to .tmp then rename) in packages/cli/src/config/config-writer.ts
+- [x] T031 Implement config-detector (first-time vs existing config detection) in packages/cli/src/config/config-detector.ts
 
 **Checkpoint**: Foundation ready — shared types exported, config read/write/detect tested, adapter interface defined. User story implementation can now begin.
 
