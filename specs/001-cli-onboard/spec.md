@@ -149,6 +149,12 @@ A user runs `closeclaw onboard` and during the platform selection step wants to 
 - **FR-023**: When DM policy is "open," all senders MUST be permitted to communicate (requires explicit opt-in during onboarding with a warning about the security implications)
 - **FR-024**: Pairing codes MUST expire after a configurable duration (default: 1 hour); expired codes MUST be rejected with guidance for the sender to re-initiate
 - **FR-025**: The health check result MUST be displayed to the user with clear pass/fail status and actionable guidance on failure
+- **FR-026**: The system MUST provide a `closeclaw gateway start` command that loads configuration, connects all enabled bot adapters, starts the local HTTP gateway server, and runs as a foreground process
+- **FR-027**: When the gateway is running with "pairing" DM policy, the bot MUST automatically reply to unapproved senders with a pairing code and human-readable approval instructions
+- **FR-028**: Bot adapters MUST support sending reply messages to senders (in addition to receiving messages)
+- **FR-029**: The `closeclaw gateway start` command MUST handle graceful shutdown on SIGINT/SIGTERM (disconnect adapters, stop server, exit 0)
+- **FR-030**: If no configuration file exists when `closeclaw gateway start` is run, the system MUST display an error directing the user to run `closeclaw onboard` first
+- **FR-031**: After successful onboarding, the system SHOULD offer to start the gateway immediately
 
 ### Key Entities
 
@@ -170,6 +176,27 @@ A user runs `closeclaw onboard` and during the platform selection step wants to 
 - **SC-006**: The configuration file is directly editable by users — opening it in a text editor reveals a clear, well-structured JSON document
 - **SC-007**: The health check completes within 10 seconds of gateway start and displays a clear pass/fail result
 - **SC-008**: A user can approve a pairing request and the approved sender receives a response within 30 seconds of running the approve command
+
+---
+
+### User Story 6 - Gateway Start and Bot Auto-Reply (Priority: P1-patch)
+
+After onboarding completes, the user needs a way to start the gateway as a long-running process so that bot adapters actively listen for incoming DMs. When an unapproved sender messages the bot under the "pairing" DM policy, the bot must reply with a pairing code and instructions for the owner to approve them.
+
+**Why this priority**: Without a running gateway, the bot cannot receive or respond to any messages after onboarding. This is a critical gap that makes pairing (US2) non-functional in practice. The gateway must run as a foreground process that keeps bot adapters connected and the HTTP pairing API available.
+
+**Independent Test**: After onboarding (US1), run `closeclaw gateway start`. Send a DM to the bot from Telegram or Discord. Verify the bot auto-replies with a pairing code. Run `closeclaw pairing approve <code>` from another terminal. Verify the sender can now communicate freely.
+
+**Acceptance Scenarios**:
+
+1. **Given** a valid `~/.closeclaw/closeclaw.json` exists with at least one bot integration, **When** the user runs `closeclaw gateway start`, **Then** the system loads the config, connects all enabled bot adapters, starts the HTTP server, and keeps running in the foreground
+2. **Given** the gateway is running with DM policy "pairing," **When** an unapproved sender sends a DM, **Then** the bot replies to that sender with a message containing a pairing code and instructions: "Pairing code: `XXXXXX`. Ask the owner to run: closeclaw pairing approve XXXXXX"
+3. **Given** the gateway is running, **When** an approved sender sends a DM, **Then** the message is accepted without a pairing challenge
+4. **Given** no configuration file exists, **When** the user runs `closeclaw gateway start`, **Then** the system displays an error instructing them to run `closeclaw onboard` first
+5. **Given** the gateway is running, **When** the user presses Ctrl+C, **Then** the system gracefully disconnects all bot adapters, stops the HTTP server, and exits cleanly
+6. **Given** onboarding completes successfully, **When** the success summary is displayed, **Then** the system prompts the user: "Start the gateway now?" and if they agree, transitions into `closeclaw gateway start` behavior
+
+---
 
 ## Assumptions
 

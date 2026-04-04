@@ -73,6 +73,43 @@ To approve: closeclaw pairing approve <code>
 
 ---
 
+### `closeclaw gateway start`
+
+Start the gateway as a long-running foreground process.
+
+**Synopsis**: `closeclaw gateway start`
+
+**Arguments**: None
+
+**Options**: None
+
+**Behavior**:
+
+1. Reads `~/.closeclaw/closeclaw.json`
+2. If config missing → error: "No configuration found. Run `closeclaw onboard` first."
+3. Instantiates bot adapters for each enabled channel
+4. Connects all adapters (Telegram long polling, Discord WebSocket)
+5. Starts HTTP gateway server with pairing endpoints
+6. Wires DM policy enforcer: unapproved senders get auto-reply with pairing code
+7. Keeps running until SIGINT/SIGTERM
+
+**Exit codes**:
+
+| Code | Meaning |
+|------|---------|
+| 0 | Graceful shutdown (Ctrl+C / SIGTERM) |
+| 1 | Error (missing config, adapter failure, port conflict) |
+
+**Stdout**: Status messages (connected adapters, listening port, incoming DM events)
+
+**Auto-reply message format** (when DM policy is "pairing" and sender is unapproved):
+```
+Pairing code: XXXXXX
+Ask the owner to run: closeclaw pairing approve XXXXXX
+```
+
+---
+
 ### `closeclaw pairing approve <code>`
 
 Approve a pending pairing request by its code.

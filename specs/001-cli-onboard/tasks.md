@@ -237,6 +237,40 @@
 
 ---
 
+## Phase 9: User Story 6 — Gateway Start and Bot Auto-Reply (Priority: P1-patch)
+
+**Purpose**: Enable the gateway to run as a long-running foreground process, connect bot adapters, reply to unapproved senders with pairing codes, and optionally auto-start after onboarding.
+
+**Goal**: After `closeclaw onboard` completes, user runs `closeclaw gateway start`. Bot receives DMs, auto-replies with pairing codes, and the pairing CLI commands work end-to-end.
+
+### Tests for User Story 6
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [ ] T098 [P] [US6] Unit test for BotAdapter.sendMessage (Telegram ctx.reply) in tests/unit/bot-adapters/telegram-adapter.test.ts
+- [ ] T099 [P] [US6] Unit test for BotAdapter.sendMessage (Discord message.reply) in tests/unit/bot-adapters/discord-adapter.test.ts
+- [ ] T100 [P] [US6] Unit test for pairing auto-reply (dm-policy-enforcer returns code, bot sends reply) in tests/unit/gateway/pairing-auto-reply.test.ts
+- [ ] T101 [P] [US6] Unit test for gateway-start command (loads config, connects adapters, starts server) in tests/unit/cli/gateway-start.test.ts
+- [ ] T102 [P] [US6] Unit test for gateway-start with missing config (errors with onboard instruction) in tests/unit/cli/gateway-start.test.ts
+- [ ] T103 [US6] Unit test for onboard post-completion gateway prompt in tests/unit/cli/onboard-command.test.ts
+- [ ] T104 [US6] Contract test for closeclaw gateway start exit codes in tests/contract/cli-commands.test.ts
+- [ ] T105 [US6] Integration test for gateway start + DM pairing reply in tests/integration/gateway-start-flow.test.ts
+
+### Implementation for User Story 6
+
+- [ ] T106 [US6] Add sendMessage(senderId: string, text: string): Promise<void> to BotAdapter interface in packages/bot-adapters/src/adapter.ts
+- [ ] T107 [P] [US6] Implement TelegramAdapter.sendMessage (ctx.reply for the active chat) in packages/bot-adapters/src/telegram-adapter.ts
+- [ ] T108 [P] [US6] Implement DiscordAdapter.sendMessage (user.send for DM) in packages/bot-adapters/src/discord-adapter.ts
+- [ ] T109 [US6] Implement pairing auto-reply in gateway message handler: when dm-policy-enforcer returns pairingCode, call adapter.sendMessage with code + instructions in packages/gateway/src/gateway-server.ts
+- [ ] T110 [US6] Implement `closeclaw gateway start` command in packages/cli/src/commands/gateway-start.ts: load config, instantiate adapters, connect, start gateway server with pairing store, handle SIGINT/SIGTERM
+- [ ] T111 [US6] Wire `closeclaw gateway start` subcommand in packages/cli/src/index.ts
+- [ ] T112 [US6] Add post-onboard prompt: "Start the gateway now?" in packages/cli/src/commands/onboard.ts — if yes, transition to gateway start logic
+- [ ] T113 [US6] Run pnpm test and verify all tests pass, format and lint
+
+**Checkpoint**: Full end-to-end flow works: onboard → gateway start → DM auto-reply with pairing code → pairing approve → sender approved.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -249,6 +283,7 @@
 - **User Story 4 (Phase 6)**: Depends on Foundational — can run in parallel with US2/US3
 - **User Story 5 (Phase 7)**: Depends on US1 instructions implementation — can run in parallel with US2/US3/US4
 - **Polish (Phase 8)**: Depends on all user stories being complete
+- **User Story 6 (Phase 9)**: Depends on US1 + US2 (needs gateway server, pairing manager, DM policy enforcer, bot adapters)
 
 ### User Story Dependencies
 
