@@ -20,6 +20,7 @@ describe("runOnboard", () => {
       } satisfies BotHealthResult),
     ),
     onMessage: vi.fn(),
+    sendMessage: vi.fn(),
   };
 
   beforeEach(() => {
@@ -57,6 +58,29 @@ describe("runOnboard", () => {
       ...over,
     };
   }
+
+  it("prompts to start gateway and invokes runGatewayStart when confirmed", async () => {
+    const runGatewayStart = vi.fn(async () => undefined);
+    const deps = baseDeps({
+      confirmStartGateway: vi.fn(async () => true),
+      runGatewayStart,
+    });
+    await runOnboard(deps);
+    expect(runGatewayStart).toHaveBeenCalledTimes(1);
+    expect(runGatewayStart).toHaveBeenCalledWith(
+      expect.objectContaining({ configPath: "/tmp/cfg.json" }),
+    );
+  });
+
+  it("does not start gateway when post-onboard prompt is declined", async () => {
+    const runGatewayStart = vi.fn();
+    const deps = baseDeps({
+      confirmStartGateway: vi.fn(async () => false),
+      runGatewayStart,
+    });
+    await runOnboard(deps);
+    expect(runGatewayStart).not.toHaveBeenCalled();
+  });
 
   it("runs health check before write and disconnects adapter", async () => {
     const deps = baseDeps();

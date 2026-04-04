@@ -12,6 +12,7 @@ function mockAdapter(
     disconnect: vi.fn(),
     healthCheck: vi.fn(() => Promise.resolve(result)),
     onMessage: vi.fn(),
+    sendMessage: vi.fn(),
   };
 }
 

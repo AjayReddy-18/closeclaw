@@ -61,6 +61,7 @@ describe("onboard add-new config persistence", () => {
         } satisfies BotHealthResult),
       ),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
 
     await runOnboard({
@@ -133,6 +134,7 @@ describe("onboard add-new config persistence", () => {
         } satisfies BotHealthResult),
       ),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
 
     await runOnboard({

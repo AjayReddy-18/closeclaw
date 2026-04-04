@@ -40,6 +40,7 @@ describe("first-time onboard flow", () => {
         } satisfies BotHealthResult),
       ),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
 
     await runOnboard({
@@ -81,6 +82,7 @@ describe("first-time onboard flow", () => {
         } satisfies BotHealthResult),
       ),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
 
     await runOnboard({

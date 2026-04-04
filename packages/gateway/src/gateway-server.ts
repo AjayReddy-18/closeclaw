@@ -245,6 +245,20 @@ function closePromise(server: Server): Promise<void> {
   });
 }
 
+function formatPairingReply(pairingCode: string): string {
+  return `Pairing code: ${pairingCode}\nAsk the owner to run: closeclaw pairing approve ${pairingCode}`;
+}
+
+async function maybeSendPairingReply(
+  adapter: BotAdapter,
+  allowed: boolean,
+  pairingCode: string | undefined,
+  senderId: string,
+): Promise<void> {
+  if (allowed || pairingCode === undefined) return;
+  await adapter.sendMessage(senderId, formatPairingReply(pairingCode));
+}
+
 function wireMessageHandlers(
   cfg: GatewayServerConfig,
   pairingManager: PairingManager,
@@ -253,12 +267,13 @@ function wireMessageHandlers(
   if (!resolver) return;
   for (const adapter of cfg.adapters) {
     adapter.onMessage((msg: BotIncomingMessage) => {
-      void handleAdapterMessage(pairingManager, msg, resolver);
+      void handleAdapterMessage(adapter, pairingManager, msg, resolver);
     });
   }
 }
 
 async function handleAdapterMessage(
+  adapter: BotAdapter,
   pairingManager: PairingManager,
   msg: BotIncomingMessage,
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
@@ -269,7 +284,11 @@ async function handleAdapterMessage(
     allowedSenders: settings.allowedSenders,
     pairingManager,
   });
-  await enforcer.shouldAllow(msg.senderId, msg.platform);
+  const { allowed, pairingCode } = await enforcer.shouldAllow(
+    msg.senderId,
+    msg.platform,
+  );
+  await maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
 }
 
 export function createGatewayServer(

@@ -9,6 +9,12 @@ import { createGatewayServer } from "../../packages/gateway/src/gateway-server.j
 import { createPairingManager } from "../../packages/gateway/src/pairing-manager.js";
 
 const runOnboardMock = vi.hoisted(() => vi.fn());
+const runGatewayStartMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../../packages/cli/src/commands/gateway-start.js", () => ({
+  runGatewayStart: runGatewayStartMock,
+  createGatewayStartDeps: vi.fn(() => ({})),
+}));
 
 vi.mock("../../packages/cli/src/commands/onboard.js", async () => {
   const actual = await vi.importActual<
@@ -34,6 +40,27 @@ describe("closeclaw onboard exit codes", () => {
     runOnboardMock.mockRejectedValue(new Error("failed"));
     const { runCli } = await import("../../packages/cli/src/cli.js");
     const code = await runCli(["node", "closeclaw", "onboard"]);
+    expect(code).toBe(1);
+  });
+});
+
+describe("closeclaw gateway start exit codes", () => {
+  beforeEach(() => {
+    runGatewayStartMock.mockReset();
+  });
+
+  it("returns exit code 0 when gateway start succeeds", async () => {
+    runGatewayStartMock.mockResolvedValue(undefined);
+    const { runCli } = await import("../../packages/cli/src/cli.js");
+    const code = await runCli(["node", "closeclaw", "gateway", "start"]);
+    expect(code).toBe(0);
+    expect(runGatewayStartMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns exit code 1 when gateway start fails", async () => {
+    runGatewayStartMock.mockRejectedValue(new Error("fail"));
+    const { runCli } = await import("../../packages/cli/src/cli.js");
+    const code = await runCli(["node", "closeclaw", "gateway", "start"]);
     expect(code).toBe(1);
   });
 });
@@ -64,6 +91,7 @@ describe("gateway pairing HTTP", () => {
       disconnect: vi.fn(),
       healthCheck: vi.fn(() => Promise.resolve({ connected: true })),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
   }
 

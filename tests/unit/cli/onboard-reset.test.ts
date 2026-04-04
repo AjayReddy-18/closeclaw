@@ -19,6 +19,7 @@ describe("runOnboard reset configuration", () => {
       } satisfies BotHealthResult),
     ),
     onMessage: vi.fn(),
+    sendMessage: vi.fn(),
   };
 
   const tgAdapter: BotAdapter = {
@@ -32,6 +33,7 @@ describe("runOnboard reset configuration", () => {
       } satisfies BotHealthResult),
     ),
     onMessage: vi.fn(),
+    sendMessage: vi.fn(),
   };
 
   beforeEach(() => {

@@ -3,6 +3,10 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { Command } from "commander";
 import { createOnboardDeps, runOnboard } from "./commands/onboard.js";
+import {
+  createGatewayStartDeps,
+  runGatewayStart,
+} from "./commands/gateway-start.js";
 import { runPairingList } from "./commands/pairing-list.js";
 import { runPairingApprove } from "./commands/pairing-approve.js";
 
@@ -47,6 +51,18 @@ pairing
       await runPairingApprove(code, {
         storePath: join(homedir(), ".closeclaw", "pairing.json"),
       });
+    } catch {
+      process.exitCode = 1;
+    }
+  });
+
+const gateway = program.command("gateway").description("Manage the gateway");
+gateway
+  .command("start")
+  .description("Start the gateway")
+  .action(async () => {
+    try {
+      await runGatewayStart(createGatewayStartDeps());
     } catch {
       process.exitCode = 1;
     }

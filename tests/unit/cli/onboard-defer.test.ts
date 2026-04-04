@@ -19,6 +19,7 @@ describe("runOnboard defer after instructions", () => {
       } satisfies BotHealthResult),
     ),
     onMessage: vi.fn(),
+    sendMessage: vi.fn(),
   };
 
   beforeEach(() => {

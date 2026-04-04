@@ -80,4 +80,8 @@ export class TelegramAdapter implements BotAdapter {
   onMessage(handler: MessageHandler): void {
     this.handler = handler;
   }
+
+  async sendMessage(senderId: string, text: string): Promise<void> {
+    await this.bot.api.sendMessage(Number(senderId), text);
+  }
 }

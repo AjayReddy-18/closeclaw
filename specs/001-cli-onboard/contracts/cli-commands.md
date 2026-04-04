@@ -95,14 +95,15 @@ Start the gateway as a long-running foreground process.
 
 **Exit codes**:
 
-| Code | Meaning |
-|------|---------|
-| 0 | Graceful shutdown (Ctrl+C / SIGTERM) |
-| 1 | Error (missing config, adapter failure, port conflict) |
+| Code | Meaning                                                |
+| ---- | ------------------------------------------------------ |
+| 0    | Graceful shutdown (Ctrl+C / SIGTERM)                   |
+| 1    | Error (missing config, adapter failure, port conflict) |
 
 **Stdout**: Status messages (connected adapters, listening port, incoming DM events)
 
 **Auto-reply message format** (when DM policy is "pairing" and sender is unapproved):
+
 ```
 Pairing code: XXXXXX
 Ask the owner to run: closeclaw pairing approve XXXXXX

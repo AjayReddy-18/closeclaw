@@ -247,25 +247,25 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T098 [P] [US6] Unit test for BotAdapter.sendMessage (Telegram ctx.reply) in tests/unit/bot-adapters/telegram-adapter.test.ts
-- [ ] T099 [P] [US6] Unit test for BotAdapter.sendMessage (Discord message.reply) in tests/unit/bot-adapters/discord-adapter.test.ts
-- [ ] T100 [P] [US6] Unit test for pairing auto-reply (dm-policy-enforcer returns code, bot sends reply) in tests/unit/gateway/pairing-auto-reply.test.ts
-- [ ] T101 [P] [US6] Unit test for gateway-start command (loads config, connects adapters, starts server) in tests/unit/cli/gateway-start.test.ts
-- [ ] T102 [P] [US6] Unit test for gateway-start with missing config (errors with onboard instruction) in tests/unit/cli/gateway-start.test.ts
-- [ ] T103 [US6] Unit test for onboard post-completion gateway prompt in tests/unit/cli/onboard-command.test.ts
-- [ ] T104 [US6] Contract test for closeclaw gateway start exit codes in tests/contract/cli-commands.test.ts
-- [ ] T105 [US6] Integration test for gateway start + DM pairing reply in tests/integration/gateway-start-flow.test.ts
+- [x] T098 [P] [US6] Unit test for BotAdapter.sendMessage (Telegram ctx.reply) in tests/unit/bot-adapters/telegram-adapter.test.ts
+- [x] T099 [P] [US6] Unit test for BotAdapter.sendMessage (Discord message.reply) in tests/unit/bot-adapters/discord-adapter.test.ts
+- [x] T100 [P] [US6] Unit test for pairing auto-reply (dm-policy-enforcer returns code, bot sends reply) in tests/unit/gateway/pairing-auto-reply.test.ts
+- [x] T101 [P] [US6] Unit test for gateway-start command (loads config, connects adapters, starts server) in tests/unit/cli/gateway-start.test.ts
+- [x] T102 [P] [US6] Unit test for gateway-start with missing config (errors with onboard instruction) in tests/unit/cli/gateway-start.test.ts
+- [x] T103 [US6] Unit test for onboard post-completion gateway prompt in tests/unit/cli/onboard-command.test.ts
+- [x] T104 [US6] Contract test for closeclaw gateway start exit codes in tests/contract/cli-commands.test.ts
+- [x] T105 [US6] Integration test for gateway start + DM pairing reply in tests/integration/gateway-start-flow.test.ts
 
 ### Implementation for User Story 6
 
-- [ ] T106 [US6] Add sendMessage(senderId: string, text: string): Promise<void> to BotAdapter interface in packages/bot-adapters/src/adapter.ts
-- [ ] T107 [P] [US6] Implement TelegramAdapter.sendMessage (ctx.reply for the active chat) in packages/bot-adapters/src/telegram-adapter.ts
-- [ ] T108 [P] [US6] Implement DiscordAdapter.sendMessage (user.send for DM) in packages/bot-adapters/src/discord-adapter.ts
-- [ ] T109 [US6] Implement pairing auto-reply in gateway message handler: when dm-policy-enforcer returns pairingCode, call adapter.sendMessage with code + instructions in packages/gateway/src/gateway-server.ts
-- [ ] T110 [US6] Implement `closeclaw gateway start` command in packages/cli/src/commands/gateway-start.ts: load config, instantiate adapters, connect, start gateway server with pairing store, handle SIGINT/SIGTERM
-- [ ] T111 [US6] Wire `closeclaw gateway start` subcommand in packages/cli/src/index.ts
-- [ ] T112 [US6] Add post-onboard prompt: "Start the gateway now?" in packages/cli/src/commands/onboard.ts — if yes, transition to gateway start logic
-- [ ] T113 [US6] Run pnpm test and verify all tests pass, format and lint
+- [x] T106 [US6] Add sendMessage(senderId: string, text: string): Promise<void> to BotAdapter interface in packages/bot-adapters/src/adapter.ts
+- [x] T107 [P] [US6] Implement TelegramAdapter.sendMessage (ctx.reply for the active chat) in packages/bot-adapters/src/telegram-adapter.ts
+- [x] T108 [P] [US6] Implement DiscordAdapter.sendMessage (user.send for DM) in packages/bot-adapters/src/discord-adapter.ts
+- [x] T109 [US6] Implement pairing auto-reply in gateway message handler: when dm-policy-enforcer returns pairingCode, call adapter.sendMessage with code + instructions in packages/gateway/src/gateway-server.ts
+- [x] T110 [US6] Implement `closeclaw gateway start` command in packages/cli/src/commands/gateway-start.ts: load config, instantiate adapters, connect, start gateway server with pairing store, handle SIGINT/SIGTERM
+- [x] T111 [US6] Wire `closeclaw gateway start` subcommand in packages/cli/src/index.ts
+- [x] T112 [US6] Add post-onboard prompt: "Start the gateway now?" in packages/cli/src/commands/onboard.ts — if yes, transition to gateway start logic
+- [x] T113 [US6] Run pnpm test and verify all tests pass, format and lint
 
 **Checkpoint**: Full end-to-end flow works: onboard → gateway start → DM auto-reply with pairing code → pairing approve → sender approved.
 

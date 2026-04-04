@@ -18,6 +18,7 @@ export type DiscordClientInstance = {
   isReady: ReturnType<typeof vi.fn>;
   user: { username: string };
   destroy: ReturnType<typeof vi.fn>;
+  users: { fetch: ReturnType<typeof vi.fn> };
 };
 
 const clients: DiscordClientInstance[] = [];
@@ -37,6 +38,7 @@ export class Client {
   readonly isReady: DiscordClientInstance["isReady"];
   readonly user: DiscordClientInstance["user"];
   readonly destroy: DiscordClientInstance["destroy"];
+  readonly users: DiscordClientInstance["users"];
 
   constructor(_opts: unknown) {
     let readyCb: (() => void) | undefined;
@@ -54,6 +56,13 @@ export class Client {
     this.isReady = vi.fn(() => false);
     this.user = { username: "discbot" };
     this.destroy = vi.fn();
+    this.users = {
+      fetch: vi.fn(() =>
+        Promise.resolve({
+          send: vi.fn().mockResolvedValue(undefined),
+        }),
+      ),
+    };
     clients.push(this);
   }
 }

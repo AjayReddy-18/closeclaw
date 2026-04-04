@@ -2,6 +2,10 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { Command } from "commander";
 import { createOnboardDeps, runOnboard } from "./commands/onboard.js";
+import {
+  createGatewayStartDeps,
+  runGatewayStart,
+} from "./commands/gateway-start.js";
 import { runPairingList } from "./commands/pairing-list.js";
 import { runPairingApprove } from "./commands/pairing-approve.js";
 
@@ -28,6 +32,10 @@ export async function runCli(argv: string[]): Promise<number> {
         storePath: join(homedir(), ".closeclaw", "pairing.json"),
       });
     });
+  const gateway = program.command("gateway");
+  gateway.command("start").action(async () => {
+    await runGatewayStart(createGatewayStartDeps());
+  });
   try {
     await program.parseAsync(argv);
     return 0;

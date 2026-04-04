@@ -90,4 +90,16 @@ describe("DiscordAdapter", () => {
       }),
     );
   });
+
+  it("sendMessage fetches user and sends DM text", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const c = discordClientInstances().at(-1)!;
+    const send = vi.fn().mockResolvedValue(undefined);
+    c.users.fetch.mockResolvedValue({ send });
+    await adapter.sendMessage("snowflake-9", "reply text");
+    expect(c.users.fetch).toHaveBeenCalledWith("snowflake-9");
+    expect(send).toHaveBeenCalledWith("reply text");
+  });
 });

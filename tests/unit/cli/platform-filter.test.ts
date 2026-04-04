@@ -82,6 +82,7 @@ describe("platform availability for onboard", () => {
         } satisfies BotHealthResult),
       ),
       onMessage: vi.fn(),
+      sendMessage: vi.fn(),
     };
     try {
       const deps: OnboardDeps = {

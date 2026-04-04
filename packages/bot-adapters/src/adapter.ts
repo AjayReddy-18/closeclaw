@@ -22,4 +22,5 @@ export interface BotAdapter {
   disconnect(): Promise<void>;
   healthCheck(): Promise<BotHealthResult>;
   onMessage(handler: MessageHandler): void;
+  sendMessage(senderId: string, text: string): Promise<void>;
 }

@@ -22,6 +22,7 @@ import {
 import { getDiscordInstructions } from "../instructions/discord-setup.js";
 import { getTelegramInstructions } from "../instructions/telegram-setup.js";
 import type { OnboardExistingAction } from "../prompts/onboard-action-select.js";
+import type { GatewayStartDeps } from "./gateway-start.js";
 
 const require = createRequire(import.meta.url);
 
@@ -45,6 +46,8 @@ export interface OnboardDeps {
   createAdapter: (platform: BotPlatform, token: string) => BotAdapter;
   checkHealth: (adapters: BotAdapter[]) => Promise<HealthCheckResult>;
   generateGatewayConfig: () => GatewayConfig;
+  confirmStartGateway?: () => Promise<boolean>;
+  runGatewayStart?: (deps: GatewayStartDeps) => Promise<void>;
 }
 
 export async function runOnboard(deps: OnboardDeps): Promise<void> {
@@ -333,6 +336,7 @@ async function persistAndVerify(
   } finally {
     await safeDisconnect(adapter);
   }
+  await promptAndStartGateway(deps);
 }
 
 function pickGateway(
@@ -374,6 +378,19 @@ async function safeDisconnect(adapter: BotAdapter): Promise<void> {
   }
 }
 
+async function promptAndStartGateway(deps: OnboardDeps): Promise<void> {
+  const ask = deps.confirmStartGateway;
+  if (!ask) return;
+  if (!(await ask())) return;
+  const mod = await import("./gateway-start.js");
+  const gwDeps: GatewayStartDeps = {
+    ...mod.createGatewayStartDeps(),
+    configPath: deps.configPath,
+  };
+  const run = deps.runGatewayStart ?? mod.runGatewayStart;
+  await run(gwDeps);
+}
+
 async function promptAllowlistSenders(): Promise<string[]> {
   const { input } = await import("@inquirer/prompts");
   for (;;) {
@@ -404,6 +421,14 @@ async function defaultConfirmProceed(): Promise<boolean> {
   return confirm({
     message: "Ready to proceed with token entry?",
     default: true,
+  });
+}
+
+async function defaultConfirmStartGateway(): Promise<boolean> {
+  const { confirm } = await import("@inquirer/prompts");
+  return confirm({
+    message: "Start the gateway now?",
+    default: false,
   });
 }
 
@@ -457,5 +482,6 @@ export function createOnboardDeps(): OnboardDeps {
     createAdapter: createAdapterFromPackage,
     checkHealth,
     generateGatewayConfig,
+    confirmStartGateway: defaultConfirmStartGateway,
   };
 }
