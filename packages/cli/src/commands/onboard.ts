@@ -31,7 +31,13 @@ export interface OnboardDeps {
   writeConfig: (path: string, config: Configuration) => void;
   selectAction: () => Promise<OnboardExistingAction>;
   selectPlatform: (platforms: BotPlatform[]) => Promise<BotPlatform>;
+  selectResetScope?: () => Promise<"all" | "specific">;
+  selectPlatformToReset?: (
+    platforms: BotPlatform[],
+  ) => Promise<BotPlatform>;
+  confirmReset?: (message: string) => Promise<boolean>;
   getInstructions: (platform: BotPlatform) => string;
+  confirmProceed?: () => Promise<boolean>;
   inputBotToken: (platform: BotPlatform) => Promise<string>;
   selectDmPolicy: () => Promise<DmPolicy>;
   inputAllowlistSenders?: () => Promise<string[]>;
@@ -59,10 +65,23 @@ async function executeOnboard(deps: OnboardDeps): Promise<void> {
     return;
   }
   if (state.allPlatformsConfigured) {
-    logAllPlatformsConfigured();
+    await runAllConfiguredChoice(deps, existing, state);
     return;
   }
   await runExistingPartialChoice(deps, existing, state);
+}
+
+async function runAllConfiguredChoice(
+  deps: OnboardDeps,
+  existing: Configuration | null,
+  _state: ConfigState,
+): Promise<void> {
+  const action = await deps.selectAction();
+  if (action === "reset-configuration") {
+    await runResetConfiguration(deps, existing);
+    return;
+  }
+  logAllPlatformsConfigured();
 }
 
 function logAllPlatformsConfigured(): void {
@@ -79,10 +98,123 @@ async function runExistingPartialChoice(
 ): Promise<void> {
   const action = await deps.selectAction();
   if (action === "reset-configuration") {
-    console.log("Reset configuration is not implemented yet.");
+    await runResetConfiguration(deps, existing);
     return;
   }
   await runConfigureFlow(deps, existing, state);
+}
+
+async function runResetConfiguration(
+  deps: OnboardDeps,
+  existing: Configuration | null,
+): Promise<void> {
+  if (existing === null) {
+    return;
+  }
+  const scope = await loadResetScope(deps);
+  const platform =
+    scope === "specific"
+      ? await loadPlatformToReset(deps, existing)
+      : undefined;
+  if (!(await loadResetConfirmed(deps, scope, platform))) {
+    return;
+  }
+  await persistReset(deps, existing, scope, platform);
+  await continueConfigureAfterReset(deps);
+}
+
+async function loadResetScope(
+  deps: OnboardDeps,
+): Promise<"all" | "specific"> {
+  if (deps.selectResetScope) {
+    return deps.selectResetScope();
+  }
+  const m = await import("../prompts/reset-scope-select.js");
+  return m.selectResetScope();
+}
+
+async function loadPlatformToReset(
+  deps: OnboardDeps,
+  existing: Configuration,
+): Promise<BotPlatform> {
+  const keys = Object.keys(existing.channels) as BotPlatform[];
+  if (deps.selectPlatformToReset) {
+    return deps.selectPlatformToReset(keys);
+  }
+  const m = await import("../prompts/reset-platform-select.js");
+  return m.selectPlatformToReset(keys);
+}
+
+function resetWarningMessage(
+  scope: "all" | "specific",
+  platform: BotPlatform | undefined,
+): string {
+  if (scope === "all") {
+    return "This will remove all bot integrations. Are you sure?";
+  }
+  const label = platform ?? "selected platform";
+  return `This will remove the ${label} integration. Are you sure?`;
+}
+
+async function loadResetConfirmed(
+  deps: OnboardDeps,
+  scope: "all" | "specific",
+  platform: BotPlatform | undefined,
+): Promise<boolean> {
+  const msg = resetWarningMessage(scope, platform);
+  if (deps.confirmReset) {
+    return deps.confirmReset(msg);
+  }
+  const m = await import("../prompts/reset-confirm.js");
+  return m.confirmReset(msg);
+}
+
+function channelsWithoutPlatform(
+  channels: Configuration["channels"],
+  platform: BotPlatform,
+): Configuration["channels"] {
+  const next: Configuration["channels"] = { ...channels };
+  delete next[platform];
+  return next;
+}
+
+function buildResetChannels(
+  scope: "all" | "specific",
+  existing: Configuration,
+  platform: BotPlatform | undefined,
+): Configuration["channels"] {
+  if (scope === "all") {
+    return {};
+  }
+  if (platform === undefined) {
+    return existing.channels;
+  }
+  return channelsWithoutPlatform(existing.channels, platform);
+}
+
+async function persistReset(
+  deps: OnboardDeps,
+  existing: Configuration,
+  scope: "all" | "specific",
+  platform: BotPlatform | undefined,
+): Promise<void> {
+  const gateway = pickGateway(deps, existing);
+  const channels = buildResetChannels(scope, existing, platform);
+  deps.writeConfig(deps.configPath, assembleConfig(channels, gateway));
+}
+
+async function continueConfigureAfterReset(
+  deps: OnboardDeps,
+): Promise<void> {
+  const fresh = deps.readConfig(deps.configPath);
+  const nextState = deps.detectConfig(fresh);
+  await runConfigureFlow(deps, fresh, nextState);
+}
+
+async function resolveConfirmProceed(deps: OnboardDeps): Promise<boolean> {
+  const fn = deps.confirmProceed;
+  if (!fn) return true;
+  return fn();
 }
 
 async function runConfigureFlow(
@@ -94,6 +226,10 @@ async function runConfigureFlow(
   const help = deps.getInstructions(platform);
   if (help.length > 0) {
     console.log(help);
+  }
+  if (!(await resolveConfirmProceed(deps))) {
+    console.log("No problem! Run 'closeclaw onboard' when you're ready.");
+    return;
   }
   const token = await deps.inputBotToken(platform);
   const dmPolicy = await deps.selectDmPolicy();
@@ -235,6 +371,14 @@ function instructionsForPlatform(platform: BotPlatform): string {
     : getDiscordInstructions();
 }
 
+async function defaultConfirmProceed(): Promise<boolean> {
+  const { confirm } = await import("@inquirer/prompts");
+  return confirm({
+    message: "Ready to proceed with token entry?",
+    default: true,
+  });
+}
+
 function createAdapterFromPackage(
   platform: BotPlatform,
   token: string,
@@ -256,11 +400,24 @@ export function createOnboardDeps(): OnboardDeps {
       import("../prompts/onboard-action-select.js").then((m) =>
         m.selectOnboardExistingAction(),
       ),
+    selectResetScope: () =>
+      import("../prompts/reset-scope-select.js").then((m) =>
+        m.selectResetScope(),
+      ),
+    selectPlatformToReset: (platforms) =>
+      import("../prompts/reset-platform-select.js").then((m) =>
+        m.selectPlatformToReset(platforms),
+      ),
+    confirmReset: (message) =>
+      import("../prompts/reset-confirm.js").then((m) =>
+        m.confirmReset(message),
+      ),
     selectPlatform: (platforms) =>
       import("../prompts/platform-select.js").then((m) =>
         m.selectPlatform(platforms),
       ),
     getInstructions: instructionsForPlatform,
+    confirmProceed: defaultConfirmProceed,
     inputBotToken: (platform) =>
       import("../prompts/token-input.js").then((m) =>
         m.inputBotToken(platform),

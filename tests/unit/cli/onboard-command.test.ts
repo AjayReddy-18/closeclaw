@@ -122,8 +122,10 @@ describe("runOnboard", () => {
           availablePlatforms: [],
           allPlatformsConfigured: true,
         })),
+        selectAction: vi.fn(async () => "add-integration" as const),
       });
       await runOnboard(deps);
+      expect(deps.selectAction).toHaveBeenCalledTimes(1);
       expect(logSpy).toHaveBeenCalledWith(
         "All platforms are already configured.",
       );

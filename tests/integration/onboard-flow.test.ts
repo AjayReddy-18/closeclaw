@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -67,5 +67,42 @@ describe("first-time onboard flow", () => {
     expect(loaded!.channels.telegram?.enabled).toBe(true);
     expect(loaded!.channels.telegram?.dmPolicy).toBe("pairing");
     expect(loaded!.version).toBe("0.1.0");
+  });
+
+  it("creates no config file when user defers after instructions", async () => {
+    const adapter: BotAdapter = {
+      platform: "telegram",
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      healthCheck: vi.fn(() =>
+        Promise.resolve({
+          connected: true,
+          botUsername: "livebot",
+        } satisfies BotHealthResult),
+      ),
+      onMessage: vi.fn(),
+    };
+
+    await runOnboard({
+      configPath,
+      readConfig,
+      writeConfig,
+      detectConfig: detectConfigState,
+      selectAction: async () => "add-integration",
+      selectPlatform: async () => "telegram",
+      getInstructions: () => "Setup help text\n",
+      confirmProceed: async () => false,
+      inputBotToken: async () => "123456789:Ab_cdefghijklmnop",
+      selectDmPolicy: async () => "pairing",
+      createAdapter: () => adapter,
+      checkHealth,
+      generateGatewayConfig: () => ({
+        bindAddress: "127.0.0.1",
+        port: 18790,
+        authToken: "a".repeat(64),
+      }),
+    });
+
+    expect(existsSync(configPath)).toBe(false);
   });
 });

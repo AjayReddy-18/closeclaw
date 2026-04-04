@@ -113,10 +113,10 @@ describe("platform availability for onboard", () => {
         })),
       };
       await runOnboard(deps);
+      expect(deps.selectAction).toHaveBeenCalledTimes(1);
       expect(logSpy).toHaveBeenCalledWith(
         "All platforms are already configured.",
       );
-      expect(deps.selectAction).not.toHaveBeenCalled();
     } finally {
       logSpy.mockRestore();
     }

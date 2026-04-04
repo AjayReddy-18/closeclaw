@@ -106,22 +106,4 @@ describe("runOnboard existing config", () => {
     expect(deps.selectPlatform).toHaveBeenCalledWith(["discord"]);
   });
 
-  it("reset path skips platform selection and write", async () => {
-    const deps = baseDeps({
-      selectAction: vi.fn(async () => "reset-configuration" as const),
-    });
-    const logSpy = vi
-      .spyOn(console, "log")
-      .mockImplementation(() => undefined);
-    try {
-      await runOnboard(deps);
-      expect(logSpy).toHaveBeenCalledWith(
-        "Reset configuration is not implemented yet.",
-      );
-      expect(deps.selectPlatform).not.toHaveBeenCalled();
-      expect(deps.writeConfig).not.toHaveBeenCalled();
-    } finally {
-      logSpy.mockRestore();
-    }
-  });
 });

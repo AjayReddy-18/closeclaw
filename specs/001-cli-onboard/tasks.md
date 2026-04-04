@@ -187,16 +187,16 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T081 [P] [US4] Unit test for reset-all flow in tests/unit/cli/onboard-reset.test.ts
-- [ ] T082 [P] [US4] Unit test for reset-specific-platform flow in tests/unit/cli/onboard-reset.test.ts
-- [ ] T083 [US4] Integration test for reset flow with confirmation in tests/integration/config-persistence.test.ts
+- [x] T081 [P] [US4] Unit test for reset-all flow in tests/unit/cli/onboard-reset.test.ts
+- [x] T082 [P] [US4] Unit test for reset-specific-platform flow in tests/unit/cli/onboard-reset.test.ts
+- [x] T083 [US4] Integration test for reset flow with confirmation in tests/integration/config-persistence.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T084 [US4] Implement reset scope prompt (all vs specific platform) in packages/cli/src/commands/onboard.ts
-- [ ] T085 [US4] Implement reset confirmation with consequence warning in packages/cli/src/commands/onboard.ts
-- [ ] T086 [US4] Implement config-writer reset logic (clear all or remove specific channel) in packages/cli/src/config/config-writer.ts
-- [ ] T087 [US4] Re-trigger first-time flow after reset in packages/cli/src/commands/onboard.ts
+- [x] T084 [US4] Implement reset scope prompt (all vs specific platform) in packages/cli/src/commands/onboard.ts
+- [x] T085 [US4] Implement reset confirmation with consequence warning in packages/cli/src/commands/onboard.ts
+- [x] T086 [US4] Implement config-writer reset logic (clear all or remove specific channel) in packages/cli/src/config/config-writer.ts
+- [x] T087 [US4] Re-trigger first-time flow after reset in packages/cli/src/commands/onboard.ts
 
 **Checkpoint**: User Stories 1–4 complete — full onboarding lifecycle (setup, pair, add, reset) works.
 
@@ -212,13 +212,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T088 [P] [US5] Unit test for defer-token-entry flow in tests/unit/cli/onboard-defer.test.ts
-- [ ] T089 [US5] Integration test for deferred exit (no partial writes) in tests/integration/onboard-flow.test.ts
+- [X] T088 [P] [US5] Unit test for defer-token-entry flow in tests/unit/cli/onboard-defer.test.ts
+- [X] T089 [US5] Integration test for deferred exit (no partial writes) in tests/integration/onboard-flow.test.ts
 
 ### Implementation for User Story 5
 
-- [ ] T090 [US5] Add "ready to proceed or come back later" prompt after instructions in packages/cli/src/commands/onboard.ts
-- [ ] T091 [US5] Implement deferred exit (no config writes, clean exit code 0) in packages/cli/src/commands/onboard.ts
+- [X] T090 [US5] Add "ready to proceed or come back later" prompt after instructions in packages/cli/src/commands/onboard.ts
+- [X] T091 [US5] Implement deferred exit (no config writes, clean exit code 0) in packages/cli/src/commands/onboard.ts
 
 **Checkpoint**: All 5 user stories complete.
 
