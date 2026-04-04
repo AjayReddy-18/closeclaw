@@ -1,0 +1,78 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import {
+  clearGrammyBotInstances,
+  grammyBotInstances,
+} from "../../__mocks__/grammy.js";
+
+describe("TelegramAdapter", () => {
+  beforeEach(() => {
+    clearGrammyBotInstances();
+  });
+
+  it("healthCheck returns connected with username when getMe succeeds", async () => {
+    const { TelegramAdapter } = await import(
+      "../../../packages/bot-adapters/src/telegram-adapter.js"
+    );
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    const bot = grammyBotInstances().at(-1);
+    expect(bot).toBeDefined();
+    bot!.api.getMe.mockResolvedValue({ username: "mybot" });
+    await expect(adapter.healthCheck()).resolves.toEqual({
+      connected: true,
+      botUsername: "mybot",
+    });
+    expect(bot!.api.getMe).toHaveBeenCalled();
+  });
+
+  it("healthCheck returns connected false with error when getMe fails", async () => {
+    const { TelegramAdapter } = await import(
+      "../../../packages/bot-adapters/src/telegram-adapter.js"
+    );
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    const bot = grammyBotInstances().at(-1)!;
+    bot.api.getMe.mockRejectedValue(new Error("network down"));
+    await expect(adapter.healthCheck()).resolves.toEqual({
+      connected: false,
+      error: "network down",
+    });
+  });
+
+  it("connect starts polling and disconnect stops", async () => {
+    const { TelegramAdapter } = await import(
+      "../../../packages/bot-adapters/src/telegram-adapter.js"
+    );
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    await adapter.connect();
+    await adapter.disconnect();
+    const bot = grammyBotInstances().at(-1)!;
+    expect(bot.start).toHaveBeenCalledTimes(1);
+    expect(bot.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it("onMessage registers handler that receives IncomingMessage for text", async () => {
+    const { TelegramAdapter } = await import(
+      "../../../packages/bot-adapters/src/telegram-adapter.js"
+    );
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    const handler = vi.fn();
+    adapter.onMessage(handler);
+    const bot = grammyBotInstances().at(-1)!;
+    const textCall = bot.on.mock.calls.find((c) => c[0] === "message:text");
+    expect(textCall).toBeDefined();
+    const route = textCall![1] as (ctx: {
+      message: { text: string; date: number };
+      from?: { id: number; first_name?: string; username?: string };
+    }) => void;
+    route({
+      message: { text: "hello", date: 1_700_000_000 },
+      from: { id: 99, first_name: "Pat" },
+    });
+    expect(handler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: "telegram",
+        senderId: "99",
+        text: "hello",
+      }),
+    );
+  });
+});

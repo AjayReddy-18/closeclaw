@@ -4,6 +4,12 @@ import { resolve } from "node:path";
 export default defineConfig({
   resolve: {
     alias: {
+      "@inquirer/prompts": resolve(
+        __dirname,
+        "tests/__mocks__/inquirer-prompts.ts",
+      ),
+      grammy: resolve(__dirname, "tests/__mocks__/grammy.ts"),
+      "discord.js": resolve(__dirname, "tests/__mocks__/discord-js.ts"),
       "@closeclaw/shared-types": resolve(
         __dirname,
         "packages/shared-types/src/index.ts",

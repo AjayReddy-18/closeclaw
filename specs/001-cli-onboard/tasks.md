@@ -84,37 +84,37 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T032 [P] [US1] Unit test for Telegram token validation in tests/unit/cli/token-validation.test.ts
-- [ ] T033 [P] [US1] Unit test for Discord token validation in tests/unit/cli/token-validation.test.ts
-- [ ] T034 [P] [US1] Unit test for platform-select prompt in tests/unit/cli/platform-select.test.ts
-- [ ] T035 [P] [US1] Unit test for token-input prompt in tests/unit/cli/token-input.test.ts
-- [ ] T036 [P] [US1] Unit test for dm-policy-select prompt in tests/unit/cli/dm-policy-select.test.ts
-- [ ] T037 [P] [US1] Unit test for Telegram setup instructions in tests/unit/cli/telegram-instructions.test.ts
-- [ ] T038 [P] [US1] Unit test for Discord setup instructions in tests/unit/cli/discord-instructions.test.ts
-- [ ] T039 [P] [US1] Unit test for TelegramAdapter (getMe health check) in tests/unit/bot-adapters/telegram-adapter.test.ts
-- [ ] T040 [P] [US1] Unit test for DiscordAdapter (login + ready event) in tests/unit/bot-adapters/discord-adapter.test.ts
-- [ ] T041 [P] [US1] Unit test for health-checker in tests/unit/gateway/health-checker.test.ts
-- [ ] T042 [P] [US1] Unit test for gateway-server HTTP endpoints in tests/unit/gateway/gateway-server.test.ts
-- [ ] T043 [P] [US1] Unit test for onboard command orchestration in tests/unit/cli/onboard-command.test.ts
-- [ ] T044 [P] [US1] Contract test for closeclaw onboard exit codes in tests/contract/cli-commands.test.ts
-- [ ] T045 [US1] Integration test for first-time onboard flow in tests/integration/onboard-flow.test.ts
+- [x] T032 [P] [US1] Unit test for Telegram token validation in tests/unit/cli/token-validation.test.ts
+- [x] T033 [P] [US1] Unit test for Discord token validation in tests/unit/cli/token-validation.test.ts
+- [x] T034 [P] [US1] Unit test for platform-select prompt in tests/unit/cli/platform-select.test.ts
+- [x] T035 [P] [US1] Unit test for token-input prompt in tests/unit/cli/token-input.test.ts
+- [x] T036 [P] [US1] Unit test for dm-policy-select prompt in tests/unit/cli/dm-policy-select.test.ts
+- [x] T037 [P] [US1] Unit test for Telegram setup instructions in tests/unit/cli/telegram-instructions.test.ts
+- [x] T038 [P] [US1] Unit test for Discord setup instructions in tests/unit/cli/discord-instructions.test.ts
+- [x] T039 [P] [US1] Unit test for TelegramAdapter (getMe health check) in tests/unit/bot-adapters/telegram-adapter.test.ts
+- [x] T040 [P] [US1] Unit test for DiscordAdapter (login + ready event) in tests/unit/bot-adapters/discord-adapter.test.ts
+- [x] T041 [P] [US1] Unit test for health-checker in tests/unit/gateway/health-checker.test.ts
+- [x] T042 [P] [US1] Unit test for gateway-server HTTP endpoints in tests/unit/gateway/gateway-server.test.ts
+- [x] T043 [P] [US1] Unit test for onboard command orchestration in tests/unit/cli/onboard-command.test.ts
+- [x] T044 [P] [US1] Contract test for closeclaw onboard exit codes in tests/contract/cli-commands.test.ts
+- [x] T045 [US1] Integration test for first-time onboard flow in tests/integration/onboard-flow.test.ts
 
 ### Implementation for User Story 1
 
-- [ ] T046 [P] [US1] Implement TelegramAdapter (grammY bot.api.getMe for health check, long polling for messages) in packages/bot-adapters/src/telegram-adapter.ts
-- [ ] T047 [P] [US1] Implement DiscordAdapter (client.login + ready event for health check, message listener) in packages/bot-adapters/src/discord-adapter.ts
-- [ ] T048 [US1] Create packages/bot-adapters/src/index.ts barrel export
-- [ ] T049 [P] [US1] Implement platform-select prompt (Telegram or Discord) in packages/cli/src/prompts/platform-select.ts
-- [ ] T050 [P] [US1] Implement token-input prompt with masked input and format validation in packages/cli/src/prompts/token-input.ts
-- [ ] T051 [P] [US1] Implement dm-policy-select prompt (pairing default, allowlist, open with warning) in packages/cli/src/prompts/dm-policy-select.ts
-- [ ] T052 [P] [US1] Implement Telegram setup instructions (BotFather steps) in packages/cli/src/instructions/telegram-setup.ts
-- [ ] T053 [P] [US1] Implement Discord setup instructions (Developer Portal steps) in packages/cli/src/instructions/discord-setup.ts
-- [ ] T054 [US1] Implement gateway auto-configuration (localhost, random auth token, default port 18790) in packages/gateway/src/gateway-config-generator.ts
-- [ ] T055 [US1] Implement health-checker (call adapter.healthCheck, format pass/fail result) in packages/gateway/src/health-checker.ts
-- [ ] T056 [US1] Implement gateway-server with /health endpoint in packages/gateway/src/gateway-server.ts
-- [ ] T057 [US1] Implement onboard command orchestrating the full first-time flow in packages/cli/src/commands/onboard.ts
-- [ ] T058 [US1] Wire Commander.js CLI entry point with `closeclaw onboard` subcommand in packages/cli/src/index.ts
-- [ ] T059 [US1] Implement Ctrl+C graceful exit handling (catch ExitPromptError, clean up, exit 130) in packages/cli/src/commands/onboard.ts
+- [x] T046 [P] [US1] Implement TelegramAdapter (grammY bot.api.getMe for health check, long polling for messages) in packages/bot-adapters/src/telegram-adapter.ts
+- [x] T047 [P] [US1] Implement DiscordAdapter (client.login + ready event for health check, message listener) in packages/bot-adapters/src/discord-adapter.ts
+- [x] T048 [US1] Create packages/bot-adapters/src/index.ts barrel export
+- [x] T049 [P] [US1] Implement platform-select prompt (Telegram or Discord) in packages/cli/src/prompts/platform-select.ts
+- [x] T050 [P] [US1] Implement token-input prompt with masked input and format validation in packages/cli/src/prompts/token-input.ts
+- [x] T051 [P] [US1] Implement dm-policy-select prompt (pairing default, allowlist, open with warning) in packages/cli/src/prompts/dm-policy-select.ts
+- [x] T052 [P] [US1] Implement Telegram setup instructions (BotFather steps) in packages/cli/src/instructions/telegram-setup.ts
+- [x] T053 [P] [US1] Implement Discord setup instructions (Developer Portal steps) in packages/cli/src/instructions/discord-setup.ts
+- [x] T054 [US1] Implement gateway auto-configuration (localhost, random auth token, default port 18790) in packages/gateway/src/gateway-config-generator.ts
+- [x] T055 [US1] Implement health-checker (call adapter.healthCheck, format pass/fail result) in packages/gateway/src/health-checker.ts
+- [x] T056 [US1] Implement gateway-server with /health endpoint in packages/gateway/src/gateway-server.ts
+- [x] T057 [US1] Implement onboard command orchestrating the full first-time flow in packages/cli/src/commands/onboard.ts
+- [x] T058 [US1] Wire Commander.js CLI entry point with `closeclaw onboard` subcommand in packages/cli/src/index.ts
+- [x] T059 [US1] Implement Ctrl+C graceful exit handling (catch ExitPromptError, clean up, exit 130) in packages/cli/src/commands/onboard.ts
 
 **Checkpoint**: User Story 1 complete — `closeclaw onboard` works end-to-end for first-time setup with health check. MVP is functional.
 

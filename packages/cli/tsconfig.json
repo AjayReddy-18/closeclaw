@@ -6,6 +6,7 @@
   },
   "include": ["src"],
   "references": [
+    { "path": "../bot-adapters" },
     { "path": "../shared-types" },
     { "path": "../gateway" }
   ]

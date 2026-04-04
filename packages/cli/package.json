@@ -17,10 +17,12 @@
     "build": "tsdown src/index.ts --format esm --dts"
   },
   "dependencies": {
-    "@closeclaw/shared-types": "workspace:*",
+    "@closeclaw/bot-adapters": "workspace:*",
     "@closeclaw/gateway": "workspace:*",
-    "commander": "^13.1.0",
-    "@inquirer/prompts": "^7.5.0"
+    "@closeclaw/shared-types": "workspace:*",
+    "@inquirer/core": "^10.1.0",
+    "@inquirer/prompts": "^7.5.0",
+    "commander": "^13.1.0"
   },
   "files": ["dist"]
 }
