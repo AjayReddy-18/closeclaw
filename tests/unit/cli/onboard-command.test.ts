@@ -36,6 +36,7 @@ describe("runOnboard", () => {
         allPlatformsConfigured: false,
       })),
       writeConfig: vi.fn(),
+      selectAction: vi.fn(async () => "add-integration" as const),
       selectPlatform: vi.fn(async (): Promise<BotPlatform> => "telegram"),
       getInstructions: vi.fn(() => ""),
       inputBotToken: vi.fn(async () => "123456789:Ab_cdefghijklmnop"),
@@ -125,6 +126,9 @@ describe("runOnboard", () => {
       await runOnboard(deps);
       expect(logSpy).toHaveBeenCalledWith(
         "All platforms are already configured.",
+      );
+      expect(logSpy).toHaveBeenCalledWith(
+        'To start over, choose "Reset configuration" when running closeclaw onboard.',
       );
       expect(deps.selectPlatform).not.toHaveBeenCalled();
       expect(deps.writeConfig).not.toHaveBeenCalled();

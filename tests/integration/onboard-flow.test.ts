@@ -47,6 +47,7 @@ describe("first-time onboard flow", () => {
       readConfig,
       writeConfig,
       detectConfig: detectConfigState,
+      selectAction: async () => "add-integration",
       selectPlatform: async () => "telegram",
       getInstructions: () => "",
       inputBotToken: async () => "123456789:Ab_cdefghijklmnop",

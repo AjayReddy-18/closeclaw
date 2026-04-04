@@ -8,3 +8,12 @@ export {
   type GatewayServer,
   type GatewayServerConfig,
 } from "./gateway-server.js";
+export {
+  createPairingManager,
+  type PairingManager,
+} from "./pairing-manager.js";
+export {
+  createDmPolicyEnforcer,
+  type DmPolicyEnforcer,
+  type DmPolicyEnforcerConfig,
+} from "./dm-policy-enforcer.js";

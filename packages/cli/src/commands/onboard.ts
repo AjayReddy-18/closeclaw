@@ -20,6 +20,7 @@ import {
 } from "../config/config-detector.js";
 import { getDiscordInstructions } from "../instructions/discord-setup.js";
 import { getTelegramInstructions } from "../instructions/telegram-setup.js";
+import type { OnboardExistingAction } from "../prompts/onboard-action-select.js";
 
 const require = createRequire(import.meta.url);
 
@@ -28,6 +29,7 @@ export interface OnboardDeps {
   readConfig: (path: string) => Configuration | null;
   detectConfig: (config: Configuration | null) => ConfigState;
   writeConfig: (path: string, config: Configuration) => void;
+  selectAction: () => Promise<OnboardExistingAction>;
   selectPlatform: (platforms: BotPlatform[]) => Promise<BotPlatform>;
   getInstructions: (platform: BotPlatform) => string;
   inputBotToken: (platform: BotPlatform) => Promise<string>;
@@ -52,8 +54,32 @@ export async function runOnboard(deps: OnboardDeps): Promise<void> {
 async function executeOnboard(deps: OnboardDeps): Promise<void> {
   const existing = deps.readConfig(deps.configPath);
   const state = deps.detectConfig(existing);
+  if (!state.exists) {
+    await runConfigureFlow(deps, existing, state);
+    return;
+  }
   if (state.allPlatformsConfigured) {
-    console.log("All platforms are already configured.");
+    logAllPlatformsConfigured();
+    return;
+  }
+  await runExistingPartialChoice(deps, existing, state);
+}
+
+function logAllPlatformsConfigured(): void {
+  console.log("All platforms are already configured.");
+  console.log(
+    'To start over, choose "Reset configuration" when running closeclaw onboard.',
+  );
+}
+
+async function runExistingPartialChoice(
+  deps: OnboardDeps,
+  existing: Configuration | null,
+  state: ConfigState,
+): Promise<void> {
+  const action = await deps.selectAction();
+  if (action === "reset-configuration") {
+    console.log("Reset configuration is not implemented yet.");
     return;
   }
   await runConfigureFlow(deps, existing, state);
@@ -226,6 +252,10 @@ export function createOnboardDeps(): OnboardDeps {
     readConfig,
     writeConfig,
     detectConfig: detectConfigState,
+    selectAction: () =>
+      import("../prompts/onboard-action-select.js").then((m) =>
+        m.selectOnboardExistingAction(),
+      ),
     selectPlatform: (platforms) =>
       import("../prompts/platform-select.js").then((m) =>
         m.selectPlatform(platforms),

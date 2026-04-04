@@ -130,23 +130,23 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T060 [P] [US2] Unit test for pairing code generation (6-char alphanumeric, crypto-based) in tests/unit/gateway/pairing-manager.test.ts
-- [ ] T061 [P] [US2] Unit test for pairing-manager (create, list, approve, expire logic) in tests/unit/gateway/pairing-manager.test.ts
-- [ ] T062 [P] [US2] Unit test for dm-policy-enforcer (pairing, allowlist, open modes) in tests/unit/gateway/dm-policy-enforcer.test.ts
-- [ ] T063 [P] [US2] Unit test for pairing-list command in tests/unit/cli/pairing-list.test.ts
-- [ ] T064 [P] [US2] Unit test for pairing-approve command in tests/unit/cli/pairing-approve.test.ts
-- [ ] T065 [P] [US2] Contract test for GET /pairing and POST /pairing/approve endpoints in tests/contract/cli-commands.test.ts
-- [ ] T066 [US2] Integration test for full pairing flow in tests/integration/pairing-flow.test.ts
+- [x] T060 [P] [US2] Unit test for pairing code generation (6-char alphanumeric, crypto-based) in tests/unit/gateway/pairing-manager.test.ts
+- [x] T061 [P] [US2] Unit test for pairing-manager (create, list, approve, expire logic) in tests/unit/gateway/pairing-manager.test.ts
+- [x] T062 [P] [US2] Unit test for dm-policy-enforcer (pairing, allowlist, open modes) in tests/unit/gateway/dm-policy-enforcer.test.ts
+- [x] T063 [P] [US2] Unit test for pairing-list command in tests/unit/cli/pairing-list.test.ts
+- [x] T064 [P] [US2] Unit test for pairing-approve command in tests/unit/cli/pairing-approve.test.ts
+- [x] T065 [P] [US2] Contract test for GET /pairing and POST /pairing/approve endpoints in tests/contract/cli-commands.test.ts
+- [x] T066 [US2] Integration test for full pairing flow in tests/integration/pairing-flow.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T067 [US2] Implement pairing-manager (code generation, store read/write, approve, expire cleanup) in packages/gateway/src/pairing-manager.ts
-- [ ] T068 [US2] Implement dm-policy-enforcer (check sender against policy, trigger pairing or reject) in packages/gateway/src/dm-policy-enforcer.ts
-- [ ] T069 [US2] Add GET /pairing and POST /pairing/approve endpoints to gateway-server in packages/gateway/src/gateway-server.ts
-- [ ] T070 [US2] Wire DM policy enforcer into bot adapter message handlers in packages/gateway/src/gateway-server.ts
-- [ ] T071 [US2] Implement pairing-list command (read from gateway API, display table) in packages/cli/src/commands/pairing-list.ts
-- [ ] T072 [US2] Implement pairing-approve command (POST to gateway API, display result) in packages/cli/src/commands/pairing-approve.ts
-- [ ] T073 [US2] Wire `closeclaw pairing list` and `closeclaw pairing approve` subcommands in packages/cli/src/index.ts
+- [x] T067 [US2] Implement pairing-manager (code generation, store read/write, approve, expire cleanup) in packages/gateway/src/pairing-manager.ts
+- [x] T068 [US2] Implement dm-policy-enforcer (check sender against policy, trigger pairing or reject) in packages/gateway/src/dm-policy-enforcer.ts
+- [x] T069 [US2] Add GET /pairing and POST /pairing/approve endpoints to gateway-server in packages/gateway/src/gateway-server.ts
+- [x] T070 [US2] Wire DM policy enforcer into bot adapter message handlers in packages/gateway/src/gateway-server.ts
+- [x] T071 [US2] Implement pairing-list command (read from gateway API, display table) in packages/cli/src/commands/pairing-list.ts
+- [x] T072 [US2] Implement pairing-approve command (POST to gateway API, display result) in packages/cli/src/commands/pairing-approve.ts
+- [x] T073 [US2] Wire `closeclaw pairing list` and `closeclaw pairing approve` subcommands in packages/cli/src/index.ts
 
 **Checkpoint**: User Stories 1 AND 2 complete — full onboarding + pairing approval flow works end-to-end.
 
@@ -162,16 +162,16 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T074 [P] [US3] Unit test for existing-config detection prompting add-new/reset in tests/unit/cli/onboard-existing.test.ts
-- [ ] T075 [P] [US3] Unit test for filtering already-configured platforms in tests/unit/cli/platform-filter.test.ts
-- [ ] T076 [US3] Integration test for add-new-bot flow in tests/integration/config-persistence.test.ts
+- [x] T074 [P] [US3] Unit test for existing-config detection prompting add-new/reset in tests/unit/cli/onboard-existing.test.ts
+- [x] T075 [P] [US3] Unit test for filtering already-configured platforms in tests/unit/cli/platform-filter.test.ts
+- [x] T076 [US3] Integration test for add-new-bot flow in tests/integration/config-persistence.test.ts
 
 ### Implementation for User Story 3
 
-- [ ] T077 [US3] Implement existing-config branch in onboard command (detect config, prompt add-new or reset) in packages/cli/src/commands/onboard.ts
-- [ ] T078 [US3] Implement platform filtering (only show unconfigured platforms) in packages/cli/src/prompts/platform-select.ts
-- [ ] T079 [US3] Implement add-new-bot flow (reuse platform setup, merge into existing config) in packages/cli/src/commands/onboard.ts
-- [ ] T080 [US3] Handle all-platforms-configured case (display message, suggest reset) in packages/cli/src/commands/onboard.ts
+- [x] T077 [US3] Implement existing-config branch in onboard command (detect config, prompt add-new or reset) in packages/cli/src/commands/onboard.ts
+- [x] T078 [US3] Implement platform filtering (only show unconfigured platforms) in packages/cli/src/prompts/platform-select.ts
+- [x] T079 [US3] Implement add-new-bot flow (reuse platform setup, merge into existing config) in packages/cli/src/commands/onboard.ts
+- [x] T080 [US3] Handle all-platforms-configured case (display message, suggest reset) in packages/cli/src/commands/onboard.ts
 
 **Checkpoint**: User Stories 1, 2, AND 3 complete — multi-platform onboarding works.
 
