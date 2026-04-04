@@ -3,10 +3,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import {
-  BotPlatform,
-  PairingStatus,
-} from "@closeclaw/shared-types";
+import { BotPlatform, PairingStatus } from "@closeclaw/shared-types";
 import { isValidConfiguration } from "@closeclaw/shared-types";
 import { runPairingList } from "../../packages/cli/src/commands/pairing-list.js";
 import { runPairingApprove } from "../../packages/cli/src/commands/pairing-approve.js";

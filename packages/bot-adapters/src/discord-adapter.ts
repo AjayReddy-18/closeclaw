@@ -1,9 +1,4 @@
-import {
-  Client,
-  Events,
-  GatewayIntentBits,
-  type Message,
-} from "discord.js";
+import { Client, Events, GatewayIntentBits, type Message } from "discord.js";
 import { BotPlatform } from "@closeclaw/shared-types";
 import type {
   BotAdapter,
@@ -52,8 +47,7 @@ export class DiscordAdapter implements BotAdapter {
     return {
       platform: BotPlatform.DISCORD,
       senderId: message.author.id,
-      senderDisplayName:
-        message.author.displayName ?? message.author.username,
+      senderDisplayName: message.author.displayName ?? message.author.username,
       text: message.content,
       timestamp: message.createdAt,
     };

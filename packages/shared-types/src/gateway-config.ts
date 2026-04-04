@@ -11,9 +11,7 @@ const MIN_PORT = 1024;
 const MAX_PORT = 65535;
 const MIN_AUTH_TOKEN_LENGTH = 32;
 
-export function isValidGatewayConfig(
-  value: unknown,
-): value is GatewayConfig {
+export function isValidGatewayConfig(value: unknown): value is GatewayConfig {
   if (typeof value !== "object" || value === null) return false;
 
   const obj = value as Record<string, unknown>;

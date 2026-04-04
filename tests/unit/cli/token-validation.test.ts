@@ -11,9 +11,9 @@ describe("validateBotToken for CLI onboarding", () => {
     });
 
     it("rejects token without colon", () => {
-      expect(
-        validateBotToken("telegram" as BotPlatform, "noColonHere"),
-      ).toBe(false);
+      expect(validateBotToken("telegram" as BotPlatform, "noColonHere")).toBe(
+        false,
+      );
     });
 
     it("rejects empty telegram token", () => {

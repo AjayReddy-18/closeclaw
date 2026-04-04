@@ -8,9 +8,8 @@ describe("selectPlatform", () => {
   });
 
   it("returns the only platform without calling select", async () => {
-    const { selectPlatform } = await import(
-      "../../../packages/cli/src/prompts/platform-select.js"
-    );
+    const { selectPlatform } =
+      await import("../../../packages/cli/src/prompts/platform-select.js");
     const result = await selectPlatform(["telegram"]);
     expect(result).toBe("telegram");
     expect(select).not.toHaveBeenCalled();
@@ -18,9 +17,8 @@ describe("selectPlatform", () => {
 
   it("calls select with mapped choices and returns selection", async () => {
     vi.mocked(select).mockResolvedValueOnce("discord" as BotPlatform);
-    const { selectPlatform } = await import(
-      "../../../packages/cli/src/prompts/platform-select.js"
-    );
+    const { selectPlatform } =
+      await import("../../../packages/cli/src/prompts/platform-select.js");
     const result = await selectPlatform(["telegram", "discord"]);
     expect(result).toBe("discord");
     expect(select).toHaveBeenCalledTimes(1);

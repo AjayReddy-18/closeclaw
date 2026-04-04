@@ -54,15 +54,13 @@ describe("isValidPairingRequest", () => {
   });
 
   it("rejects invalid pairing code format", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, code: "abc" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, code: "abc" })).toBe(false);
   });
 
   it("rejects lowercase pairing code", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, code: "a7x3k2" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, code: "a7x3k2" })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid platform", () => {
@@ -72,27 +70,27 @@ describe("isValidPairingRequest", () => {
   });
 
   it("rejects empty senderId", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, senderId: "" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, senderId: "" })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid createdAt date", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, createdAt: "bad" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, createdAt: "bad" })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid expiresAt date", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, expiresAt: "bad" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, expiresAt: "bad" })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid status", () => {
-    expect(
-      isValidPairingRequest({ ...validRequest, status: "denied" }),
-    ).toBe(false);
+    expect(isValidPairingRequest({ ...validRequest, status: "denied" })).toBe(
+      false,
+    );
   });
 });
 
@@ -135,9 +133,9 @@ describe("isValidPairingStore", () => {
   });
 
   it("rejects non-array requests", () => {
-    expect(
-      isValidPairingStore({ requests: "bad", approvedSenders: [] }),
-    ).toBe(false);
+    expect(isValidPairingStore({ requests: "bad", approvedSenders: [] })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid request in store", () => {

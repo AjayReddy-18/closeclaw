@@ -3,10 +3,7 @@ import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import {
-  BotPlatform,
-  PairingStatus,
-} from "@closeclaw/shared-types";
+import { BotPlatform, PairingStatus } from "@closeclaw/shared-types";
 import { runPairingApprove } from "../../../packages/cli/src/commands/pairing-approve.js";
 
 describe("runPairingApprove", () => {
@@ -46,7 +43,9 @@ describe("runPairingApprove", () => {
     );
     await runPairingApprove("XY9Z01", { storePath });
     expect(
-      logSpy.mock.calls.some((c) => String(c[0]).toLowerCase().includes("success")),
+      logSpy.mock.calls.some((c) =>
+        String(c[0]).toLowerCase().includes("success"),
+      ),
     ).toBe(true);
     const raw = JSON.parse(readFileSync(storePath, "utf-8")) as {
       approvedSenders: { senderId: string }[];

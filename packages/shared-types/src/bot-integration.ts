@@ -36,9 +36,7 @@ function isIso8601(value: unknown): boolean {
   return !isNaN(date.getTime());
 }
 
-export function isValidBotIntegration(
-  value: unknown,
-): value is BotIntegration {
+export function isValidBotIntegration(value: unknown): value is BotIntegration {
   if (typeof value !== "object" || value === null) return false;
 
   const obj = value as Record<string, unknown>;

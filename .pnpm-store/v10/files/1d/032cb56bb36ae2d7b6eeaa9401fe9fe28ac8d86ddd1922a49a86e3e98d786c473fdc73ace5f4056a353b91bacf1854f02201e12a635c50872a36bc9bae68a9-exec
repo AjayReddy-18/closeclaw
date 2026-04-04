@@ -20,7 +20,7 @@ const isMuslFromFilesystem = () => {
   const { readFileSync } = require("fs");
   try {
     return readFileSync("/usr/bin/ldd", "utf-8").includes("musl");
-  } catch(_error) {
+  } catch (_error) {
     return null;
   }
 };
@@ -90,12 +90,12 @@ const PLATFORMS = {
   },
 };
 
-let binPath = (
-  PLATFORMS &&
-  PLATFORMS[platform] &&
-  PLATFORMS[platform][arch] &&
-  PLATFORMS[platform][arch][isMusl() ? "musl" : "gnu"]
-) || null;
+let binPath =
+  (PLATFORMS &&
+    PLATFORMS[platform] &&
+    PLATFORMS[platform][arch] &&
+    PLATFORMS[platform][arch][isMusl() ? "musl" : "gnu"]) ||
+  null;
 
 if (binPath) {
   const result = require("child_process").spawnSync(
@@ -109,7 +109,7 @@ if (binPath) {
         JS_RUNTIME_NAME: release.name,
         NODE_PACKAGE_MANAGER: detectPackageManager(),
       }),
-    }
+    },
   );
 
   if (result.error) {
@@ -124,7 +124,7 @@ if (binPath) {
   }
   console.error(
     `The oxlint CLI package doesn't ship with prebuilt binaries for your platform (${target}) yet. ` +
-      "You can create an issue at https://github.com/oxc-project/oxc/issues for support."
+      "You can create an issue at https://github.com/oxc-project/oxc/issues for support.",
   );
   process.exitCode = 1;
 }

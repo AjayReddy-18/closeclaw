@@ -3,10 +3,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import {
-  BotPlatform,
-  PairingStatus,
-} from "@closeclaw/shared-types";
+import { BotPlatform, PairingStatus } from "@closeclaw/shared-types";
 import { runPairingList } from "../../../packages/cli/src/commands/pairing-list.js";
 
 describe("runPairingList", () => {
@@ -60,8 +57,8 @@ describe("runPairingList", () => {
       "utf-8",
     );
     await runPairingList({ storePath });
-    expect(logSpy.mock.calls.some((c) => String(c[0]).includes("No pending"))).toBe(
-      true,
-    );
+    expect(
+      logSpy.mock.calls.some((c) => String(c[0]).includes("No pending")),
+    ).toBe(true);
   });
 });

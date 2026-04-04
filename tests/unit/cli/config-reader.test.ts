@@ -60,6 +60,8 @@ describe("readConfig", () => {
   it("throws ConfigReadError on invalid schema", () => {
     writeFileSync(configPath, JSON.stringify({ version: "bad" }));
     expect(() => readConfig(configPath)).toThrow(ConfigReadError);
-    expect(() => readConfig(configPath)).toThrow("Invalid configuration schema");
+    expect(() => readConfig(configPath)).toThrow(
+      "Invalid configuration schema",
+    );
   });
 });

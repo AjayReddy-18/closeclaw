@@ -5,8 +5,5 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../shared-types" },
-    { "path": "../bot-adapters" }
-  ]
+  "references": [{ "path": "../shared-types" }, { "path": "../bot-adapters" }]
 }

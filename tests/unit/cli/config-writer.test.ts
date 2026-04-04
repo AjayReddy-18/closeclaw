@@ -1,10 +1,27 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { readFileSync, rmSync, existsSync } from "node:fs";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import type { Configuration } from "@closeclaw/shared-types";
-import { writeConfig } from "../../../packages/cli/src/config/config-writer.js";
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  return {
+    ...actual,
+    mkdirSync: vi.fn(
+      (
+        path: Parameters<typeof actual.mkdirSync>[0],
+        options?: Parameters<typeof actual.mkdirSync>[1],
+      ) => actual.mkdirSync(path, options),
+    ),
+  };
+});
+
+import * as fs from "node:fs";
+import {
+  writeConfig,
+  ConfigWriteError,
+} from "../../../packages/cli/src/config/config-writer.js";
 
 describe("writeConfig", () => {
   let testDir: string;
@@ -35,17 +52,17 @@ describe("writeConfig", () => {
   });
 
   afterEach(() => {
-    rmSync(testDir, { recursive: true, force: true });
+    fs.rmSync(testDir, { recursive: true, force: true });
   });
 
   it("creates the directory and writes config", () => {
     writeConfig(configPath, validConfig);
-    expect(existsSync(configPath)).toBe(true);
+    expect(fs.existsSync(configPath)).toBe(true);
   });
 
   it("writes valid JSON with 2-space indentation", () => {
     writeConfig(configPath, validConfig);
-    const raw = readFileSync(configPath, "utf-8");
+    const raw = fs.readFileSync(configPath, "utf-8");
     const parsed = JSON.parse(raw);
     expect(parsed).toEqual(validConfig);
     expect(raw).toContain("  ");
@@ -53,7 +70,7 @@ describe("writeConfig", () => {
 
   it("does not leave .tmp file after successful write", () => {
     writeConfig(configPath, validConfig);
-    expect(existsSync(`${configPath}.tmp`)).toBe(false);
+    expect(fs.existsSync(`${configPath}.tmp`)).toBe(false);
   });
 
   it("overwrites existing config", () => {
@@ -63,8 +80,24 @@ describe("writeConfig", () => {
       version: "1.1.0",
     };
     writeConfig(configPath, updatedConfig);
-    const raw = readFileSync(configPath, "utf-8");
+    const raw = fs.readFileSync(configPath, "utf-8");
     const parsed = JSON.parse(raw);
     expect(parsed.version).toBe("1.1.0");
+  });
+
+  it("includes Permission denied when mkdir fails with EACCES", () => {
+    vi.mocked(fs.mkdirSync).mockImplementationOnce(() => {
+      const err = new Error("mock") as NodeJS.ErrnoException;
+      err.code = "EACCES";
+      throw err;
+    });
+    let caught: unknown;
+    try {
+      writeConfig(configPath, validConfig);
+    } catch (e: unknown) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(ConfigWriteError);
+    expect((caught as ConfigWriteError).message).toContain("Permission denied");
   });
 });

@@ -30,9 +30,7 @@ describe("isValidConfiguration", () => {
   });
 
   it("rejects invalid semver version", () => {
-    expect(
-      isValidConfiguration({ ...validConfig, version: "v1" }),
-    ).toBe(false);
+    expect(isValidConfiguration({ ...validConfig, version: "v1" })).toBe(false);
   });
 
   it("rejects invalid lastModified date", () => {
@@ -42,9 +40,9 @@ describe("isValidConfiguration", () => {
   });
 
   it("rejects non-object channels", () => {
-    expect(
-      isValidConfiguration({ ...validConfig, channels: "bad" }),
-    ).toBe(false);
+    expect(isValidConfiguration({ ...validConfig, channels: "bad" })).toBe(
+      false,
+    );
   });
 
   it("rejects unknown platform key in channels", () => {
@@ -77,9 +75,7 @@ describe("isValidConfiguration", () => {
   });
 
   it("validates config with empty channels", () => {
-    expect(
-      isValidConfiguration({ ...validConfig, channels: {} }),
-    ).toBe(true);
+    expect(isValidConfiguration({ ...validConfig, channels: {} })).toBe(true);
   });
 
   it("validates config with multiple channels", () => {

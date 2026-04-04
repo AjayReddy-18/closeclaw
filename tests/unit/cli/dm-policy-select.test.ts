@@ -9,9 +9,8 @@ describe("selectDmPolicy", () => {
 
   it("returns selected policy and passes expected choice values", async () => {
     vi.mocked(select).mockResolvedValueOnce(DmPolicy.OPEN);
-    const { selectDmPolicy } = await import(
-      "../../../packages/cli/src/prompts/dm-policy-select.js"
-    );
+    const { selectDmPolicy } =
+      await import("../../../packages/cli/src/prompts/dm-policy-select.js");
     const result = await selectDmPolicy();
     expect(result).toBe(DmPolicy.OPEN);
     expect(select).toHaveBeenCalledTimes(1);

@@ -12,10 +12,27 @@ export class ConfigWriteError extends Error {
   }
 }
 
-export function writeConfig(
-  filePath: string,
-  config: Configuration,
-): void {
+function isEacces(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as NodeJS.ErrnoException).code === "EACCES"
+  );
+}
+
+function formatWriteFailure(
+  label: string,
+  target: string,
+  error: unknown,
+): string {
+  if (isEacces(error)) {
+    return `${label}: Permission denied — cannot access ${target}`;
+  }
+  return `${label}: ${target}`;
+}
+
+export function writeConfig(filePath: string, config: Configuration): void {
   const dir = dirname(filePath);
   ensureDirectory(dir);
 
@@ -27,7 +44,7 @@ export function writeConfig(
     renameSync(tmpPath, filePath);
   } catch (error: unknown) {
     throw new ConfigWriteError(
-      `Failed to write config: ${filePath}`,
+      formatWriteFailure("Failed to write config", filePath, error),
       error,
     );
   }
@@ -38,7 +55,7 @@ function ensureDirectory(dir: string): void {
     mkdirSync(dir, { recursive: true });
   } catch (error: unknown) {
     throw new ConfigWriteError(
-      `Failed to create config directory: ${dir}`,
+      formatWriteFailure("Failed to create config directory", dir, error),
       error,
     );
   }

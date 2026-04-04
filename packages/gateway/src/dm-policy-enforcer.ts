@@ -32,10 +32,7 @@ export function createDmPolicyEnforcer(
         senderId,
       );
       if (ok) return { allowed: true };
-      const req = await config.pairingManager.createRequest(
-        platform,
-        senderId,
-      );
+      const req = await config.pairingManager.createRequest(platform, senderId);
       return { allowed: false, pairingCode: req.code };
     },
   };

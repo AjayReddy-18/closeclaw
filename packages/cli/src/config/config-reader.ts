@@ -39,8 +39,6 @@ export function readConfig(filePath: string): Configuration | null {
   return parsed;
 }
 
-function isNodeError(
-  error: unknown,
-): error is NodeJS.ErrnoException {
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
 }

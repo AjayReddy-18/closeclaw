@@ -49,13 +49,9 @@ export class TelegramAdapter implements BotAdapter {
     };
   }
 
-  private formatSender(
-    from: Context["from"],
-  ): string | undefined {
+  private formatSender(from: Context["from"]): string | undefined {
     if (!from) return undefined;
-    const name = [from.first_name, from.last_name]
-      .filter(Boolean)
-      .join(" ");
+    const name = [from.first_name, from.last_name].filter(Boolean).join(" ");
     if (name.length > 0) return name;
     return from.username;
   }

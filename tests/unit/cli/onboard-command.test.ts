@@ -6,6 +6,7 @@ import {
   runOnboard,
   type OnboardDeps,
 } from "../../../packages/cli/src/commands/onboard.js";
+import { ConfigReadError } from "../../../packages/cli/src/config/config-reader.js";
 
 describe("runOnboard", () => {
   const adapter: BotAdapter = {
@@ -111,9 +112,7 @@ describe("runOnboard", () => {
   });
 
   it("logs and returns when all platforms are configured", async () => {
-    const logSpy = vi
-      .spyOn(console, "log")
-      .mockImplementation(() => undefined);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     try {
       const deps = baseDeps({
         detectConfig: vi.fn(() => ({
@@ -137,5 +136,46 @@ describe("runOnboard", () => {
     } finally {
       logSpy.mockRestore();
     }
+  });
+
+  it("exits with code 1 when config read fails and reset is declined", async () => {
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`exit:${String(code)}`);
+    });
+    const errSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const deps = baseDeps({
+      readConfig: vi.fn(() => {
+        throw new ConfigReadError("Malformed JSON in config: /tmp/cfg.json");
+      }),
+      confirmResetMalformedConfig: vi.fn(async () => false),
+    });
+    await expect(runOnboard(deps)).rejects.toThrow("exit:1");
+    expect(vi.mocked(deps.readConfig)).toHaveBeenCalledTimes(1);
+    exitSpy.mockRestore();
+    errSpy.mockRestore();
+  });
+
+  it("removes config and continues after read error when reset is confirmed", async () => {
+    let calls = 0;
+    const unlink = vi.fn();
+    const deps = baseDeps({
+      readConfig: vi.fn(() => {
+        calls += 1;
+        if (calls === 1) {
+          throw new ConfigReadError(
+            "Invalid configuration schema: /tmp/cfg.json",
+          );
+        }
+        return null;
+      }),
+      confirmResetMalformedConfig: vi.fn(async () => true),
+      unlinkConfig: unlink,
+    });
+    await runOnboard(deps);
+    expect(unlink).toHaveBeenCalledWith("/tmp/cfg.json");
+    expect(vi.mocked(deps.readConfig)).toHaveBeenCalledTimes(2);
+    expect(deps.writeConfig).toHaveBeenCalledTimes(1);
   });
 });

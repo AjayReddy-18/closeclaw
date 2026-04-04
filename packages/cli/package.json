@@ -24,5 +24,7 @@
     "@inquirer/prompts": "^7.5.0",
     "commander": "^13.1.0"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

@@ -4,7 +4,10 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { BotAdapter, IncomingMessage as BotIncomingMessage } from "@closeclaw/bot-adapters";
+import type {
+  BotAdapter,
+  IncomingMessage as BotIncomingMessage,
+} from "@closeclaw/bot-adapters";
 import type { BotPlatform, DmPolicy } from "@closeclaw/shared-types";
 import { checkHealth, type HealthCheckResult } from "./health-checker.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
@@ -36,7 +39,11 @@ function writeJson(res: ServerResponse, body: HealthCheckResult): void {
   res.end(JSON.stringify(body));
 }
 
-function writeJsonData(res: ServerResponse, status: number, body: unknown): void {
+function writeJsonData(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+): void {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(body));
@@ -154,14 +161,7 @@ async function routeHealthOrPairing(
     return true;
   }
   if (!pairingManager) return false;
-  return pairingAuthedRoutes(
-    method,
-    path,
-    req,
-    res,
-    authToken,
-    pairingManager,
-  );
+  return pairingAuthedRoutes(method, path, req, res, authToken, pairingManager);
 }
 
 async function routeRequest(
@@ -190,11 +190,53 @@ function parsePath(url: string | undefined): string {
   return url.split("?")[0] ?? "";
 }
 
-function listenPromise(server: Server, port: number): Promise<void> {
+const LISTEN_PORT_ATTEMPTS = 10;
+
+function isAddrInUse(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as NodeJS.ErrnoException).code === "EADDRINUSE"
+  );
+}
+
+function listenOnce(server: Server, port: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    server.listen(port, "127.0.0.1", () => resolve());
-    server.once("error", reject);
+    const onErr = (e: Error) => {
+      server.off("error", onErr);
+      reject(e);
+    };
+    server.once("error", onErr);
+    server.listen(port, "127.0.0.1", () => {
+      server.off("error", onErr);
+      resolve();
+    });
   });
+}
+
+function logBoundPort(server: Server): void {
+  const a = server.address();
+  if (typeof a === "object" && a !== null && "port" in a) {
+    console.log(`Gateway listening on port ${String(a.port)}`);
+  }
+}
+
+async function listenWithPortFallback(
+  server: Server,
+  basePort: number,
+): Promise<void> {
+  for (let i = 0; i < LISTEN_PORT_ATTEMPTS; i++) {
+    const port = basePort + i;
+    try {
+      await listenOnce(server, port);
+      logBoundPort(server);
+      return;
+    } catch (e) {
+      const canRetry = i < LISTEN_PORT_ATTEMPTS - 1;
+      if (!isAddrInUse(e) || !canRetry) throw e;
+    }
+  }
 }
 
 function closePromise(server: Server): Promise<void> {
@@ -256,7 +298,7 @@ export function createGatewayServer(
     });
   });
   return {
-    start: () => listenPromise(server, config.port),
+    start: () => listenWithPortFallback(server, config.port),
     stop: () => closePromise(server),
     address: () => server.address(),
   };

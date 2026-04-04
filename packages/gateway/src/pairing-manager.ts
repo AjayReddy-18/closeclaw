@@ -107,13 +107,7 @@ function appendPendingRequest(
   now: number,
 ): PairingRequest {
   const code = pickUniqueCode(store);
-  const req = buildPendingRequest(
-    code,
-    platform,
-    senderId,
-    displayName,
-    now,
-  );
+  const req = buildPendingRequest(code, platform, senderId, displayName, now);
   store.requests.push(req);
   return req;
 }
@@ -153,10 +147,7 @@ export type PairingManager = {
   listPending(): Promise<PairingRequest[]>;
   approve(code: string): Promise<ApprovedSender | null>;
   expireStale(): Promise<number>;
-  isSenderApproved(
-    platform: BotPlatform,
-    senderId: string,
-  ): Promise<boolean>;
+  isSenderApproved(platform: BotPlatform, senderId: string): Promise<boolean>;
 };
 
 export function createPairingManager(storePath: string): PairingManager {

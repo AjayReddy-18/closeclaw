@@ -11,9 +11,8 @@ describe("DiscordAdapter", () => {
   });
 
   it("healthCheck calls login and resolves healthy with username", async () => {
-    const { DiscordAdapter } = await import(
-      "../../../packages/bot-adapters/src/discord-adapter.js"
-    );
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
     const adapter = new DiscordAdapter({ token: "valid" });
     await expect(adapter.healthCheck()).resolves.toEqual({
       connected: true,
@@ -25,15 +24,12 @@ describe("DiscordAdapter", () => {
   });
 
   it("healthCheck returns connected false when login fails with invalid token", async () => {
-    const { DiscordAdapter } = await import(
-      "../../../packages/bot-adapters/src/discord-adapter.js"
-    );
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
     const adapter = new DiscordAdapter({ token: "bad" });
     const c = discordClientInstances().at(-1)!;
     c.login.mockReset();
-    c.login.mockRejectedValueOnce(
-      new Error("An invalid token was provided."),
-    );
+    c.login.mockRejectedValueOnce(new Error("An invalid token was provided."));
     await expect(adapter.healthCheck()).resolves.toMatchObject({
       connected: false,
       error: expect.stringMatching(/invalid token/i) as string,
@@ -41,9 +37,8 @@ describe("DiscordAdapter", () => {
   });
 
   it("connect uses login lifecycle and disconnect destroys client", async () => {
-    const { DiscordAdapter } = await import(
-      "../../../packages/bot-adapters/src/discord-adapter.js"
-    );
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
     const adapter = new DiscordAdapter({ token: "t" });
     await adapter.connect();
     await adapter.disconnect();
@@ -53,9 +48,8 @@ describe("DiscordAdapter", () => {
   });
 
   it("onMessage delivers DM messages via MessageCreate handler", async () => {
-    const { DiscordAdapter } = await import(
-      "../../../packages/bot-adapters/src/discord-adapter.js"
-    );
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
     const adapter = new DiscordAdapter({ token: "t" });
     const handler = vi.fn();
     adapter.onMessage(handler);
@@ -65,7 +59,12 @@ describe("DiscordAdapter", () => {
     );
     expect(msgCall).toBeDefined();
     const route = msgCall![1] as (m: {
-      author: { bot: boolean; id: string; displayName: string; username: string };
+      author: {
+        bot: boolean;
+        id: string;
+        displayName: string;
+        username: string;
+      };
       content: string;
       createdAt: Date;
       guild: null;

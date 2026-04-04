@@ -27,27 +27,21 @@ describe("isValidGatewayConfig", () => {
   });
 
   it("rejects port below 1024", () => {
-    expect(
-      isValidGatewayConfig({ ...validConfig, port: 80 }),
-    ).toBe(false);
+    expect(isValidGatewayConfig({ ...validConfig, port: 80 })).toBe(false);
   });
 
   it("rejects port above 65535", () => {
-    expect(
-      isValidGatewayConfig({ ...validConfig, port: 70000 }),
-    ).toBe(false);
+    expect(isValidGatewayConfig({ ...validConfig, port: 70000 })).toBe(false);
   });
 
   it("rejects non-integer port", () => {
-    expect(
-      isValidGatewayConfig({ ...validConfig, port: 18790.5 }),
-    ).toBe(false);
+    expect(isValidGatewayConfig({ ...validConfig, port: 18790.5 })).toBe(false);
   });
 
   it("rejects authToken shorter than 32 characters", () => {
-    expect(
-      isValidGatewayConfig({ ...validConfig, authToken: "short" }),
-    ).toBe(false);
+    expect(isValidGatewayConfig({ ...validConfig, authToken: "short" })).toBe(
+      false,
+    );
   });
 
   it("accepts authToken of exactly 32 characters", () => {

@@ -7,8 +7,7 @@ export const PairingStatus = {
   EXPIRED: "expired",
 } as const;
 
-export type PairingStatus =
-  (typeof PairingStatus)[keyof typeof PairingStatus];
+export type PairingStatus = (typeof PairingStatus)[keyof typeof PairingStatus];
 
 export function isPairingStatus(value: unknown): value is PairingStatus {
   return (
@@ -41,9 +40,7 @@ export interface PairingStore {
 
 const PAIRING_CODE_PATTERN = /^[A-Z0-9]{6}$/;
 
-export function isValidPairingRequest(
-  value: unknown,
-): value is PairingRequest {
+export function isValidPairingRequest(value: unknown): value is PairingRequest {
   if (typeof value !== "object" || value === null) return false;
 
   const obj = value as Record<string, unknown>;
@@ -67,9 +64,7 @@ export function isValidPairingRequest(
   return true;
 }
 
-export function isValidPairingStore(
-  value: unknown,
-): value is PairingStore {
+export function isValidPairingStore(value: unknown): value is PairingStore {
   if (typeof value !== "object" || value === null) return false;
 
   const obj = value as Record<string, unknown>;

@@ -1,16 +1,11 @@
-import type {
-  BotAdapter,
-  BotHealthResult,
-} from "@closeclaw/bot-adapters";
+import type { BotAdapter, BotHealthResult } from "@closeclaw/bot-adapters";
 
 export type HealthCheckResult = {
   status: "healthy" | "unhealthy";
   channels: Record<string, BotHealthResult>;
 };
 
-function allConnected(
-  results: readonly BotHealthResult[],
-): boolean {
+function allConnected(results: readonly BotHealthResult[]): boolean {
   return results.every((r) => r.connected);
 }
 

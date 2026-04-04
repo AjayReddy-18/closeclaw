@@ -58,9 +58,7 @@ describe("runOnboard defer after instructions", () => {
   }
 
   it("defers: no token prompt, no write, logs comeback message", async () => {
-    const logSpy = vi
-      .spyOn(console, "log")
-      .mockImplementation(() => undefined);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     const deps = baseDeps({
       confirmProceed: vi.fn(async () => false),
     });

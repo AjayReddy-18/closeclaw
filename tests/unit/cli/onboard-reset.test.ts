@@ -54,9 +54,7 @@ describe("runOnboard reset configuration", () => {
             allPlatformsConfigured: false,
           };
         }
-        const configuredPlatforms = Object.keys(
-          cfg.channels,
-        ) as BotPlatform[];
+        const configuredPlatforms = Object.keys(cfg.channels) as BotPlatform[];
         const all: BotPlatform[] = ["telegram", "discord"];
         const availablePlatforms = all.filter(
           (p) => !configuredPlatforms.includes(p),
@@ -73,7 +71,9 @@ describe("runOnboard reset configuration", () => {
       }),
       selectAction: vi.fn(async () => "reset-configuration" as const),
       selectResetScope: vi.fn(async () => "all" as const),
-      selectPlatformToReset: vi.fn(async (): Promise<BotPlatform> => "telegram"),
+      selectPlatformToReset: vi.fn(
+        async (): Promise<BotPlatform> => "telegram",
+      ),
       confirmReset: vi.fn(async () => true),
       selectPlatform: vi.fn(async (): Promise<BotPlatform> => "discord"),
       getInstructions: vi.fn(() => ""),

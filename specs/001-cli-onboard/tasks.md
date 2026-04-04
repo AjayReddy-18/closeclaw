@@ -26,9 +26,9 @@
 - [x] T002 Create root package.json with workspace scripts (build, test, lint, format) and devDependencies (typescript, vitest, oxlint, prettier, tsdown, tsx)
 - [x] T003 Create root tsconfig.json with strict mode enabled, no `any` permitted, and path aliases for workspace packages
 - [x] T004 [P] Create packages/shared-types/package.json with name @closeclaw/shared-types and zero runtime dependencies
-- [x] T005 [P] Create packages/bot-adapters/package.json with name @closeclaw/bot-adapters and dependencies on @closeclaw/shared-types (workspace:*), grammy, discord.js
-- [x] T006 [P] Create packages/gateway/package.json with name @closeclaw/gateway and dependencies on @closeclaw/shared-types (workspace:*), @closeclaw/bot-adapters (workspace:*)
-- [x] T007 [P] Create packages/cli/package.json with name @closeclaw/cli and dependencies on @closeclaw/shared-types (workspace:*), @closeclaw/gateway (workspace:*), commander, @inquirer/prompts
+- [x] T005 [P] Create packages/bot-adapters/package.json with name @closeclaw/bot-adapters and dependencies on @closeclaw/shared-types (workspace:\*), grammy, discord.js
+- [x] T006 [P] Create packages/gateway/package.json with name @closeclaw/gateway and dependencies on @closeclaw/shared-types (workspace:_), @closeclaw/bot-adapters (workspace:_)
+- [x] T007 [P] Create packages/cli/package.json with name @closeclaw/cli and dependencies on @closeclaw/shared-types (workspace:_), @closeclaw/gateway (workspace:_), commander, @inquirer/prompts
 - [x] T008 Create packages/cli/package.json bin entry pointing to dist/index.js for the `closeclaw` command
 - [x] T009 [P] Configure vitest.config.ts at root with workspace test support
 - [x] T010 [P] Configure oxlint (oxlintrc.json) and prettier (.prettierrc) at root
@@ -212,13 +212,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [X] T088 [P] [US5] Unit test for defer-token-entry flow in tests/unit/cli/onboard-defer.test.ts
-- [X] T089 [US5] Integration test for deferred exit (no partial writes) in tests/integration/onboard-flow.test.ts
+- [x] T088 [P] [US5] Unit test for defer-token-entry flow in tests/unit/cli/onboard-defer.test.ts
+- [x] T089 [US5] Integration test for deferred exit (no partial writes) in tests/integration/onboard-flow.test.ts
 
 ### Implementation for User Story 5
 
-- [X] T090 [US5] Add "ready to proceed or come back later" prompt after instructions in packages/cli/src/commands/onboard.ts
-- [X] T091 [US5] Implement deferred exit (no config writes, clean exit code 0) in packages/cli/src/commands/onboard.ts
+- [x] T090 [US5] Add "ready to proceed or come back later" prompt after instructions in packages/cli/src/commands/onboard.ts
+- [x] T091 [US5] Implement deferred exit (no config writes, clean exit code 0) in packages/cli/src/commands/onboard.ts
 
 **Checkpoint**: All 5 user stories complete.
 
@@ -228,12 +228,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T092 [P] Add error handling for port-already-in-use (detect conflict, try next port) in packages/gateway/src/gateway-server.ts
-- [ ] T093 [P] Add malformed config file handling (offer reset or exit) in packages/cli/src/config/config-reader.ts
-- [ ] T094 [P] Add permission error handling for ~/.closeclaw directory in packages/cli/src/config/config-writer.ts
-- [ ] T095 Run quickstart.md validation (end-to-end manual test following quickstart steps)
-- [ ] T096 Verify all tests pass with `pnpm test` and coverage meets near-100% target
-- [ ] T097 Run oxlint and prettier across entire codebase, fix any violations
+- [x] T092 [P] Add error handling for port-already-in-use (detect conflict, try next port) in packages/gateway/src/gateway-server.ts
+- [x] T093 [P] Add malformed config file handling (offer reset or exit) in packages/cli/src/config/config-reader.ts
+- [x] T094 [P] Add permission error handling for ~/.closeclaw directory in packages/cli/src/config/config-writer.ts
+- [x] T095 Run quickstart.md validation (end-to-end manual test following quickstart steps)
+- [x] T096 Verify all tests pass with `pnpm test` and coverage meets near-100% target
+- [x] T097 Run oxlint and prettier across entire codebase, fix any violations
 
 ---
 

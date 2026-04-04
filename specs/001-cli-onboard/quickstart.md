@@ -85,6 +85,7 @@ curl http://127.0.0.1:18790/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",

@@ -3,10 +3,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import {
-  BotPlatform,
-  PairingStatus,
-} from "@closeclaw/shared-types";
+import { BotPlatform, PairingStatus } from "@closeclaw/shared-types";
 import { createPairingManager } from "../../../packages/gateway/src/pairing-manager.js";
 
 describe("createPairingManager", () => {
@@ -40,11 +37,7 @@ describe("createPairingManager", () => {
   it("creates request with approximately 1 hour expiry", async () => {
     const mgr = createPairingManager(storePath);
     const before = Date.now();
-    const req = await mgr.createRequest(
-      BotPlatform.DISCORD,
-      "user-1",
-      "Bob",
-    );
+    const req = await mgr.createRequest(BotPlatform.DISCORD, "user-1", "Bob");
     const created = new Date(req.createdAt).getTime();
     const expires = new Date(req.expiresAt).getTime();
     expect(created).toBeGreaterThanOrEqual(before - 2000);

@@ -26,18 +26,18 @@ Build the `closeclaw onboard` CLI command that guides users through interactive 
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Evidence |
-|-----------|--------|----------|
-| I. TDD (NON-NEGOTIABLE) | PASS | All modules designed for testability; Vitest configured; bot adapters use injected dependencies for mocking |
-| II. Clean Code (NON-NEGOTIABLE) | PASS | No function exceeds 20 lines by design (small focused modules); no comments; intent-revealing names |
-| III. Design Principles & Patterns | PASS | Adapter pattern for bot platforms (SOLID/OCP); dependency injection for all external services; composition over inheritance |
-| IV. Atomic Commits | PASS | Feature decomposed into independently committable packages and modules |
-| V. Automation-First | PASS | Gateway auto-configured with sensible defaults; health check automated; CI/CD gates planned |
-| VI. Modular Architecture | PASS | 4 packages with explicit boundaries: cli, gateway, bot-adapters, shared-types |
-| Code Quality Standards | PASS | TypeScript strict mode; oxlint; Prettier; input validation at all boundaries |
-| Technology Stack | PASS | TypeScript, Node.js, pnpm, Vitest, Commander.js, grammY, Discord.js — all aligned |
+| Principle                         | Status | Evidence                                                                                                                    |
+| --------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+| I. TDD (NON-NEGOTIABLE)           | PASS   | All modules designed for testability; Vitest configured; bot adapters use injected dependencies for mocking                 |
+| II. Clean Code (NON-NEGOTIABLE)   | PASS   | No function exceeds 20 lines by design (small focused modules); no comments; intent-revealing names                         |
+| III. Design Principles & Patterns | PASS   | Adapter pattern for bot platforms (SOLID/OCP); dependency injection for all external services; composition over inheritance |
+| IV. Atomic Commits                | PASS   | Feature decomposed into independently committable packages and modules                                                      |
+| V. Automation-First               | PASS   | Gateway auto-configured with sensible defaults; health check automated; CI/CD gates planned                                 |
+| VI. Modular Architecture          | PASS   | 4 packages with explicit boundaries: cli, gateway, bot-adapters, shared-types                                               |
+| Code Quality Standards            | PASS   | TypeScript strict mode; oxlint; Prettier; input validation at all boundaries                                                |
+| Technology Stack                  | PASS   | TypeScript, Node.js, pnpm, Vitest, Commander.js, grammY, Discord.js — all aligned                                           |
 
 ## Project Structure
 

@@ -13,5 +13,7 @@
   "scripts": {
     "build": "tsdown src/index.ts --format esm --dts"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

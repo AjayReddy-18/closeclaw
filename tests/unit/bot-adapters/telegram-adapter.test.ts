@@ -10,9 +10,8 @@ describe("TelegramAdapter", () => {
   });
 
   it("healthCheck returns connected with username when getMe succeeds", async () => {
-    const { TelegramAdapter } = await import(
-      "../../../packages/bot-adapters/src/telegram-adapter.js"
-    );
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
     const adapter = new TelegramAdapter({ token: "1:a" });
     const bot = grammyBotInstances().at(-1);
     expect(bot).toBeDefined();
@@ -25,9 +24,8 @@ describe("TelegramAdapter", () => {
   });
 
   it("healthCheck returns connected false with error when getMe fails", async () => {
-    const { TelegramAdapter } = await import(
-      "../../../packages/bot-adapters/src/telegram-adapter.js"
-    );
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
     const adapter = new TelegramAdapter({ token: "1:a" });
     const bot = grammyBotInstances().at(-1)!;
     bot.api.getMe.mockRejectedValue(new Error("network down"));
@@ -38,9 +36,8 @@ describe("TelegramAdapter", () => {
   });
 
   it("connect starts polling and disconnect stops", async () => {
-    const { TelegramAdapter } = await import(
-      "../../../packages/bot-adapters/src/telegram-adapter.js"
-    );
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
     const adapter = new TelegramAdapter({ token: "1:a" });
     await adapter.connect();
     await adapter.disconnect();
@@ -50,9 +47,8 @@ describe("TelegramAdapter", () => {
   });
 
   it("onMessage registers handler that receives IncomingMessage for text", async () => {
-    const { TelegramAdapter } = await import(
-      "../../../packages/bot-adapters/src/telegram-adapter.js"
-    );
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
     const adapter = new TelegramAdapter({ token: "1:a" });
     const handler = vi.fn();
     adapter.onMessage(handler);

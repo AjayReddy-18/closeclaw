@@ -79,9 +79,8 @@ describe("runOnboard existing config", () => {
 
   it("selectOnboardExistingAction shows add-new and reset choices", async () => {
     vi.mocked(select).mockResolvedValueOnce("add-integration");
-    const { selectOnboardExistingAction } = await import(
-      "../../../packages/cli/src/prompts/onboard-action-select.js"
-    );
+    const { selectOnboardExistingAction } =
+      await import("../../../packages/cli/src/prompts/onboard-action-select.js");
     await selectOnboardExistingAction();
     expect(select).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -105,5 +104,4 @@ describe("runOnboard existing config", () => {
     await runOnboard(deps);
     expect(deps.selectPlatform).toHaveBeenCalledWith(["discord"]);
   });
-
 });

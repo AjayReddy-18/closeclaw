@@ -1,3 +1,4 @@
+import { unlinkSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -12,7 +13,7 @@ import {
   type GatewayConfig,
 } from "@closeclaw/shared-types";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
-import { readConfig } from "../config/config-reader.js";
+import { ConfigReadError, readConfig } from "../config/config-reader.js";
 import { writeConfig } from "../config/config-writer.js";
 import {
   detectConfigState,
@@ -32,12 +33,12 @@ export interface OnboardDeps {
   selectAction: () => Promise<OnboardExistingAction>;
   selectPlatform: (platforms: BotPlatform[]) => Promise<BotPlatform>;
   selectResetScope?: () => Promise<"all" | "specific">;
-  selectPlatformToReset?: (
-    platforms: BotPlatform[],
-  ) => Promise<BotPlatform>;
+  selectPlatformToReset?: (platforms: BotPlatform[]) => Promise<BotPlatform>;
   confirmReset?: (message: string) => Promise<boolean>;
   getInstructions: (platform: BotPlatform) => string;
   confirmProceed?: () => Promise<boolean>;
+  confirmResetMalformedConfig?: () => Promise<boolean>;
+  unlinkConfig?: (path: string) => void;
   inputBotToken: (platform: BotPlatform) => Promise<string>;
   selectDmPolicy: () => Promise<DmPolicy>;
   inputAllowlistSenders?: () => Promise<string[]>;
@@ -57,8 +58,40 @@ export async function runOnboard(deps: OnboardDeps): Promise<void> {
   }
 }
 
+async function confirmResetAfterMalformed(deps: OnboardDeps): Promise<boolean> {
+  if (deps.confirmResetMalformedConfig) {
+    return deps.confirmResetMalformedConfig();
+  }
+  const { confirm } = await import("@inquirer/prompts");
+  return confirm({ message: "Reset configuration?", default: false });
+}
+
+function exitWithCodeOne(): never {
+  process.exit(1);
+}
+
+function removeConfigFile(deps: OnboardDeps): void {
+  const fn = deps.unlinkConfig ?? ((p: string) => unlinkSync(p));
+  fn(deps.configPath);
+}
+
+async function loadConfigOrOfferReset(
+  deps: OnboardDeps,
+): Promise<Configuration | null> {
+  try {
+    return deps.readConfig(deps.configPath);
+  } catch (e: unknown) {
+    if (!(e instanceof ConfigReadError)) throw e;
+    console.error(e.message);
+    const ok = await confirmResetAfterMalformed(deps);
+    if (!ok) exitWithCodeOne();
+    removeConfigFile(deps);
+    return loadConfigOrOfferReset(deps);
+  }
+}
+
 async function executeOnboard(deps: OnboardDeps): Promise<void> {
-  const existing = deps.readConfig(deps.configPath);
+  const existing = await loadConfigOrOfferReset(deps);
   const state = deps.detectConfig(existing);
   if (!state.exists) {
     await runConfigureFlow(deps, existing, state);
@@ -123,9 +156,7 @@ async function runResetConfiguration(
   await continueConfigureAfterReset(deps);
 }
 
-async function loadResetScope(
-  deps: OnboardDeps,
-): Promise<"all" | "specific"> {
+async function loadResetScope(deps: OnboardDeps): Promise<"all" | "specific"> {
   if (deps.selectResetScope) {
     return deps.selectResetScope();
   }
@@ -203,9 +234,7 @@ async function persistReset(
   deps.writeConfig(deps.configPath, assembleConfig(channels, gateway));
 }
 
-async function continueConfigureAfterReset(
-  deps: OnboardDeps,
-): Promise<void> {
+async function continueConfigureAfterReset(deps: OnboardDeps): Promise<void> {
   const fresh = deps.readConfig(deps.configPath);
   const nextState = deps.detectConfig(fresh);
   await runConfigureFlow(deps, fresh, nextState);
@@ -350,8 +379,7 @@ async function promptAllowlistSenders(): Promise<string[]> {
   for (;;) {
     const raw = await input({
       message: "Comma-separated allowed user IDs",
-      validate: (v) =>
-        v.trim().length > 0 ? true : "Enter at least one ID",
+      validate: (v) => (v.trim().length > 0 ? true : "Enter at least one ID"),
     });
     const ids = raw
       .split(",")
@@ -383,7 +411,8 @@ function createAdapterFromPackage(
   platform: BotPlatform,
   token: string,
 ): BotAdapter {
-  const mod = require("@closeclaw/bot-adapters") as typeof import("@closeclaw/bot-adapters");
+  const mod =
+    require("@closeclaw/bot-adapters") as typeof import("@closeclaw/bot-adapters");
   if (platform === BotPlatform.TELEGRAM) {
     return new mod.TelegramAdapter({ token });
   }
@@ -423,9 +452,7 @@ export function createOnboardDeps(): OnboardDeps {
         m.inputBotToken(platform),
       ),
     selectDmPolicy: () =>
-      import("../prompts/dm-policy-select.js").then((m) =>
-        m.selectDmPolicy(),
-      ),
+      import("../prompts/dm-policy-select.js").then((m) => m.selectDmPolicy()),
     inputAllowlistSenders: promptAllowlistSenders,
     createAdapter: createAdapterFromPackage,
     checkHealth,

@@ -1,8 +1,6 @@
 import { select } from "@inquirer/prompts";
 
-export type OnboardExistingAction =
-  | "add-integration"
-  | "reset-configuration";
+export type OnboardExistingAction = "add-integration" | "reset-configuration";
 
 export async function selectOnboardExistingAction(): Promise<OnboardExistingAction> {
   return select<OnboardExistingAction>({

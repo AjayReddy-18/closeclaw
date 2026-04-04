@@ -15,7 +15,7 @@
 - Q: Should onboarding verify the setup works end-to-end? → A: Run a health check after gateway start (verify token validity + bot connects to platform API) and display the result
 - Q: How should users approve incoming pairing requests? → A: CLI commands only: `closeclaw pairing approve <code>` and `closeclaw pairing list`
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - First-Time Bot Onboarding (Priority: P1)
 
@@ -120,7 +120,7 @@ A user runs `closeclaw onboard` and during the platform selection step wants to 
 - What happens when the default gateway port is already in use? The system detects the conflict and tries the next available port, or prompts the user to free the port.
 - What happens when the user selects "open" DM policy? The system displays a security warning explaining that anyone can message the bot and requires explicit confirmation before proceeding.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -158,7 +158,7 @@ A user runs `closeclaw onboard` and during the platform selection step wants to 
 - **Onboarding Session**: The transient state of an in-progress onboarding flow. Tracks which step the user is on and whether changes should be committed to disk
 - **Pairing Request**: A pending authorization request from an unapproved sender. Attributes: sender platform, sender ID, pairing code, expiration timestamp, status (pending | approved | expired)
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

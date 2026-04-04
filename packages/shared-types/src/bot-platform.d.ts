@@ -1,6 +1,6 @@
 export declare const BotPlatform: {
-    readonly TELEGRAM: "telegram";
-    readonly DISCORD: "discord";
+  readonly TELEGRAM: "telegram";
+  readonly DISCORD: "discord";
 };
 export type BotPlatform = (typeof BotPlatform)[keyof typeof BotPlatform];
 export declare const BOT_PLATFORMS: readonly BotPlatform[];

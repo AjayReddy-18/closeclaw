@@ -70,9 +70,7 @@ describe("platform availability for onboard", () => {
   });
 
   it("runOnboard logs all-configured when both platforms set", async () => {
-    const logSpy = vi
-      .spyOn(console, "log")
-      .mockImplementation(() => undefined);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     const adapter: BotAdapter = {
       platform: "telegram",
       connect: vi.fn(),
@@ -123,9 +121,8 @@ describe("platform availability for onboard", () => {
   });
 
   it("selectPlatform with only discord skips inquirer select", async () => {
-    const { selectPlatform } = await import(
-      "../../../packages/cli/src/prompts/platform-select.js"
-    );
+    const { selectPlatform } =
+      await import("../../../packages/cli/src/prompts/platform-select.js");
     const result = await selectPlatform(["discord"]);
     expect(result).toBe("discord");
     expect(select).not.toHaveBeenCalled();

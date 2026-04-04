@@ -7,34 +7,43 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
+  if ((from && typeof from === "object") || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
       if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+        __defProp(to, key, {
+          get: () => from[key],
+          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+        });
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
+var __toESM = (mod, isNodeMode, target) => (
+  (target = mod != null ? __create(__getProtoOf(mod)) : {}),
+  __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule
+      ? __defProp(target, "default", { value: mod, enumerable: true })
+      : target,
+    mod,
+  )
+);
 
 // lib/npm/node-platform.ts
 var fs = require("fs");
 var os = require("os");
 var path = require("path");
-var ESBUILD_BINARY_PATH = process.env.ESBUILD_BINARY_PATH || ESBUILD_BINARY_PATH;
+var ESBUILD_BINARY_PATH =
+  process.env.ESBUILD_BINARY_PATH || ESBUILD_BINARY_PATH;
 var isValidBinaryPath = (x) => !!x && x !== "/usr/bin/esbuild";
 var packageDarwin_arm64 = "@esbuild/darwin-arm64";
 var packageDarwin_x64 = "@esbuild/darwin-x64";
 var knownWindowsPackages = {
   "win32 arm64 LE": "@esbuild/win32-arm64",
   "win32 ia32 LE": "@esbuild/win32-ia32",
-  "win32 x64 LE": "@esbuild/win32-x64"
+  "win32 x64 LE": "@esbuild/win32-x64",
 };
 var knownUnixlikePackages = {
   "aix ppc64 BE": "@esbuild/aix-ppc64",
@@ -56,12 +65,12 @@ var knownUnixlikePackages = {
   "netbsd x64 LE": "@esbuild/netbsd-x64",
   "openbsd arm64 LE": "@esbuild/openbsd-arm64",
   "openbsd x64 LE": "@esbuild/openbsd-x64",
-  "sunos x64 LE": "@esbuild/sunos-x64"
+  "sunos x64 LE": "@esbuild/sunos-x64",
 };
 var knownWebAssemblyFallbackPackages = {
   "android arm LE": "@esbuild/android-arm",
   "android x64 LE": "@esbuild/android-x64",
-  "openharmony arm64 LE": "@esbuild/openharmony-arm64"
+  "openharmony arm64 LE": "@esbuild/openharmony-arm64",
 };
 function pkgAndSubpathForCurrentPlatform() {
   let pkg;
@@ -85,33 +94,38 @@ function pkgAndSubpathForCurrentPlatform() {
 }
 function pkgForSomeOtherPlatform() {
   const libMainJS = require.resolve("esbuild");
-  const nodeModulesDirectory = path.dirname(path.dirname(path.dirname(libMainJS)));
+  const nodeModulesDirectory = path.dirname(
+    path.dirname(path.dirname(libMainJS)),
+  );
   if (path.basename(nodeModulesDirectory) === "node_modules") {
     for (const unixKey in knownUnixlikePackages) {
       try {
         const pkg = knownUnixlikePackages[unixKey];
         if (fs.existsSync(path.join(nodeModulesDirectory, pkg))) return pkg;
-      } catch {
-      }
+      } catch {}
     }
     for (const windowsKey in knownWindowsPackages) {
       try {
         const pkg = knownWindowsPackages[windowsKey];
         if (fs.existsSync(path.join(nodeModulesDirectory, pkg))) return pkg;
-      } catch {
-      }
+      } catch {}
     }
   }
   return null;
 }
 function downloadedBinPath(pkg, subpath) {
   const esbuildLibDir = path.dirname(require.resolve("esbuild"));
-  return path.join(esbuildLibDir, `downloaded-${pkg.replace("/", "-")}-${path.basename(subpath)}`);
+  return path.join(
+    esbuildLibDir,
+    `downloaded-${pkg.replace("/", "-")}-${path.basename(subpath)}`,
+  );
 }
 function generateBinPath() {
   if (isValidBinaryPath(ESBUILD_BINARY_PATH)) {
     if (!fs.existsSync(ESBUILD_BINARY_PATH)) {
-      console.warn(`[esbuild] Ignoring bad configuration: ESBUILD_BINARY_PATH=${ESBUILD_BINARY_PATH}`);
+      console.warn(
+        `[esbuild] Ignoring bad configuration: ESBUILD_BINARY_PATH=${ESBUILD_BINARY_PATH}`,
+      );
     } else {
       return { binPath: ESBUILD_BINARY_PATH, isWASM: false };
     }
@@ -146,7 +160,10 @@ other platform in your ".yarnrc.yml" file using the "supportedArchitectures"
 feature: https://yarnpkg.com/configuration/yarnrc/#supportedArchitectures
 Keep in mind that this means multiple copies of esbuild will be present.
 `;
-          if (pkg === packageDarwin_x64 && otherPkg === packageDarwin_arm64 || pkg === packageDarwin_arm64 && otherPkg === packageDarwin_x64) {
+          if (
+            (pkg === packageDarwin_x64 && otherPkg === packageDarwin_arm64) ||
+            (pkg === packageDarwin_arm64 && otherPkg === packageDarwin_x64)
+          ) {
             suggestions = `
 Specifically the "${otherPkg}" package is present but this platform
 needs the "${pkg}" package instead. People often get into this
@@ -192,16 +209,17 @@ for your current platform.`);
     let pnpapi;
     try {
       pnpapi = require("pnpapi");
-    } catch (e) {
-    }
+    } catch (e) {}
     if (pnpapi) {
-      const root = pnpapi.getPackageInformation(pnpapi.topLevel).packageLocation;
+      const root = pnpapi.getPackageInformation(
+        pnpapi.topLevel,
+      ).packageLocation;
       const binTargetPath = path.join(
         root,
         "node_modules",
         ".cache",
         "esbuild",
-        `pnpapi-${pkg.replace("/", "-")}-${"0.27.7"}-${path.basename(subpath)}`
+        `pnpapi-${pkg.replace("/", "-")}-${"0.27.7"}-${path.basename(subpath)}`,
       );
       if (!fs.existsSync(binTargetPath)) {
         fs.mkdirSync(path.dirname(binTargetPath), { recursive: true });
@@ -217,7 +235,13 @@ for your current platform.`);
 // lib/npm/node-shim.ts
 var { binPath, isWASM } = generateBinPath();
 if (isWASM) {
-  require("child_process").execFileSync("node", [binPath].concat(process.argv.slice(2)), { stdio: "inherit" });
+  require("child_process").execFileSync(
+    "node",
+    [binPath].concat(process.argv.slice(2)),
+    { stdio: "inherit" },
+  );
 } else {
-  require("child_process").execFileSync(binPath, process.argv.slice(2), { stdio: "inherit" });
+  require("child_process").execFileSync(binPath, process.argv.slice(2), {
+    stdio: "inherit",
+  });
 }

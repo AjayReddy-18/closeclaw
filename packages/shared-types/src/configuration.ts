@@ -1,5 +1,8 @@
 import type { BotPlatform } from "./bot-platform.js";
-import { isValidBotIntegration, type BotIntegration } from "./bot-integration.js";
+import {
+  isValidBotIntegration,
+  type BotIntegration,
+} from "./bot-integration.js";
 import { isValidGatewayConfig, type GatewayConfig } from "./gateway-config.js";
 import { isBotPlatform } from "./bot-platform.js";
 
@@ -12,9 +15,7 @@ export interface Configuration {
 
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
 
-export function isValidConfiguration(
-  value: unknown,
-): value is Configuration {
+export function isValidConfiguration(value: unknown): value is Configuration {
   if (typeof value !== "object" || value === null) return false;
 
   const obj = value as Record<string, unknown>;

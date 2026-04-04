@@ -8,10 +8,7 @@ import { runPairingApprove } from "./commands/pairing-approve.js";
 
 const program = new Command();
 
-program
-  .name("closeclaw")
-  .description("CloseClaw CLI")
-  .version("0.1.0");
+program.name("closeclaw").description("CloseClaw CLI").version("0.1.0");
 
 program
   .command("onboard")
@@ -55,8 +52,6 @@ pairing
     }
   });
 
-void program
-  .parseAsync(process.argv)
-  .catch(() => {
-    process.exitCode = 1;
-  });
+void program.parseAsync(process.argv).catch(() => {
+  process.exitCode = 1;
+});

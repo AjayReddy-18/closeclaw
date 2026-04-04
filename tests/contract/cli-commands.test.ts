@@ -62,9 +62,7 @@ describe("gateway pairing HTTP", () => {
       platform: BotPlatform.TELEGRAM,
       connect: vi.fn(),
       disconnect: vi.fn(),
-      healthCheck: vi.fn(() =>
-        Promise.resolve({ connected: true }),
-      ),
+      healthCheck: vi.fn(() => Promise.resolve({ connected: true })),
       onMessage: vi.fn(),
     };
   }

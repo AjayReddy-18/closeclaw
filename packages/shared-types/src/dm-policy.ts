@@ -13,7 +13,5 @@ export const DM_POLICIES: readonly DmPolicy[] = [
 ];
 
 export function isDmPolicy(value: unknown): value is DmPolicy {
-  return (
-    typeof value === "string" && DM_POLICIES.includes(value as DmPolicy)
-  );
+  return typeof value === "string" && DM_POLICIES.includes(value as DmPolicy);
 }

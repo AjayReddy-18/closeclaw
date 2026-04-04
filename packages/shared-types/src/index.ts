@@ -1,8 +1,4 @@
-export {
-  BotPlatform,
-  BOT_PLATFORMS,
-  isBotPlatform,
-} from "./bot-platform.js";
+export { BotPlatform, BOT_PLATFORMS, isBotPlatform } from "./bot-platform.js";
 
 export { DmPolicy, DM_POLICIES, isDmPolicy } from "./dm-policy.js";
 
@@ -12,15 +8,9 @@ export {
   isValidBotIntegration,
 } from "./bot-integration.js";
 
-export {
-  type GatewayConfig,
-  isValidGatewayConfig,
-} from "./gateway-config.js";
+export { type GatewayConfig, isValidGatewayConfig } from "./gateway-config.js";
 
-export {
-  type Configuration,
-  isValidConfiguration,
-} from "./configuration.js";
+export { type Configuration, isValidConfiguration } from "./configuration.js";
 
 export {
   PairingStatus,

@@ -8,7 +8,10 @@ describe("validateBotToken", () => {
   describe("telegram", () => {
     it("accepts valid telegram token format", () => {
       expect(
-        validateBotToken("telegram", "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"),
+        validateBotToken(
+          "telegram",
+          "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
+        ),
       ).toBe(true);
     });
 
@@ -64,15 +67,15 @@ describe("isValidBotIntegration", () => {
   });
 
   it("rejects non-string botToken", () => {
-    expect(
-      isValidBotIntegration({ ...validIntegration, botToken: 123 }),
-    ).toBe(false);
+    expect(isValidBotIntegration({ ...validIntegration, botToken: 123 })).toBe(
+      false,
+    );
   });
 
   it("rejects non-boolean enabled", () => {
-    expect(
-      isValidBotIntegration({ ...validIntegration, enabled: "yes" }),
-    ).toBe(false);
+    expect(isValidBotIntegration({ ...validIntegration, enabled: "yes" })).toBe(
+      false,
+    );
   });
 
   it("rejects invalid dmPolicy", () => {

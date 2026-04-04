@@ -8,9 +8,7 @@ export interface ConfigState {
   allPlatformsConfigured: boolean;
 }
 
-export function detectConfigState(
-  config: Configuration | null,
-): ConfigState {
+export function detectConfigState(config: Configuration | null): ConfigState {
   if (config === null) {
     return {
       exists: false,

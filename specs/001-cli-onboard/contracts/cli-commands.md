@@ -22,11 +22,11 @@ Interactive onboarding wizard for bot integration setup.
 
 **Exit codes**:
 
-| Code | Meaning |
-|------|---------|
-| 0 | Onboarding completed successfully |
-| 1 | Onboarding failed (health check failure, write error, etc.) |
-| 130 | User interrupted with Ctrl+C (no partial writes) |
+| Code | Meaning                                                     |
+| ---- | ----------------------------------------------------------- |
+| 0    | Onboarding completed successfully                           |
+| 1    | Onboarding failed (health check failure, write error, etc.) |
+| 130  | User interrupted with Ctrl+C (no partial writes)            |
 
 **Stdout**: Interactive prompts, setup instructions, health check results, success summary
 
@@ -52,14 +52,15 @@ Display all pending pairing requests.
 
 **Exit codes**:
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success (even if no pending requests) |
-| 1 | Error (config missing, file unreadable) |
+| Code | Meaning                                 |
+| ---- | --------------------------------------- |
+| 0    | Success (even if no pending requests)   |
+| 1    | Error (config missing, file unreadable) |
 
 **Stdout**: Table of pending requests, or "No pending pairing requests" message
 
 **Example output**:
+
 ```
 Pending Pairing Requests:
 
@@ -80,9 +81,9 @@ Approve a pending pairing request by its code.
 
 **Arguments**:
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| code | yes | 6-character alphanumeric pairing code |
+| Argument | Required | Description                           |
+| -------- | -------- | ------------------------------------- |
+| code     | yes      | 6-character alphanumeric pairing code |
 
 **Options**: None
 
@@ -96,19 +97,21 @@ Approve a pending pairing request by its code.
 
 **Exit codes**:
 
-| Code | Meaning |
-|------|---------|
-| 0 | Sender approved successfully |
-| 1 | Error (code not found, code expired, file error) |
+| Code | Meaning                                          |
+| ---- | ------------------------------------------------ |
+| 0    | Sender approved successfully                     |
+| 1    | Error (code not found, code expired, file error) |
 
 **Stdout**: Success confirmation with sender details
 
 **Example output (success)**:
+
 ```
 Approved! @alice (telegram:123456789) can now message your bot.
 ```
 
 **Example output (expired)**:
+
 ```
 Error: Pairing code A7X3K2 has expired.
 Ask the sender to message the bot again to generate a new code.
@@ -123,6 +126,7 @@ Returns the health status of the gateway and connected bot adapters.
 **Request**: No body or authentication required (localhost only)
 
 **Response (200 OK)**:
+
 ```json
 {
   "status": "healthy",
@@ -141,6 +145,7 @@ Returns the health status of the gateway and connected bot adapters.
 ```
 
 **Response (503 Service Unavailable)**:
+
 ```json
 {
   "status": "unhealthy",
@@ -163,6 +168,7 @@ List pending pairing requests (used by `closeclaw pairing list`).
 **Request headers**: `Authorization: Bearer <gateway-auth-token>`
 
 **Response (200 OK)**:
+
 ```json
 {
   "requests": [
@@ -186,6 +192,7 @@ Approve a pairing request (used by `closeclaw pairing approve <code>`).
 **Request headers**: `Authorization: Bearer <gateway-auth-token>`
 
 **Request body**:
+
 ```json
 {
   "code": "A7X3K2"
@@ -193,6 +200,7 @@ Approve a pairing request (used by `closeclaw pairing approve <code>`).
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "approved": true,
@@ -205,6 +213,7 @@ Approve a pairing request (used by `closeclaw pairing approve <code>`).
 ```
 
 **Response (404 Not Found)**:
+
 ```json
 {
   "error": "no_matching_request",
@@ -213,6 +222,7 @@ Approve a pairing request (used by `closeclaw pairing approve <code>`).
 ```
 
 **Response (410 Gone)**:
+
 ```json
 {
   "error": "code_expired",

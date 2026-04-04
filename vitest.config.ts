@@ -18,14 +18,8 @@ export default defineConfig({
         __dirname,
         "packages/bot-adapters/src/index.ts",
       ),
-      "@closeclaw/gateway": resolve(
-        __dirname,
-        "packages/gateway/src/index.ts",
-      ),
-      "@closeclaw/cli": resolve(
-        __dirname,
-        "packages/cli/src/index.ts",
-      ),
+      "@closeclaw/gateway": resolve(__dirname, "packages/gateway/src/index.ts"),
+      "@closeclaw/cli": resolve(__dirname, "packages/cli/src/index.ts"),
     },
   },
   test: {

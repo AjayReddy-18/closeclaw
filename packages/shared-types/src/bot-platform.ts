@@ -12,7 +12,6 @@ export const BOT_PLATFORMS: readonly BotPlatform[] = [
 
 export function isBotPlatform(value: unknown): value is BotPlatform {
   return (
-    typeof value === "string" &&
-    BOT_PLATFORMS.includes(value as BotPlatform)
+    typeof value === "string" && BOT_PLATFORMS.includes(value as BotPlatform)
   );
 }

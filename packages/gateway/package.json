@@ -17,5 +17,7 @@
     "@closeclaw/shared-types": "workspace:*",
     "@closeclaw/bot-adapters": "workspace:*"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

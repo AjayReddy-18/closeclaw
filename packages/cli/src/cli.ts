@@ -15,13 +15,11 @@ export async function runCli(argv: string[]): Promise<number> {
       await runOnboard(createOnboardDeps());
     });
   const pairing = program.command("pairing");
-  pairing
-    .command("list")
-    .action(async () => {
-      await runPairingList({
-        storePath: join(homedir(), ".closeclaw", "pairing.json"),
-      });
+  pairing.command("list").action(async () => {
+    await runPairingList({
+      storePath: join(homedir(), ".closeclaw", "pairing.json"),
     });
+  });
   pairing
     .command("approve")
     .argument("<code>", "code")
