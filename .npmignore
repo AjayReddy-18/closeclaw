@@ -1,0 +1,14 @@
+node_modules/
+src/
+tests/
+coverage/
+*.log
+.env*
+*.tmp
+*.swp
+.DS_Store
+.vscode/
+.idea/
+.specify/
+specs/
+.cursor/

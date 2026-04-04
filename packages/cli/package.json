@@ -1,0 +1,26 @@
+{
+  "name": "@closeclaw/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "closeclaw": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts"
+  },
+  "dependencies": {
+    "@closeclaw/shared-types": "workspace:*",
+    "@closeclaw/gateway": "workspace:*",
+    "commander": "^13.1.0",
+    "@inquirer/prompts": "^7.5.0"
+  },
+  "files": ["dist"]
+}

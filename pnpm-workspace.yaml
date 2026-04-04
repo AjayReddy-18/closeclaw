@@ -1,0 +1,5 @@
+packages:
+  - "packages/shared-types"
+  - "packages/bot-adapters"
+  - "packages/gateway"
+  - "packages/cli"
