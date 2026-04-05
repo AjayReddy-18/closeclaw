@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { generateText } from "ai";
-import {
-  createMemoryFlusher,
-} from "../../../packages/ai-agent/src/memory-flush.js";
+import { createMemoryFlusher } from "../../../packages/ai-agent/src/memory-flush.js";
 import type { PreferenceStore } from "../../../packages/ai-agent/src/preference-store.js";
 import type { ConversationFileMessage } from "../../../packages/ai-agent/src/persistence-types.js";
 import { BotPlatform } from "@closeclaw/shared-types";
@@ -52,11 +50,7 @@ describe("createMemoryFlusher", () => {
     });
     const store = mockPrefStore();
     const flusher = createMemoryFlusher(store);
-    const result = await flusher.flush(
-      BotPlatform.TELEGRAM,
-      "1",
-      msgs(5),
-    );
+    const result = await flusher.flush(BotPlatform.TELEGRAM, "1", msgs(5));
     expect(result).toHaveLength(2);
     expect(store.upsertPreference).toHaveBeenCalledTimes(2);
     expect(store.upsertPreference).toHaveBeenCalledWith(
@@ -77,11 +71,7 @@ describe("createMemoryFlusher", () => {
     });
     const store = mockPrefStore();
     const flusher = createMemoryFlusher(store);
-    const result = await flusher.flush(
-      BotPlatform.TELEGRAM,
-      "1",
-      msgs(3),
-    );
+    const result = await flusher.flush(BotPlatform.TELEGRAM, "1", msgs(3));
     expect(result).toHaveLength(0);
     expect(store.upsertPreference).not.toHaveBeenCalled();
   });
@@ -90,11 +80,7 @@ describe("createMemoryFlusher", () => {
     mockGen.mockRejectedValueOnce(new Error("AI down"));
     const store = mockPrefStore();
     const flusher = createMemoryFlusher(store);
-    const result = await flusher.flush(
-      BotPlatform.TELEGRAM,
-      "1",
-      msgs(3),
-    );
+    const result = await flusher.flush(BotPlatform.TELEGRAM, "1", msgs(3));
     expect(result).toHaveLength(0);
   });
 
@@ -108,11 +94,7 @@ describe("createMemoryFlusher", () => {
     });
     const store = mockPrefStore();
     const flusher = createMemoryFlusher(store);
-    const result = await flusher.flush(
-      BotPlatform.TELEGRAM,
-      "1",
-      msgs(3),
-    );
+    const result = await flusher.flush(BotPlatform.TELEGRAM, "1", msgs(3));
     expect(result).toHaveLength(0);
   });
 });

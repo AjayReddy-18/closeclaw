@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { generateText } from "ai";
-import {
-  createConversationCompressor,
-} from "../../../packages/ai-agent/src/conversation-compressor.js";
+import { createConversationCompressor } from "../../../packages/ai-agent/src/conversation-compressor.js";
 import type { ConversationFileMessage } from "../../../packages/ai-agent/src/persistence-types.js";
 
 const mockGen = vi.mocked(generateText);

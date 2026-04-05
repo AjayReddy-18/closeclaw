@@ -29,10 +29,13 @@ describe("createSavePreferenceTool", () => {
 
   it("calls upsertPreference on execute", async () => {
     const t = createSavePreferenceTool(store, BotPlatform.TELEGRAM, "1");
-    const result = await t.execute({ key: "name", value: "Ajay" }, {
-      toolCallId: "tc1",
-      messages: [],
-    });
+    const result = await t.execute(
+      { key: "name", value: "Ajay" },
+      {
+        toolCallId: "tc1",
+        messages: [],
+      },
+    );
     expect(store.upsertPreference).toHaveBeenCalledWith(
       BotPlatform.TELEGRAM,
       "1",
@@ -57,10 +60,13 @@ describe("createForgetPreferenceTool", () => {
 
   it("calls removePreference on execute", async () => {
     const t = createForgetPreferenceTool(store, BotPlatform.TELEGRAM, "1");
-    const result = await t.execute({ key: "tz" }, {
-      toolCallId: "tc2",
-      messages: [],
-    });
+    const result = await t.execute(
+      { key: "tz" },
+      {
+        toolCallId: "tc2",
+        messages: [],
+      },
+    );
     expect(store.removePreference).toHaveBeenCalledWith(
       BotPlatform.TELEGRAM,
       "1",
@@ -72,10 +78,13 @@ describe("createForgetPreferenceTool", () => {
   it("returns not-found message when key does not exist", async () => {
     (store.removePreference as ReturnType<typeof vi.fn>).mockReturnValue(false);
     const t = createForgetPreferenceTool(store, BotPlatform.TELEGRAM, "1");
-    const result = await t.execute({ key: "nope" }, {
-      toolCallId: "tc3",
-      messages: [],
-    });
+    const result = await t.execute(
+      { key: "nope" },
+      {
+        toolCallId: "tc3",
+        messages: [],
+      },
+    );
     expect(result).toContain("not found");
   });
 });

@@ -14,7 +14,11 @@ function fileName(platform: BotPlatform, senderId: string): string {
   return `${platform}-${senderId}.json`;
 }
 
-function filePath(baseDir: string, platform: BotPlatform, senderId: string): string {
+function filePath(
+  baseDir: string,
+  platform: BotPlatform,
+  senderId: string,
+): string {
   return join(baseDir, fileName(platform, senderId));
 }
 
@@ -39,7 +43,11 @@ function ensureDir(dir: string): void {
 
 export interface ConversationPersistence {
   load(platform: BotPlatform, senderId: string): ConversationFileData | null;
-  save(platform: BotPlatform, senderId: string, data: ConversationFileData): void;
+  save(
+    platform: BotPlatform,
+    senderId: string,
+    data: ConversationFileData,
+  ): void;
   remove(platform: BotPlatform, senderId: string): void;
 }
 
@@ -48,13 +56,20 @@ export function createConversationPersistence(
 ): ConversationPersistence {
   ensureDir(baseDir);
 
-  function load(platform: BotPlatform, senderId: string): ConversationFileData | null {
+  function load(
+    platform: BotPlatform,
+    senderId: string,
+  ): ConversationFileData | null {
     const fp = filePath(baseDir, platform, senderId);
     if (!existsSync(fp)) return null;
     return readJsonSafe(fp);
   }
 
-  function save(platform: BotPlatform, senderId: string, data: ConversationFileData): void {
+  function save(
+    platform: BotPlatform,
+    senderId: string,
+    data: ConversationFileData,
+  ): void {
     ensureDir(baseDir);
     writeAtomic(filePath(baseDir, platform, senderId), data);
   }

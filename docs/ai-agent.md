@@ -20,18 +20,40 @@ User Message → Bot Adapter → Gateway → Message Processor → AI SDK
 ## Conversation Management
 
 Each sender gets an isolated conversation keyed by
-`platform:senderId`. Conversations persist in memory for the
-lifetime of the gateway process.
+`platform:senderId`. Conversations are stored on disk and
+survive gateway restarts.
+
+**Persistent Storage:** Conversations are saved as JSON files
+in `~/.closeclaw/conversations/<platform>-<senderId>.json`.
+Files are written atomically (write to `.tmp`, then rename) to
+prevent corruption. Conversations are loaded lazily on first
+message from each sender, ensuring fast gateway startup
+regardless of how many files exist.
 
 **Context Trimming:** When a conversation exceeds the token estimate
 limit, older messages are trimmed from the history while preserving
 the system prompt and the most recent messages.
 
+**Automatic Compression:** When a conversation exceeds 50 messages
+(configurable via `compressionThreshold`), older messages are
+automatically summarized by the AI model into a rolling summary.
+The 20 most recent messages (configurable via `keepRecentCount`)
+are kept verbatim. The summary is stored in the conversation file
+and prepended to the AI context so historical facts remain
+accessible. Compression runs non-blocking after the response is
+delivered to the user.
+
+**Memory Flush:** Before compression, the system extracts durable
+facts and preferences from the about-to-be-compressed messages
+and saves them to the preference file. This prevents accidental
+loss of important context during compression.
+
 **Stale Pruning:** Conversations inactive for 24 hours are
-automatically pruned.
+automatically pruned (both in memory and on disk).
 
 **Clearing:** Send `/clear` to the bot to reset your conversation
-history.
+history. The conversation file is deleted but preferences are
+preserved.
 
 ## Supported Providers
 
@@ -65,9 +87,39 @@ Connects via OpenAI-compatible adapter pointed at
 Any provider exposing an OpenAI-compatible endpoint. Provide a
 base URL and optional API key.
 
+## User Preference Memory
+
+The agent automatically identifies and stores user preferences
+during conversation. When you share personal information like
+your name, timezone, language preferences, or likes/dislikes,
+the AI stores them in a dedicated preference file at
+`~/.closeclaw/preferences/<platform>-<senderId>.json`.
+
+Preferences are:
+
+- **Automatically extracted** on every message (no trigger word
+  needed)
+- **Injected into the AI context** for personalized responses
+- **Independent of conversation history** — `/clear` does not
+  erase preferences
+- **Persistent across restarts** — loaded from disk
+- **Forgettable** — tell the bot "forget my timezone" to remove
+  a specific preference
+
 ## Built-in Tools
 
 Tools extend the AI's capabilities beyond text generation.
+
+### save_preference
+
+Automatically called by the AI when it identifies preference-worthy
+information. Stores a key-value pair in the sender's preference file.
+Always available when tool calling is active.
+
+### forget_preference
+
+Called when the user asks to forget a specific preference. Removes
+the entry from the preference file.
 
 ### datetime
 

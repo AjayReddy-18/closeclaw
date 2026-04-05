@@ -20,7 +20,9 @@ export function messageToFile(m: ConversationMessage): ConversationFileMessage {
   };
 }
 
-export function messageFromFile(m: ConversationFileMessage): ConversationMessage {
+export function messageFromFile(
+  m: ConversationFileMessage,
+): ConversationMessage {
   return {
     role: m.role,
     content: m.content,
@@ -60,9 +62,7 @@ export function conversationToFile(c: Conversation): ConversationFileData {
   };
 }
 
-export function conversationFromFile(
-  data: ConversationFileData,
-): Conversation {
+export function conversationFromFile(data: ConversationFileData): Conversation {
   return {
     platform: data.platform as BotPlatform,
     senderId: data.senderId,

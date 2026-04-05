@@ -29,8 +29,16 @@ function toolOptionsForGenerate(
 ) {
   const tools = buildToolMap(config.tools);
   if (prefStore && platform && senderId) {
-    tools["save_preference"] = createSavePreferenceTool(prefStore, platform, senderId);
-    tools["forget_preference"] = createForgetPreferenceTool(prefStore, platform, senderId);
+    tools["save_preference"] = createSavePreferenceTool(
+      prefStore,
+      platform,
+      senderId,
+    );
+    tools["forget_preference"] = createForgetPreferenceTool(
+      prefStore,
+      platform,
+      senderId,
+    );
   }
   if (Object.keys(tools).length === 0) return {};
   return { tools, stopWhen: stepCountIs(config.tools.maxCallDepth) };
@@ -59,11 +67,22 @@ export function createMessageProcessor(
     senderDisplayName?: string,
   ): Promise<string> {
     const toolOpts = toolOptionsForGenerate(
-      agentConfig, preferenceStore, platform, senderId,
+      agentConfig,
+      preferenceStore,
+      platform,
+      senderId,
     );
     const result = await handleIncomingText(
-      agentConfig, conversationStore, gen, model, toolOpts,
-      platform, senderId, text, senderDisplayName, preferenceStore,
+      agentConfig,
+      conversationStore,
+      gen,
+      model,
+      toolOpts,
+      platform,
+      senderId,
+      text,
+      senderDisplayName,
+      preferenceStore,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -100,7 +119,11 @@ async function handleIncomingText(
   }
   const reject = rejectionForOversizedInput(agentConfig, text);
   if (reject !== undefined) return reject;
-  const c = conversationStore.getOrCreate(platform, senderId, senderDisplayName);
+  const c = conversationStore.getOrCreate(
+    platform,
+    senderId,
+    senderDisplayName,
+  );
   appendUserMessage(c, text);
   const prefCtx = prefStore
     ? formatPreferencesForContext(prefStore, platform, senderId)
@@ -120,7 +143,10 @@ function appendUserMessage(
 }
 
 function sdkMessagesForGenerate(
-  conversation: { messages: ConversationMessage[]; compressedSummary?: { text: string } },
+  conversation: {
+    messages: ConversationMessage[];
+    compressedSummary?: { text: string };
+  },
   config: AgentConfig,
   preferenceContext?: string,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
@@ -165,14 +191,21 @@ function pushAssistantMessage(
 }
 
 async function invokeModel(
-  conversation: { messages: ConversationMessage[]; compressedSummary?: { text: string } },
+  conversation: {
+    messages: ConversationMessage[];
+    compressedSummary?: { text: string };
+  },
   gen: typeof generateText,
   model: ReturnType<typeof createModelProvider>,
   config: AgentConfig,
   toolOpts: ReturnType<typeof toolOptionsForGenerate>,
   preferenceContext?: string,
 ): Promise<string> {
-  const messages = sdkMessagesForGenerate(conversation, config, preferenceContext);
+  const messages = sdkMessagesForGenerate(
+    conversation,
+    config,
+    preferenceContext,
+  );
   const args = {
     model,
     messages,

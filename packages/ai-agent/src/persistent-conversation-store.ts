@@ -48,7 +48,9 @@ export function createPersistentConversationStore(
   }
 
   function hydrateInner(
-    platform: BotPlatform, senderId: string, disk: Conversation,
+    platform: BotPlatform,
+    senderId: string,
+    disk: Conversation,
   ): Conversation {
     const c = inner.getOrCreate(platform, senderId, disk.senderDisplayName);
     c.messages = disk.messages;
@@ -59,7 +61,9 @@ export function createPersistentConversationStore(
   }
 
   function getOrCreate(
-    platform: BotPlatform, senderId: string, senderDisplayName?: string,
+    platform: BotPlatform,
+    senderId: string,
+    senderDisplayName?: string,
   ): Conversation {
     const disk = tryLoadFromDisk(platform, senderId);
     if (disk) return hydrateInner(platform, senderId, disk);
@@ -93,7 +97,8 @@ export function createPersistentConversationStore(
     maxAgeMs: number,
   ): { platform: BotPlatform; senderId: string }[] {
     const cutoff = Date.now() - maxAgeMs;
-    return inner.list()
+    return inner
+      .list()
       .filter((s) => s.lastActivityAt.getTime() < cutoff)
       .map((s) => ({ platform: s.platform, senderId: s.senderId }));
   }
@@ -110,14 +115,18 @@ export function createPersistentConversationStore(
   }
 
   function maybeCompress(
-    platform: BotPlatform, senderId: string, c: Conversation,
+    platform: BotPlatform,
+    senderId: string,
+    c: Conversation,
   ): void {
     if (!compressor || !compressor.shouldCompress(c.messages.length)) return;
     queueMicrotask(() => void runCompression(platform, senderId, c));
   }
 
   async function runCompression(
-    platform: BotPlatform, senderId: string, c: Conversation,
+    platform: BotPlatform,
+    senderId: string,
+    c: Conversation,
   ): Promise<void> {
     try {
       if (flusher) await flushBeforeCompress(platform, senderId, c);
@@ -128,7 +137,9 @@ export function createPersistentConversationStore(
   }
 
   async function flushBeforeCompress(
-    platform: BotPlatform, senderId: string, c: Conversation,
+    platform: BotPlatform,
+    senderId: string,
+    c: Conversation,
   ): Promise<void> {
     if (!flusher) return;
     const toCompress = c.messages.slice(0, -keepRecentCount(c));
@@ -145,7 +156,9 @@ export function createPersistentConversationStore(
   }
 
   async function compressMessages(
-    platform: BotPlatform, senderId: string, c: Conversation,
+    platform: BotPlatform,
+    senderId: string,
+    c: Conversation,
   ): Promise<void> {
     if (!compressor) return;
     const keep = keepRecentCount(c);
@@ -156,7 +169,8 @@ export function createPersistentConversationStore(
     if (!summary) return;
     c.compressedSummary = {
       text: summary,
-      messagesCompressed: older.length + (c.compressedSummary?.messagesCompressed ?? 0),
+      messagesCompressed:
+        older.length + (c.compressedSummary?.messagesCompressed ?? 0),
       compressedAt: new Date(),
     };
     c.messages = c.messages.slice(-keep);

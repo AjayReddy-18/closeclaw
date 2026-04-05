@@ -7,13 +7,20 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import type { BotPlatform } from "@closeclaw/shared-types";
-import type { PreferenceFileData, PreferenceEntry } from "./persistence-types.js";
+import type {
+  PreferenceFileData,
+  PreferenceEntry,
+} from "./persistence-types.js";
 
 function fileName(platform: BotPlatform, senderId: string): string {
   return `${platform}-${senderId}.json`;
 }
 
-function filePath(baseDir: string, platform: BotPlatform, senderId: string): string {
+function filePath(
+  baseDir: string,
+  platform: BotPlatform,
+  senderId: string,
+): string {
   return join(baseDir, fileName(platform, senderId));
 }
 
@@ -47,7 +54,11 @@ function emptyPreferences(
   };
 }
 
-function upsertEntry(prefs: PreferenceEntry[], key: string, value: string): void {
+function upsertEntry(
+  prefs: PreferenceEntry[],
+  key: string,
+  value: string,
+): void {
   const idx = prefs.findIndex((p) => p.key === key);
   const entry: PreferenceEntry = {
     key,
@@ -61,20 +72,36 @@ function upsertEntry(prefs: PreferenceEntry[], key: string, value: string): void
 export interface PreferenceStore {
   load(platform: BotPlatform, senderId: string): PreferenceFileData | null;
   save(platform: BotPlatform, senderId: string, data: PreferenceFileData): void;
-  upsertPreference(platform: BotPlatform, senderId: string, key: string, value: string): void;
-  removePreference(platform: BotPlatform, senderId: string, key: string): boolean;
+  upsertPreference(
+    platform: BotPlatform,
+    senderId: string,
+    key: string,
+    value: string,
+  ): void;
+  removePreference(
+    platform: BotPlatform,
+    senderId: string,
+    key: string,
+  ): boolean;
 }
 
 export function createPreferenceStore(baseDir: string): PreferenceStore {
   ensureDir(baseDir);
 
-  function load(platform: BotPlatform, senderId: string): PreferenceFileData | null {
+  function load(
+    platform: BotPlatform,
+    senderId: string,
+  ): PreferenceFileData | null {
     const fp = filePath(baseDir, platform, senderId);
     if (!existsSync(fp)) return null;
     return readJsonSafe(fp);
   }
 
-  function save(platform: BotPlatform, senderId: string, data: PreferenceFileData): void {
+  function save(
+    platform: BotPlatform,
+    senderId: string,
+    data: PreferenceFileData,
+  ): void {
     ensureDir(baseDir);
     writeAtomic(filePath(baseDir, platform, senderId), data);
   }
@@ -85,7 +112,8 @@ export function createPreferenceStore(baseDir: string): PreferenceStore {
     key: string,
     value: string,
   ): void {
-    const existing = load(platform, senderId) ?? emptyPreferences(platform, senderId);
+    const existing =
+      load(platform, senderId) ?? emptyPreferences(platform, senderId);
     upsertEntry(existing.preferences, key, value);
     existing.lastModifiedAt = new Date().toISOString();
     save(platform, senderId, existing);

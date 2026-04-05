@@ -24,6 +24,8 @@ The constitution at `.specify/memory/constitution.md` is the supreme authority f
 All git write commands (commit, push, branch, merge, rebase, tag) MUST use `required_permissions: ["all"]` to avoid sandbox blocking. This is non-negotiable — the sandbox will reject git writes without it.
 
 ## Active Technologies
+- TypeScript 5.x (strict mode) + Node.js fs/path, existing `@closeclaw/ai-agent`, Vercel AI SDK (`generateText`) (003-persistent-memory)
+- JSON files on local disk (`~/.closeclaw/conversations/`, `~/.closeclaw/preferences/`) (003-persistent-memory)
 
 - TypeScript 5.x (strict mode, no `any`)
 - pnpm monorepo: packages/shared-types, packages/bot-adapters, packages/gateway, packages/cli, packages/ai-agent
@@ -66,10 +68,10 @@ pnpm build               # Build all packages
 TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
+- 003-persistent-memory: Added TypeScript 5.x (strict mode) + Node.js fs/path, existing `@closeclaw/ai-agent`, Vercel AI SDK (`generateText`)
 
 - 001-cli-onboard: Bot integration CLI, pairing, gateway start, DM policies
 - 002-ai-agent-routing: AI agent with 6 providers, tool calling, conversation management, CLI commands
-- Constitution v1.2.0: Added Principle VII (Living Documentation) and build verification rule
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

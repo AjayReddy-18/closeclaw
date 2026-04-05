@@ -1,7 +1,10 @@
 import type { BotPlatform } from "@closeclaw/shared-types";
 import { generateText } from "ai";
 import type { LanguageModelV2 } from "@ai-sdk/provider";
-import type { ConversationFileMessage, PreferenceEntry } from "./persistence-types.js";
+import type {
+  ConversationFileMessage,
+  PreferenceEntry,
+} from "./persistence-types.js";
 import type { PreferenceStore } from "./preference-store.js";
 
 export interface MemoryFlusher {
@@ -28,9 +31,7 @@ function parsePreferences(text: string): PreferenceEntry[] {
   try {
     const parsed = JSON.parse(text) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(isKeyValuePair)
-      .map(toPreferenceEntry);
+    return parsed.filter(isKeyValuePair).map(toPreferenceEntry);
   } catch {
     return [];
   }
@@ -42,8 +43,15 @@ function isKeyValuePair(item: unknown): item is { key: string; value: string } {
   return typeof obj.key === "string" && typeof obj.value === "string";
 }
 
-function toPreferenceEntry(pair: { key: string; value: string }): PreferenceEntry {
-  return { key: pair.key, value: pair.value, updatedAt: new Date().toISOString() };
+function toPreferenceEntry(pair: {
+  key: string;
+  value: string;
+}): PreferenceEntry {
+  return {
+    key: pair.key,
+    value: pair.value,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export function createMemoryFlusher(

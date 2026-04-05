@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  formatPreferencesForContext,
-} from "../../../packages/ai-agent/src/preference-injection.js";
+import { formatPreferencesForContext } from "../../../packages/ai-agent/src/preference-injection.js";
 import type { PreferenceStore } from "../../../packages/ai-agent/src/preference-store.js";
 import { BotPlatform } from "@closeclaw/shared-types";
 
-function mockStore(prefs: Array<{ key: string; value: string }>): PreferenceStore {
+function mockStore(
+  prefs: Array<{ key: string; value: string }>,
+): PreferenceStore {
   return {
     load: vi.fn().mockReturnValue({
       platform: "telegram",

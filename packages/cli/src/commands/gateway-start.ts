@@ -131,19 +131,31 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   if (!config) return;
   const adapters = buildAdapters(config, deps.createAdapter);
   let pruneInterval: ReturnType<typeof setInterval> | undefined;
-  let conversationStore: ReturnType<typeof createPersistentConversationStore> | undefined;
+  let conversationStore:
+    | ReturnType<typeof createPersistentConversationStore>
+    | undefined;
   let messageProcessor: ReturnType<typeof createMessageProcessor> | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
     const baseDir = join(homedir(), ".closeclaw");
-    const persistence = createConversationPersistence(join(baseDir, "conversations"));
+    const persistence = createConversationPersistence(
+      join(baseDir, "conversations"),
+    );
     const prefStore = createPreferenceStore(join(baseDir, "preferences"));
-    const threshold = config.agent.compressionThreshold ?? DEFAULT_COMPRESSION_THRESHOLD;
-    const keepRecent = config.agent.keepRecentCount ?? DEFAULT_KEEP_RECENT_COUNT;
+    const threshold =
+      config.agent.compressionThreshold ?? DEFAULT_COMPRESSION_THRESHOLD;
+    const keepRecent =
+      config.agent.keepRecentCount ?? DEFAULT_KEEP_RECENT_COUNT;
     const model = createModelProvider(config.agent);
-    const compressor = createConversationCompressor(threshold, keepRecent, model);
+    const compressor = createConversationCompressor(
+      threshold,
+      keepRecent,
+      model,
+    );
     const flusher = createMemoryFlusher(prefStore, model);
     const pStore = createPersistentConversationStore({
-      persistence, compressor, flusher,
+      persistence,
+      compressor,
+      flusher,
     });
     conversationStore = pStore;
     messageProcessor = createMessageProcessor({
