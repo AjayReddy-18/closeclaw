@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { isValidConfiguration } from "@closeclaw/shared-types";
+import {
+  DEFAULT_TOOL_CONFIG,
+  isValidConfiguration,
+} from "@closeclaw/shared-types";
 
 describe("isValidConfiguration", () => {
   const validConfig = {
@@ -92,5 +95,43 @@ describe("isValidConfiguration", () => {
         },
       }),
     ).toBe(true);
+  });
+
+  it("validates config without agent (backward compat)", () => {
+    expect(isValidConfiguration(validConfig)).toBe(true);
+    expect(isValidConfiguration({ ...validConfig, agent: undefined })).toBe(
+      true,
+    );
+  });
+
+  it("validates config with valid agent", () => {
+    expect(
+      isValidConfiguration({
+        ...validConfig,
+        agent: {
+          provider: "openai",
+          model: "gpt-4",
+          apiKey: "sk-test",
+          systemPrompt: "You are helpful.",
+          maxContextTokens: 8192,
+          tools: DEFAULT_TOOL_CONFIG,
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects config with invalid agent", () => {
+    expect(
+      isValidConfiguration({
+        ...validConfig,
+        agent: {
+          provider: "openai",
+          model: "gpt-4",
+          systemPrompt: "x",
+          maxContextTokens: 1,
+          tools: DEFAULT_TOOL_CONFIG,
+        },
+      }),
+    ).toBe(false);
   });
 });
