@@ -17,8 +17,8 @@
 
 **Purpose**: Expand the model lists that drive the selection UI
 
-- [ ] T001 [P] [US1] Update provider-info test to verify expanded model lists in tests/unit/ai-agent/provider-info.test.ts
-- [ ] T002 [P] [US1] Expand exampleModels arrays for all providers in packages/ai-agent/src/provider-info.ts — openai: add gpt-4o-mini, o3, o3-mini, o4-mini; anthropic: add claude-3-5-sonnet-20241022; google: add gemini-2.5-pro, gemini-2.5-flash; ollama: add llama3.1, gemma2, phi3, deepseek-r1
+- [x] T001 [P] [US1] Update provider-info test to verify expanded model lists in tests/unit/ai-agent/provider-info.test.ts
+- [x] T002 [P] [US1] Expand exampleModels arrays for all providers in packages/ai-agent/src/provider-info.ts — openai: add gpt-4o-mini, o3, o3-mini, o4-mini; anthropic: add claude-3-5-sonnet-20241022; google: add gemini-2.5-pro, gemini-2.5-flash; ollama: add llama3.1, gemma2, phi3, deepseek-r1
 
 **Checkpoint**: Provider info data is expanded and tests pass
 
@@ -32,15 +32,15 @@
 
 ### Tests
 
-- [ ] T003 [US1] Update agent-configure tests to cover model selection list: mock `select` to return a listed model, verify it flows through to assembleAgent in tests/unit/cli/agent-configure.test.ts
-- [ ] T004 [US1] Add test for "Custom (enter manually)" path: mock `select` to return sentinel value, then mock `input` for custom model name in tests/unit/cli/agent-configure.test.ts
-- [ ] T005 [US1] Add test for custom provider (no model list): verify `input` is called directly without `select` in tests/unit/cli/agent-configure.test.ts
+- [x] T003 [US1] Update agent-configure tests to cover model selection list: mock `select` to return a listed model, verify it flows through to assembleAgent in tests/unit/cli/agent-configure.test.ts
+- [x] T004 [US1] Add test for "Custom (enter manually)" path: mock `select` to return sentinel value, then mock `input` for custom model name in tests/unit/cli/agent-configure.test.ts
+- [x] T005 [US1] Add test for custom provider (no model list): verify `input` is called directly without `select` in tests/unit/cli/agent-configure.test.ts
 
 ### Implementation
 
-- [ ] T006 [US1] Widen `select` type in AgentConfigureDeps to accept `string` values (not just `AiProvider`) in packages/cli/src/commands/agent-configure-run.ts
-- [ ] T007 [US1] Replace `promptModel(deps)` with `promptModel(deps, provider)` — build choices from PROVIDER_INFO[provider].exampleModels, append "Custom (enter manually)" sentinel, use select for providers with models, fall back to input for custom provider in packages/cli/src/commands/agent-configure-run.ts
-- [ ] T008 [US1] Update the call site in `executeAgentConfigure` to pass `provider` to `promptModel` in packages/cli/src/commands/agent-configure-run.ts
+- [x] T006 [US1] Widen `select` type in AgentConfigureDeps to accept `string` values (not just `AiProvider`) in packages/cli/src/commands/agent-configure-run.ts
+- [x] T007 [US1] Replace `promptModel(deps)` with `promptModel(deps, provider)` — build choices from PROVIDER_INFO[provider].exampleModels, append "Custom (enter manually)" sentinel, use select for providers with models, fall back to input for custom provider in packages/cli/src/commands/agent-configure-run.ts
+- [x] T008 [US1] Update the call site in `executeAgentConfigure` to pass `provider` to `promptModel` in packages/cli/src/commands/agent-configure-run.ts
 
 **Checkpoint**: Model selection works for all providers, custom fallback works, all tests pass
 
@@ -50,11 +50,11 @@
 
 **Purpose**: Ensure everything is clean and passing
 
-- [ ] T009 Run full test suite: `pnpm test`
-- [ ] T010 Run coverage check: `pnpm test:coverage` (must meet ≥ 90% threshold)
-- [ ] T011 Run lint and format: `pnpm lint && pnpm format:check`
-- [ ] T012 Commit changes following Conventional Commits: `feat(cli): replace free-text model input with selectable model list`
-- [ ] T013 Verify app end-to-end: `pnpm tsx packages/cli/src/index.ts agent configure`
+- [x] T009 Run full test suite: `pnpm test`
+- [x] T010 Run coverage check: `pnpm test:coverage` (must meet ≥ 90% threshold)
+- [x] T011 Run lint and format: `pnpm lint && pnpm format:check`
+- [x] T012 Commit changes following Conventional Commits: `feat(cli): replace free-text model input with selectable model list`
+- [x] T013 Verify app end-to-end: `pnpm tsx packages/cli/src/index.ts agent configure`
 
 ---
 
