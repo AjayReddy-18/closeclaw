@@ -100,3 +100,7 @@ export {
   isValidCronExpression,
   nextCronOccurrence,
 } from "./scheduler/cron-utils.js";
+export {
+  createHeartbeatRunner,
+  type HeartbeatRunner,
+} from "./scheduler/heartbeat-runner.js";

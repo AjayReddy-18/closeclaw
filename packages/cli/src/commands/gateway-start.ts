@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
 import type { createPersistentConversationStore } from "@closeclaw/ai-agent";
 import type { createMessageProcessor } from "@closeclaw/ai-agent";
+import type { HeartbeatRunner } from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
@@ -13,6 +14,7 @@ import {
 } from "@closeclaw/shared-types";
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
 import { assembleAgent } from "./agent-assembly.js";
+import { setupHeartbeat } from "./heartbeat-setup.js";
 
 const require = createRequire(import.meta.url);
 
@@ -135,6 +137,10 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
       60 * 60 * 1000,
     );
   }
+  let heartbeat: HeartbeatRunner | undefined;
+  if (processor) {
+    heartbeat = setupHeartbeat(config, processor, adapters);
+  }
   const server = deps.createGatewayServer({
     port: config.gateway.port,
     authToken: config.gateway.authToken,
@@ -147,9 +153,14 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   await connectAll(adapters);
   try {
     await server.start();
+    if (heartbeat) {
+      heartbeat.start();
+      console.log(`Heartbeat active: every ${config.heartbeat?.every}`);
+    }
     console.log("Gateway running. Press Ctrl+C to stop.");
     await (deps.waitForShutdown ?? waitForSigint)();
   } finally {
+    heartbeat?.stop();
     if (pruneInterval !== undefined) clearInterval(pruneInterval);
     await server.stop().catch(() => undefined);
     await disconnectAll(adapters);
