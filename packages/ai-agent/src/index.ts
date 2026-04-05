@@ -1,4 +1,5 @@
 export type {
+  CompressedSummary,
   ConversationRole,
   ConversationMessage,
   Conversation,
@@ -22,6 +23,34 @@ export {
 } from "./message-processor-types.js";
 
 export { createConversationStore } from "./conversation-store.js";
+
+export type {
+  ConversationFileData,
+  ConversationFileMessage,
+  CompressedSummaryData,
+  PreferenceEntry,
+  PreferenceFileData,
+} from "./persistence-types.js";
+
+export {
+  conversationToFile,
+  conversationFromFile,
+} from "./persistence-serializer.js";
+
+export {
+  createConversationPersistence,
+  type ConversationPersistence,
+} from "./conversation-persistence.js";
+
+export {
+  createPreferenceStore,
+  type PreferenceStore,
+} from "./preference-store.js";
+
+export {
+  createPersistentConversationStore,
+  type PersistentConversationStore,
+} from "./persistent-conversation-store.js";
 export { trimHistory, estimateTokens } from "./context-trimmer.js";
 export {
   createMessageProcessor,

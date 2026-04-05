@@ -9,10 +9,12 @@ import {
 import { ConfigReadError } from "../../../packages/cli/src/config/config-reader.js";
 
 const aiMocks = vi.hoisted(() => {
-  const mockStore = { pruneStale: vi.fn() };
+  const mockStore = { pruneStale: vi.fn(), saveToDisk: vi.fn() };
   return {
     mockStore,
-    createConversationStore: vi.fn(() => mockStore),
+    mockPersistence: {},
+    createConversationPersistence: vi.fn(() => ({})),
+    createPersistentConversationStore: vi.fn(() => mockStore),
     createMessageProcessor: vi.fn(() => ({
       processMessage: vi.fn().mockResolvedValue("ok"),
     })),
@@ -20,7 +22,8 @@ const aiMocks = vi.hoisted(() => {
 });
 
 vi.mock("@closeclaw/ai-agent", () => ({
-  createConversationStore: aiMocks.createConversationStore,
+  createConversationPersistence: aiMocks.createConversationPersistence,
+  createPersistentConversationStore: aiMocks.createPersistentConversationStore,
   createMessageProcessor: aiMocks.createMessageProcessor,
 }));
 
@@ -305,7 +308,8 @@ describe("runGatewayStart AI agent assembly", () => {
   };
 
   beforeEach(() => {
-    aiMocks.createConversationStore.mockClear();
+    aiMocks.createConversationPersistence.mockClear();
+    aiMocks.createPersistentConversationStore.mockClear();
     aiMocks.createMessageProcessor.mockClear();
   });
 
@@ -325,11 +329,15 @@ describe("runGatewayStart AI agent assembly", () => {
       }),
       waitForShutdown: async () => undefined,
     });
-    expect(aiMocks.createConversationStore).toHaveBeenCalled();
-    expect(aiMocks.createMessageProcessor).toHaveBeenCalledWith({
-      agentConfig: validAgent,
-      conversationStore: aiMocks.mockStore,
-    });
+    expect(aiMocks.createConversationPersistence).toHaveBeenCalled();
+    expect(aiMocks.createPersistentConversationStore).toHaveBeenCalled();
+    expect(aiMocks.createMessageProcessor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agentConfig: validAgent,
+        conversationStore: aiMocks.mockStore,
+        onAfterResponse: expect.any(Function),
+      }),
+    );
     expect(gwCfg).toMatchObject({
       messageProcessor: expect.objectContaining({
         processMessage: expect.any(Function),
@@ -355,7 +363,7 @@ describe("runGatewayStart AI agent assembly", () => {
       }),
       waitForShutdown: async () => undefined,
     });
-    expect(aiMocks.createConversationStore).not.toHaveBeenCalled();
+    expect(aiMocks.createConversationPersistence).not.toHaveBeenCalled();
     expect(aiMocks.createMessageProcessor).not.toHaveBeenCalled();
     expect(gwCfg).toMatchObject({
       messageProcessor: undefined,

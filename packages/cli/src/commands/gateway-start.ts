@@ -3,8 +3,9 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
 import {
-  createConversationStore,
   createMessageProcessor,
+  createPersistentConversationStore,
+  createConversationPersistence,
 } from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
@@ -122,13 +123,17 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   if (!config) return;
   const adapters = buildAdapters(config, deps.createAdapter);
   let pruneInterval: ReturnType<typeof setInterval> | undefined;
-  let conversationStore: ReturnType<typeof createConversationStore> | undefined;
+  let conversationStore: ReturnType<typeof createPersistentConversationStore> | undefined;
   let messageProcessor: ReturnType<typeof createMessageProcessor> | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    conversationStore = createConversationStore();
+    const convDir = join(homedir(), ".closeclaw", "conversations");
+    const persistence = createConversationPersistence(convDir);
+    const pStore = createPersistentConversationStore(persistence);
+    conversationStore = pStore;
     messageProcessor = createMessageProcessor({
       agentConfig: config.agent,
-      conversationStore,
+      conversationStore: pStore,
+      onAfterResponse: (p, s) => pStore.saveToDisk(p, s),
     });
     console.log(
       `AI agent active: ${config.agent.provider}/${config.agent.model}`,

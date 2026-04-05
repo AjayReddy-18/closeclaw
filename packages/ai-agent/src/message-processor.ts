@@ -25,6 +25,7 @@ export interface CreateMessageProcessorDeps {
   agentConfig: AgentConfig;
   conversationStore: ConversationStore;
   generate?: typeof generateText;
+  onAfterResponse?: (platform: BotPlatform, senderId: string) => void;
 }
 
 export function createMessageProcessor(
@@ -34,20 +35,23 @@ export function createMessageProcessor(
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
   const toolOpts = toolOptionsForGenerate(agentConfig);
-  return {
-    processMessage: (platform, senderId, text, senderDisplayName) =>
-      handleIncomingText(
-        agentConfig,
-        conversationStore,
-        gen,
-        model,
-        toolOpts,
-        platform,
-        senderId,
-        text,
-        senderDisplayName,
-      ),
-  };
+  const afterHook = deps.onAfterResponse;
+
+  async function process(
+    platform: BotPlatform,
+    senderId: string,
+    text: string,
+    senderDisplayName?: string,
+  ): Promise<string> {
+    const result = await handleIncomingText(
+      agentConfig, conversationStore, gen, model, toolOpts,
+      platform, senderId, text, senderDisplayName,
+    );
+    if (afterHook) afterHook(platform, senderId);
+    return result;
+  }
+
+  return { processMessage: process };
 }
 
 function rejectionForOversizedInput(
