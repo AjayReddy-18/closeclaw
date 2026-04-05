@@ -76,6 +76,10 @@ export {
   createForgetPreferenceTool,
 } from "./tools/preference-tools.js";
 export { buildToolMap } from "./tool-executor.js";
+export {
+  createScheduleTaskTool,
+  type ScheduleTaskToolDeps,
+} from "./tools/schedule-task-tool.js";
 export { formatPreferencesForContext } from "./preference-injection.js";
 
 export type { ProviderDisplayInfo } from "./provider-info.js";
