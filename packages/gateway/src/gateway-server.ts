@@ -23,9 +23,15 @@ const PROCESSING_ACK_DELAY_MS = 5000;
 
 const senderQueues = new Map<string, Promise<void>>();
 
+function safeTask(task: () => Promise<void>): () => Promise<void> {
+  return () =>
+    task().catch((err) => console.error("[gateway] Queued task failed:", err));
+}
+
 function enqueueForSender(key: string, task: () => Promise<void>): void {
   const prev = senderQueues.get(key) ?? Promise.resolve();
-  const next = prev.then(task, task);
+  const safe = safeTask(task);
+  const next = prev.then(safe, safe);
   senderQueues.set(key, next);
 }
 
