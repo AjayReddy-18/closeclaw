@@ -11,7 +11,7 @@
 
 - Q: What is the scope of "routing to other processes"? → A: The AI model can call tools/functions that execute predefined actions (shell commands, HTTP calls, file operations) and decide whether to send the result to the user, chain into another tool call, or end the conversation turn.
 - Q: Should conversation context be preserved across messages? → A: Yes, each sender has an ongoing conversation with history, up to a configurable context window. History resets when the context limit is reached or the user explicitly clears it.
-- Q: How are AI providers configured? → A: Via `closeclaw agent configure` CLI command that prompts for provider, model, and API key. Configuration is stored in `~/.closeclaw/closeclaw.json` alongside existing bot settings.
+- Q: How are AI providers configured? → A: Via `closeclaw agent configure` CLI command that prompts for provider, model, and API key. Configuration is stored in `~/.closeclaw/config.json` alongside existing bot settings.
 - Q: How should the model name be selected during configuration? → A: After choosing a provider, show a selectable list of popular models for that provider plus a "Custom (enter manually)" option at the end for free-text entry. This prevents typos while supporting unlisted/fine-tuned models.
 
 ## User Scenarios & Testing _(mandatory)_
@@ -22,7 +22,7 @@ After completing bot onboarding (feature 001), the user runs `closeclaw agent co
 
 **Why this priority**: Without a configured AI provider, no message processing is possible. This is the prerequisite for all other stories in this feature — it connects CloseClaw to the "brain" that processes messages.
 
-**Independent Test**: Run `closeclaw agent configure`, select a provider (e.g., Ollama for local testing without API keys), choose a model, and verify the configuration is saved to `~/.closeclaw/closeclaw.json` with the agent section populated. Run the gateway and confirm it logs that an AI agent is active.
+**Independent Test**: Run `closeclaw agent configure`, select a provider (e.g., Ollama for local testing without API keys), choose a model, and verify the configuration is saved to `~/.closeclaw/config.json` with the agent section populated. Run the gateway and confirm it logs that an AI agent is active.
 
 **Acceptance Scenarios**:
 
@@ -31,7 +31,7 @@ After completing bot onboarding (feature 001), the user runs `closeclaw agent co
 3. **Given** the user selects Ollama (local provider), **When** prompted for configuration, **Then** the system asks for the Ollama server URL (defaulting to `http://localhost:11434`) and presents a selectable list of popular Ollama models with a "Custom (enter manually)" option, without requiring an API key
 4. **Given** the user selects "Custom (OpenAI-compatible)" provider, **When** prompted, **Then** the system collects a base URL, optional API key, and prompts for a model name via free-text input (no predefined list) — enabling any provider that exposes an OpenAI-compatible chat completions endpoint
 5. **Given** the provider details are entered, **When** the system validates the configuration, **Then** it makes a lightweight test request (a simple prompt) to confirm the provider is reachable and the credentials are valid, displaying a clear pass/fail result
-6. **Given** validation succeeds, **When** the configuration is saved, **Then** the agent configuration is written to `~/.closeclaw/closeclaw.json` under a new `agent` section without overwriting existing bot or gateway settings
+6. **Given** validation succeeds, **When** the configuration is saved, **Then** the agent configuration is written to `~/.closeclaw/config.json` under a new `agent` section without overwriting existing bot or gateway settings
 7. **Given** validation fails (unreachable server, invalid API key, unknown model), **When** the failure is displayed, **Then** the system offers to re-enter credentials or exit without saving
 8. **Given** an agent is already configured, **When** the user runs `closeclaw agent configure` again, **Then** the system shows the current configuration and offers to reconfigure or keep the existing setup
 
@@ -127,7 +127,7 @@ Users can manage their conversation history with the bot. A sender can clear the
 - **FR-001**: The system MUST provide a `closeclaw agent configure` command to set up the AI model provider, model selection (via a list of popular models per provider with a "Custom" free-text option), and credentials
 - **FR-002**: The system MUST support the following AI providers: OpenAI, Anthropic Claude, Google Gemini, Ollama (local), Kimi (Moonshot AI), and any OpenAI-compatible endpoint via a custom base URL
 - **FR-003**: The system MUST validate the AI provider configuration by making a lightweight test request before saving
-- **FR-004**: The AI agent configuration MUST be persisted in `~/.closeclaw/closeclaw.json` under a dedicated `agent` section without overwriting existing bot or gateway settings
+- **FR-004**: The AI agent configuration MUST be persisted in `~/.closeclaw/config.json` under a dedicated `agent` section without overwriting existing bot or gateway settings
 - **FR-005**: The system MUST provide a `closeclaw agent system-prompt` command to set, view, and update the AI's system prompt
 - **FR-006**: When the gateway is running with an AI agent configured, approved messages MUST be forwarded to the configured AI model for processing
 - **FR-007**: The AI model's text response MUST be sent back to the sender via the bot's DM channel
