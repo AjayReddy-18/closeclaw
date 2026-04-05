@@ -91,6 +91,25 @@ describe("DiscordAdapter", () => {
     );
   });
 
+  describe("sendTypingIndicator", () => {
+    it("calls sendTyping on the DM channel", async () => {
+      const { DiscordAdapter } =
+        await import("../../../packages/bot-adapters/src/discord-adapter.js");
+      const adapter = new DiscordAdapter({ token: "t" });
+      const sendTyping = vi.fn().mockResolvedValue(undefined);
+      const dmChannel = { sendTyping };
+      const c = discordClientInstances().at(-1)!;
+      c.users.fetch.mockResolvedValue({
+        send: vi.fn().mockResolvedValue(undefined),
+        dmChannel,
+        createDM: vi.fn(),
+      });
+      await adapter.sendTypingIndicator("user-9");
+      expect(c.users.fetch).toHaveBeenCalledWith("user-9");
+      expect(sendTyping).toHaveBeenCalled();
+    });
+  });
+
   it("sendMessage fetches user and sends DM text", async () => {
     const { DiscordAdapter } =
       await import("../../../packages/bot-adapters/src/discord-adapter.js");
@@ -101,5 +120,126 @@ describe("DiscordAdapter", () => {
     await adapter.sendMessage("snowflake-9", "reply text");
     expect(c.users.fetch).toHaveBeenCalledWith("snowflake-9");
     expect(send).toHaveBeenCalledWith("reply text");
+  });
+
+  it("ignores messages from bots", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const handler = vi.fn();
+    adapter.onMessage(handler);
+    const c = discordClientInstances().at(-1)!;
+    const msgCall = c.on.mock.calls.find(
+      (call) => call[0] === Events.MessageCreate,
+    );
+    const route = msgCall![1] as (m: {
+      author: {
+        bot: boolean;
+        id: string;
+        displayName: string;
+        username: string;
+      };
+      content: string;
+      createdAt: Date;
+      guild: null;
+    }) => void;
+    route({
+      author: { bot: true, id: "bot-1", displayName: "Bot", username: "bot" },
+      content: "auto-msg",
+      createdAt: new Date(),
+      guild: null,
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("ignores guild messages (non-DM)", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const handler = vi.fn();
+    adapter.onMessage(handler);
+    const c = discordClientInstances().at(-1)!;
+    const msgCall = c.on.mock.calls.find(
+      (call) => call[0] === Events.MessageCreate,
+    );
+    const route = msgCall![1] as (m: {
+      author: {
+        bot: boolean;
+        id: string;
+        displayName: string;
+        username: string;
+      };
+      content: string;
+      createdAt: Date;
+      guild: object | null;
+    }) => void;
+    route({
+      author: { bot: false, id: "user-1", displayName: "Sam", username: "sam" },
+      content: "hi",
+      createdAt: new Date(),
+      guild: { id: "g-1" },
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("does not deliver DM when no handler is registered", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    new DiscordAdapter({ token: "t" });
+    const c = discordClientInstances().at(-1)!;
+    const msgCall = c.on.mock.calls.find(
+      (call) => call[0] === Events.MessageCreate,
+    );
+    const route = msgCall![1] as (m: {
+      author: {
+        bot: boolean;
+        id: string;
+        displayName: string;
+        username: string;
+      };
+      content: string;
+      createdAt: Date;
+      guild: null;
+    }) => void;
+    expect(() =>
+      route({
+        author: { bot: false, id: "u", displayName: "X", username: "x" },
+        content: "test",
+        createdAt: new Date(),
+        guild: null,
+      }),
+    ).not.toThrow();
+  });
+
+  it("skips login when client is already ready on healthCheck", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const c = discordClientInstances().at(-1)!;
+    c.isReady.mockReturnValue(true);
+    const result = await adapter.healthCheck();
+    expect(result.connected).toBe(true);
+    expect(c.login).not.toHaveBeenCalled();
+  });
+
+  it("skips login on connect when client is already ready", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const c = discordClientInstances().at(-1)!;
+    c.isReady.mockReturnValue(true);
+    await adapter.connect();
+    expect(c.login).not.toHaveBeenCalled();
+  });
+
+  it("safeDestroy does not throw when destroy throws", async () => {
+    const { DiscordAdapter } =
+      await import("../../../packages/bot-adapters/src/discord-adapter.js");
+    const adapter = new DiscordAdapter({ token: "t" });
+    const c = discordClientInstances().at(-1)!;
+    c.destroy.mockImplementation(() => {
+      throw new Error("destroy failed");
+    });
+    await expect(adapter.disconnect()).resolves.toBeUndefined();
   });
 });

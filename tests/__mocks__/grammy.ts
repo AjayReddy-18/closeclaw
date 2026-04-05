@@ -7,6 +7,7 @@ export type GrammyBotInstance = {
   api: {
     getMe: ReturnType<typeof vi.fn>;
     sendMessage: ReturnType<typeof vi.fn>;
+    sendChatAction: ReturnType<typeof vi.fn>;
   };
   start: ReturnType<typeof vi.fn>;
   stop: ReturnType<typeof vi.fn>;
@@ -28,7 +29,11 @@ export class Bot {
   readonly on: GrammyBotInstance["on"];
 
   constructor(public token: string) {
-    this.api = { getMe: vi.fn(), sendMessage: vi.fn() };
+    this.api = {
+      getMe: vi.fn(),
+      sendMessage: vi.fn(),
+      sendChatAction: vi.fn(),
+    };
     this.start = vi.fn();
     this.stop = vi.fn();
     this.on = vi.fn();

@@ -23,4 +23,5 @@ export interface BotAdapter {
   healthCheck(): Promise<BotHealthResult>;
   onMessage(handler: MessageHandler): void;
   sendMessage(senderId: string, text: string): Promise<void>;
+  sendTypingIndicator(senderId: string): Promise<void>;
 }

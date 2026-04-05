@@ -116,4 +116,10 @@ export class DiscordAdapter implements BotAdapter {
     const user = await this.client.users.fetch(senderId);
     await user.send(text);
   }
+
+  async sendTypingIndicator(senderId: string): Promise<void> {
+    const user = await this.client.users.fetch(senderId);
+    const channel = user.dmChannel ?? (await user.createDM());
+    await channel.sendTyping();
+  }
 }

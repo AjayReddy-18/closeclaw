@@ -84,4 +84,8 @@ export class TelegramAdapter implements BotAdapter {
   async sendMessage(senderId: string, text: string): Promise<void> {
     await this.bot.api.sendMessage(Number(senderId), text);
   }
+
+  async sendTypingIndicator(senderId: string): Promise<void> {
+    await this.bot.api.sendChatAction(Number(senderId), "typing");
+  }
 }
