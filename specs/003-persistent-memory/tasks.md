@@ -17,10 +17,10 @@
 
 **Purpose**: Shared type updates and infrastructure that all stories depend on
 
-- [ ] T001 Add `compressionThreshold` (default: 50) and `keepRecentCount` (default: 20) fields to AgentConfig in packages/shared-types/src/agent-config.ts and update `isValidAgentConfig` validator
-- [ ] T002 Add `compressedSummary` optional field to `Conversation` interface in packages/ai-agent/src/conversation-types.ts (fields: text, messagesCompressed, compressedAt)
-- [ ] T003 [P] Add `ConversationFileData`, `PreferenceEntry`, and `PreferenceFileData` type definitions in packages/ai-agent/src/persistence-types.ts
-- [ ] T004 [P] Add serialization helpers (Conversation ↔ ConversationFileData, Date ↔ ISO string) in packages/ai-agent/src/persistence-serializer.ts
+- [x] T001 Add `compressionThreshold` (default: 50) and `keepRecentCount` (default: 20) fields to AgentConfig in packages/shared-types/src/agent-config.ts and update `isValidAgentConfig` validator
+- [x] T002 Add `compressedSummary` optional field to `Conversation` interface in packages/ai-agent/src/conversation-types.ts (fields: text, messagesCompressed, compressedAt)
+- [x] T003 [P] Add `ConversationFileData`, `PreferenceEntry`, and `PreferenceFileData` type definitions in packages/ai-agent/src/persistence-types.ts
+- [x] T004 [P] Add serialization helpers (Conversation ↔ ConversationFileData, Date ↔ ISO string) in packages/ai-agent/src/persistence-serializer.ts
 
 **Checkpoint**: Types are defined, existing tests still pass
 
@@ -32,11 +32,11 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Write unit tests for conversation file read/write/remove (atomic writes, corrupted file handling, missing file returns null) in tests/unit/ai-agent/conversation-persistence.test.ts
-- [ ] T006 Implement `createConversationPersistence` factory (load, save with atomic tmp+rename, remove) in packages/ai-agent/src/conversation-persistence.ts
-- [ ] T007 [P] Write unit tests for preference file read/write/upsert/remove (upsert deduplicates by key, removePreference returns boolean) in tests/unit/ai-agent/preference-store.test.ts
-- [ ] T008 [P] Implement `createPreferenceStore` factory (load, save, upsertPreference, removePreference) in packages/ai-agent/src/preference-store.ts
-- [ ] T009 Update existing tests for AgentConfig in tests/unit/shared-types/agent-config.test.ts to cover new `compressionThreshold` and `keepRecentCount` fields
+- [x] T005 Write unit tests for conversation file read/write/remove (atomic writes, corrupted file handling, missing file returns null) in tests/unit/ai-agent/conversation-persistence.test.ts
+- [x] T006 Implement `createConversationPersistence` factory (load, save with atomic tmp+rename, remove) in packages/ai-agent/src/conversation-persistence.ts
+- [x] T007 [P] Write unit tests for preference file read/write/upsert/remove (upsert deduplicates by key, removePreference returns boolean) in tests/unit/ai-agent/preference-store.test.ts
+- [x] T008 [P] Implement `createPreferenceStore` factory (load, save, upsertPreference, removePreference) in packages/ai-agent/src/preference-store.ts
+- [x] T009 Update existing tests for AgentConfig in tests/unit/shared-types/agent-config.test.ts to cover new `compressionThreshold` and `keepRecentCount` fields
 
 **Checkpoint**: Persistence I/O is tested and working; can read/write JSON files atomically
 
@@ -50,16 +50,16 @@
 
 ### Tests for US1
 
-- [ ] T010 [US1] Write unit tests for persistent conversation store wrapper (getOrCreate loads from disk on first call, save writes after each exchange, clear removes file, pruneStale removes disk files) in tests/unit/ai-agent/persistent-conversation-store.test.ts
-- [ ] T011 [US1] Write integration test for save → restart → load cycle (create store, add messages, create new store from same path, verify messages restored) in tests/integration/ai-agent/persistence-flow.test.ts
+- [x] T010 [US1] Write unit tests for persistent conversation store wrapper (getOrCreate loads from disk on first call, save writes after each exchange, clear removes file, pruneStale removes disk files) in tests/unit/ai-agent/persistent-conversation-store.test.ts
+- [x] T011 [US1] Write integration test for save → restart → load cycle (create store, add messages, create new store from same path, verify messages restored) in tests/integration/ai-agent/persistence-flow.test.ts
 
 ### Implementation for US1
 
-- [ ] T012 [US1] Implement `createPersistentConversationStore` wrapper in packages/ai-agent/src/persistent-conversation-store.ts — wraps in-memory store, lazy-loads from disk on getOrCreate, saves after mutations, delegates clear to remove file + in-memory clear, delegates pruneStale to also delete disk files
-- [ ] T013 [US1] Update `createMessageProcessor` in packages/ai-agent/src/message-processor.ts — after invokeModel returns, call a `postProcessHook` callback (injected via deps) that the gateway uses to trigger disk save
-- [ ] T014 [US1] Update `gateway-start.ts` in packages/cli/src/commands/gateway-start.ts — replace `createConversationStore()` with `createPersistentConversationStore()`, passing `~/.closeclaw/conversations/` as the base directory
-- [ ] T015 [US1] Export new modules from packages/ai-agent/src/index.ts (persistence types, persistent store, serializer)
-- [ ] T016 [US1] Handle "/clear" disk cleanup — when `clear()` is called on persistent store, delete the conversation file from disk but NOT the preference file
+- [x] T012 [US1] Implement `createPersistentConversationStore` wrapper in packages/ai-agent/src/persistent-conversation-store.ts — wraps in-memory store, lazy-loads from disk on getOrCreate, saves after mutations, delegates clear to remove file + in-memory clear, delegates pruneStale to also delete disk files
+- [x] T013 [US1] Update `createMessageProcessor` in packages/ai-agent/src/message-processor.ts — after invokeModel returns, call a `postProcessHook` callback (injected via deps) that the gateway uses to trigger disk save
+- [x] T014 [US1] Update `gateway-start.ts` in packages/cli/src/commands/gateway-start.ts — replace `createConversationStore()` with `createPersistentConversationStore()`, passing `~/.closeclaw/conversations/` as the base directory
+- [x] T015 [US1] Export new modules from packages/ai-agent/src/index.ts (persistence types, persistent store, serializer)
+- [x] T016 [US1] Handle "/clear" disk cleanup — when `clear()` is called on persistent store, delete the conversation file from disk but NOT the preference file
 
 **Checkpoint**: Conversations survive gateway restarts. MVP is functional.
 
@@ -73,13 +73,13 @@
 
 ### Tests for US2
 
-- [ ] T017 [US2] Write unit tests for conversation compressor (shouldCompress returns true when count > threshold, compress generates summary via AI, rolling summary merges with existing summary) in tests/unit/ai-agent/conversation-compressor.test.ts
+- [x] T017 [US2] Write unit tests for conversation compressor (shouldCompress returns true when count > threshold, compress generates summary via AI, rolling summary merges with existing summary) in tests/unit/ai-agent/conversation-compressor.test.ts
 
 ### Implementation for US2
 
-- [ ] T018 [US2] Implement `createConversationCompressor` in packages/ai-agent/src/conversation-compressor.ts — `shouldCompress(count)` checks against threshold, `compress(messages, existingSummary?)` calls generateText with a summarization prompt, returns summary string
-- [ ] T019 [US2] Wire compression into persistent store in packages/ai-agent/src/persistent-conversation-store.ts — after save, check shouldCompress; if true, schedule compression via `queueMicrotask` (non-blocking), replace older messages with summary and save again
-- [ ] T020 [US2] Update `sdkMessagesForGenerate` in packages/ai-agent/src/message-processor.ts — if conversation has a compressedSummary, prepend it as a system message before the recent messages so the AI has context from compressed history
+- [x] T018 [US2] Implement `createConversationCompressor` in packages/ai-agent/src/conversation-compressor.ts — `shouldCompress(count)` checks against threshold, `compress(messages, existingSummary?)` calls generateText with a summarization prompt, returns summary string
+- [x] T019 [US2] Wire compression into persistent store in packages/ai-agent/src/persistent-conversation-store.ts — after save, check shouldCompress; if true, schedule compression via `queueMicrotask` (non-blocking), replace older messages with summary and save again
+- [x] T020 [US2] Update `sdkMessagesForGenerate` in packages/ai-agent/src/message-processor.ts — if conversation has a compressedSummary, prepend it as a system message before the recent messages so the AI has context from compressed history
 
 **Checkpoint**: Compression works end-to-end. Long conversations stay bounded.
 
@@ -93,16 +93,16 @@
 
 ### Tests for US3
 
-- [ ] T021 [US3] Write unit tests for save_preference and forget_preference tools (tool definitions, execute writes/removes preferences) in tests/unit/ai-agent/preference-tools.test.ts
-- [ ] T022 [P] [US3] Write unit tests for preference injection into AI context (preferences formatted and appended to system prompt) in tests/unit/ai-agent/preference-injection.test.ts
+- [x] T021 [US3] Write unit tests for save_preference and forget_preference tools (tool definitions, execute writes/removes preferences) in tests/unit/ai-agent/preference-tools.test.ts
+- [x] T022 [P] [US3] Write unit tests for preference injection into AI context (preferences formatted and appended to system prompt) in tests/unit/ai-agent/preference-injection.test.ts
 
 ### Implementation for US3
 
-- [ ] T023 [US3] Implement `createSavePreferenceTool` and `createForgetPreferenceTool` AI tools in packages/ai-agent/src/tools/preference-tools.ts — save_preference takes key/value and calls preferenceStore.upsertPreference; forget_preference takes key and calls preferenceStore.removePreference
-- [ ] T024 [US3] Implement `formatPreferencesForContext` helper in packages/ai-agent/src/preference-injection.ts — loads preferences from PreferenceStore, formats as a string block (e.g., "User preferences:\n- name: Ajay\n- timezone: IST"), returns empty string if no preferences
-- [ ] T025 [US3] Wire preference tools into `buildToolMap` in packages/ai-agent/src/tool-executor.ts — when tool calling is enabled, always include save_preference and forget_preference tools alongside existing tools
-- [ ] T026 [US3] Wire preference context into `sdkMessagesForGenerate` in packages/ai-agent/src/message-processor.ts — inject preference text into the system prompt so AI has access to stored preferences
-- [ ] T027 [US3] Pass PreferenceStore to `createMessageProcessor` deps in packages/ai-agent/src/message-processor.ts and through gateway-start.ts
+- [x] T023 [US3] Implement `createSavePreferenceTool` and `createForgetPreferenceTool` AI tools in packages/ai-agent/src/tools/preference-tools.ts — save_preference takes key/value and calls preferenceStore.upsertPreference; forget_preference takes key and calls preferenceStore.removePreference
+- [x] T024 [US3] Implement `formatPreferencesForContext` helper in packages/ai-agent/src/preference-injection.ts — loads preferences from PreferenceStore, formats as a string block (e.g., "User preferences:\n- name: Ajay\n- timezone: IST"), returns empty string if no preferences
+- [x] T025 [US3] Wire preference tools into `buildToolMap` in packages/ai-agent/src/tool-executor.ts — when tool calling is enabled, always include save_preference and forget_preference tools alongside existing tools
+- [x] T026 [US3] Wire preference context into `sdkMessagesForGenerate` in packages/ai-agent/src/message-processor.ts — inject preference text into the system prompt so AI has access to stored preferences
+- [x] T027 [US3] Pass PreferenceStore to `createMessageProcessor` deps in packages/ai-agent/src/message-processor.ts and through gateway-start.ts
 
 **Checkpoint**: Preferences are extracted, stored, and used. Bot personalizes responses.
 
@@ -116,12 +116,12 @@
 
 ### Tests for US4
 
-- [ ] T028 [US4] Write unit tests for memory flush (AI extracts preferences from messages, preferences written to store, errors don't block compression) in tests/unit/ai-agent/memory-flush.test.ts
+- [x] T028 [US4] Write unit tests for memory flush (AI extracts preferences from messages, preferences written to store, errors don't block compression) in tests/unit/ai-agent/memory-flush.test.ts
 
 ### Implementation for US4
 
-- [ ] T029 [US4] Implement `createMemoryFlusher` in packages/ai-agent/src/memory-flush.ts — sends about-to-be-compressed messages to AI with extraction prompt, parses response into PreferenceEntry array, writes each to PreferenceStore
-- [ ] T030 [US4] Wire memory flush into compression flow in packages/ai-agent/src/persistent-conversation-store.ts — before calling compressor.compress, call flusher.extractPreferences (wrapped in try/catch so errors are best-effort)
+- [x] T029 [US4] Implement `createMemoryFlusher` in packages/ai-agent/src/memory-flush.ts — sends about-to-be-compressed messages to AI with extraction prompt, parses response into PreferenceEntry array, writes each to PreferenceStore
+- [x] T030 [US4] Wire memory flush into compression flow in packages/ai-agent/src/persistent-conversation-store.ts — before calling compressor.compress, call flusher.extractPreferences (wrapped in try/catch so errors are best-effort)
 
 **Checkpoint**: Memory flush prevents data loss during compression.
 
@@ -131,12 +131,12 @@
 
 **Purpose**: Documentation, cleanup, validation
 
-- [ ] T031 Update docs/ai-agent.md with sections on persistence (file locations, lazy loading), compression (threshold, summary), preferences (automatic extraction, /clear behavior, forget), and memory flush
-- [ ] T032 Run full test suite: `pnpm test`
-- [ ] T033 Run coverage check: `pnpm test:coverage` (must meet ≥90% threshold)
-- [ ] T034 Run lint and format: `pnpm lint && pnpm format:check`
-- [ ] T035 Build all packages: `pnpm build`
-- [ ] T036 Commit all changes following Conventional Commits (atomic commits per phase)
+- [x] T031 Update docs/ai-agent.md with sections on persistence (file locations, lazy loading), compression (threshold, summary), preferences (automatic extraction, /clear behavior, forget), and memory flush
+- [x] T032 Run full test suite: `pnpm test`
+- [x] T033 Run coverage check: `pnpm test:coverage` (must meet ≥90% threshold)
+- [x] T034 Run lint and format: `pnpm lint && pnpm format:check`
+- [x] T035 Build all packages: `pnpm build`
+- [x] T036 Commit all changes following Conventional Commits (atomic commits per phase)
 - [ ] T037 Verify app end-to-end per quickstart.md
 
 ---

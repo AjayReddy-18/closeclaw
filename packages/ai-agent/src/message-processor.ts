@@ -128,7 +128,16 @@ async function handleIncomingText(
   const prefCtx = prefStore
     ? formatPreferencesForContext(prefStore, platform, senderId)
     : "";
-  return await invokeModel(c, gen, model, agentConfig, toolOpts, prefCtx);
+  const identity = buildSenderIdentity(platform, senderId, senderDisplayName);
+  return await invokeModel(
+    c,
+    gen,
+    model,
+    agentConfig,
+    toolOpts,
+    prefCtx,
+    identity,
+  );
 }
 
 function appendUserMessage(
@@ -142,6 +151,15 @@ function appendUserMessage(
   });
 }
 
+export function buildSenderIdentity(
+  platform: BotPlatform,
+  senderId: string,
+  senderDisplayName?: string,
+): string {
+  const name = senderDisplayName ?? senderId;
+  return `\nCurrent user: ${name} (platform: ${platform}, id: ${senderId})`;
+}
+
 function sdkMessagesForGenerate(
   conversation: {
     messages: ConversationMessage[];
@@ -149,8 +167,10 @@ function sdkMessagesForGenerate(
   },
   config: AgentConfig,
   preferenceContext?: string,
+  senderIdentity?: string,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemParts = [config.systemPrompt];
+  if (senderIdentity) systemParts.push(senderIdentity);
   if (preferenceContext) systemParts.push(`\n${preferenceContext}`);
   if (conversation.compressedSummary?.text) {
     systemParts.push(
@@ -200,11 +220,13 @@ async function invokeModel(
   config: AgentConfig,
   toolOpts: ReturnType<typeof toolOptionsForGenerate>,
   preferenceContext?: string,
+  senderIdentity?: string,
 ): Promise<string> {
   const messages = sdkMessagesForGenerate(
     conversation,
     config,
     preferenceContext,
+    senderIdentity,
   );
   const args = {
     model,

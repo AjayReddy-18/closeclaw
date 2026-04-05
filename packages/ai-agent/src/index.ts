@@ -62,6 +62,7 @@ export { createMemoryFlusher, type MemoryFlusher } from "./memory-flush.js";
 export { trimHistory, estimateTokens } from "./context-trimmer.js";
 export {
   createMessageProcessor,
+  buildSenderIdentity,
   type CreateMessageProcessorDeps,
 } from "./message-processor.js";
 export { createModelProvider } from "./provider-factory.js";

@@ -8,7 +8,10 @@ import {
   type AgentConfig,
 } from "@closeclaw/shared-types";
 import { createConversationStore } from "../../../packages/ai-agent/src/conversation-store.js";
-import { createMessageProcessor } from "../../../packages/ai-agent/src/message-processor.js";
+import {
+  createMessageProcessor,
+  buildSenderIdentity,
+} from "../../../packages/ai-agent/src/message-processor.js";
 import {
   AI_ERROR_MESSAGE,
   CLEAR_COMMAND,
@@ -247,5 +250,47 @@ describe("createMessageProcessor", () => {
       "Your message is too long. Please keep it under 200 characters.",
     );
     expect(mockGen).not.toHaveBeenCalled();
+  });
+
+  it("injects sender display name into system prompt", async () => {
+    const p = createMessageProcessor({
+      agentConfig: baseConfig(),
+      conversationStore: store,
+    });
+    await p.processMessage(BotPlatform.TELEGRAM, "42", "hi", "Ajay");
+    const call = mockGen.mock.calls[0][0];
+    const msgs = call.messages as { role: string; content: string }[];
+    const system = msgs.find((m) => m.role === "system")!;
+    expect(system.content).toContain("Current user: Ajay");
+    expect(system.content).toContain("platform: telegram");
+    expect(system.content).toContain("id: 42");
+  });
+
+  it("falls back to senderId when senderDisplayName is absent", async () => {
+    const p = createMessageProcessor({
+      agentConfig: baseConfig(),
+      conversationStore: store,
+    });
+    await p.processMessage(BotPlatform.DISCORD, "99", "hey");
+    const call = mockGen.mock.calls[0][0];
+    const msgs = call.messages as { role: string; content: string }[];
+    const system = msgs.find((m) => m.role === "system")!;
+    expect(system.content).toContain("Current user: 99");
+    expect(system.content).toContain("platform: discord");
+  });
+});
+
+describe("buildSenderIdentity", () => {
+  it("uses display name when provided", () => {
+    const result = buildSenderIdentity(BotPlatform.TELEGRAM, "123", "Ajay");
+    expect(result).toContain("Current user: Ajay");
+    expect(result).toContain("platform: telegram");
+    expect(result).toContain("id: 123");
+  });
+
+  it("falls back to senderId when no display name", () => {
+    const result = buildSenderIdentity(BotPlatform.DISCORD, "456");
+    expect(result).toContain("Current user: 456");
+    expect(result).toContain("platform: discord");
   });
 });
