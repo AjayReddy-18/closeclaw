@@ -26,11 +26,11 @@ closeclaw onboard
 
 **DM Policies:**
 
-| Policy | Description |
-|--------|-------------|
-| pairing | Default. Unapproved senders receive a pairing code to approve via CLI |
-| allowlist | Only pre-approved sender IDs can message the bot |
-| open | Anyone can message (shows security warning) |
+| Policy    | Description                                                           |
+| --------- | --------------------------------------------------------------------- |
+| pairing   | Default. Unapproved senders receive a pairing code to approve via CLI |
+| allowlist | Only pre-approved sender IDs can message the bot                      |
+| open      | Anyone can message (shows security warning)                           |
 
 ## gateway start
 
@@ -53,12 +53,12 @@ closeclaw gateway start
 
 **Endpoints:**
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /health | Gateway and adapter health status |
-| GET | /pairing/pending | List pending pairing requests |
-| POST | /pairing/approve | Approve a pairing code |
-| GET | /agent/conversations | List active AI conversations |
+| Method | Path                 | Description                       |
+| ------ | -------------------- | --------------------------------- |
+| GET    | /health              | Gateway and adapter health status |
+| GET    | /pairing/pending     | List pending pairing requests     |
+| POST   | /pairing/approve     | Approve a pairing code            |
+| GET    | /agent/conversations | List active AI conversations      |
 
 ## pairing list
 
@@ -97,14 +97,14 @@ closeclaw agent configure
 
 **Supported Providers:**
 
-| Provider | Models | Auth |
-|----------|--------|------|
-| OpenAI | gpt-5.4, gpt-5.4-pro, gpt-5.4-mini, etc. | API key |
-| Anthropic | claude-opus-4-6, claude-sonnet-4-6, etc. | API key |
-| Google | gemini-3.1-pro-preview, gemini-2.5-pro, etc. | API key |
-| Ollama | llama4, llama3.3, deepseek-r1, etc. | None (local) |
-| Kimi | kimi-k2.5, kimi-k2-thinking, kimi-code, etc. | API key |
-| Custom | Any OpenAI-compatible model | Optional |
+| Provider  | Models                                       | Auth         |
+| --------- | -------------------------------------------- | ------------ |
+| OpenAI    | gpt-5.4, gpt-5.4-pro, gpt-5.4-mini, etc.     | API key      |
+| Anthropic | claude-opus-4-6, claude-sonnet-4-6, etc.     | API key      |
+| Google    | gemini-3.1-pro-preview, gemini-2.5-pro, etc. | API key      |
+| Ollama    | llama4, llama3.3, deepseek-r1, etc.          | None (local) |
+| Kimi      | kimi-k2.5, kimi-k2-thinking, kimi-code, etc. | API key      |
+| Custom    | Any OpenAI-compatible model                  | Optional     |
 
 ## agent system-prompt
 
