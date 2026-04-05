@@ -135,4 +135,54 @@ describe("isValidAgentConfig", () => {
       }),
     ).toBe(false);
   });
+
+  it("accepts config with compressionThreshold and keepRecentCount", () => {
+    expect(
+      isValidAgentConfig({
+        ...agentForProvider("openai"),
+        compressionThreshold: 50,
+        keepRecentCount: 20,
+      }),
+    ).toBe(true);
+  });
+
+  it("accepts config without compression fields (optional)", () => {
+    expect(isValidAgentConfig(agentForProvider("openai"))).toBe(true);
+  });
+
+  it("rejects compressionThreshold less than 1", () => {
+    expect(
+      isValidAgentConfig({
+        ...agentForProvider("openai"),
+        compressionThreshold: 0,
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects non-number compressionThreshold", () => {
+    expect(
+      isValidAgentConfig({
+        ...agentForProvider("openai"),
+        compressionThreshold: "fifty",
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects keepRecentCount less than 1", () => {
+    expect(
+      isValidAgentConfig({
+        ...agentForProvider("openai"),
+        keepRecentCount: 0,
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects non-number keepRecentCount", () => {
+    expect(
+      isValidAgentConfig({
+        ...agentForProvider("openai"),
+        keepRecentCount: "twenty",
+      }),
+    ).toBe(false);
+  });
 });
