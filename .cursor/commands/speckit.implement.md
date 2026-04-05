@@ -85,6 +85,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Automatically proceed to step 3
 
 3. Load and analyze the implementation context:
+   - **REQUIRED**: Read `.specify/memory/constitution.md` — this is the supreme authority for all development decisions. Every implementation step, commit, and code change MUST comply with it. Violations are NOT permitted.
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -156,7 +157,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
 
-8. Progress tracking and error handling:
+8. **Constitution Compliance (NON-NEGOTIABLE)**:
+   - Every function MUST be ≤ 20 lines of logic. No exceptions.
+   - Every file MUST be ≤ 200 lines. Split by responsibility when approaching.
+   - NO comments in production code (except legal headers, TODO with issue IDs, mandated doc-strings).
+   - All external dependencies MUST be injected and mockable.
+   - Test coverage MUST meet or exceed configured thresholds.
+   - **Atomic Commits**: After each coherent unit of work (a task or small group of related tasks), create a commit following Conventional Commits format `type(scope): description`. The test suite MUST pass at every commit. Large changes MUST be decomposed into multiple commits, NOT delivered as one monolithic changeset. Use `required_permissions: ["all"]` for all git commands.
+
+9. Progress tracking and error handling:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
@@ -164,16 +173,18 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Completion validation:
+10. Completion validation:
    - Verify all required tasks are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
+   - Run the full verification suite: `pnpm test && pnpm test:coverage && pnpm lint && pnpm format:check && pnpm build`
    - Report final status with summary of completed work
+   - Provide the user with **app verification commands** (not just test/lint) so they can manually try the feature end-to-end
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 
-10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
+11. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
     - If it exists, read it and look for entries under the `hooks.after_implement` key
     - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
     - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.

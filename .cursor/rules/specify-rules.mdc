@@ -8,28 +8,65 @@ alwaysApply: true
 
 Auto-generated from all feature plans. Last updated: 2026-04-05
 
+## Constitution (SUPREME AUTHORITY)
+
+The constitution at `.specify/memory/constitution.md` is the supreme authority for ALL development decisions. You MUST read it before any implementation work. Key non-negotiable rules:
+
+- **TDD**: Red-Green-Refactor. Write failing test first, then implement, then refactor.
+- **Clean Code**: No comments in production code. Functions ≤ 20 lines. Files ≤ 200 lines. Names reveal intent.
+- **Atomic Commits**: Every commit = single coherent working change. Test suite passes at every commit. Conventional Commits format: `type(scope): description`. Large changes MUST be decomposed into multiple commits.
+- **Design**: SOLID, DRY, KISS, YAGNI. Composition over inheritance. Dependency injection for all external deps.
+- **Coverage**: ≥ 90% for statements, branches, functions, and lines.
+
+## Git Operations
+
+All git write commands (commit, push, branch, merge, rebase, tag) MUST use `required_permissions: ["all"]` to avoid sandbox blocking. This is non-negotiable — the sandbox will reject git writes without it.
+
 ## Active Technologies
 
-- TypeScript 5.x (strict mode, no `any`) + Commander.js (CLI framework), @inquirer/prompts (interactive prompts), grammY (Telegram Bot API), Discord.js (Discord Bot API) (001-cli-onboard)
+- TypeScript 5.x (strict mode, no `any`)
+- pnpm monorepo: packages/shared-types, packages/bot-adapters, packages/gateway, packages/cli, packages/ai-agent
+- Commander.js (CLI), @inquirer/prompts (interactive prompts)
+- grammY (Telegram Bot API), Discord.js (Discord Bot API)
+- Vercel AI SDK (ai, @ai-sdk/openai, @ai-sdk/anthropic, @ai-sdk/google)
+- Vitest (testing), oxlint (linting), Prettier (formatting), tsdown (build)
 
 ## Project Structure
 
 ```text
-src/
+packages/
+  shared-types/   # Core interfaces and validators
+  bot-adapters/   # Telegram/Discord adapter implementations
+  gateway/        # HTTP gateway server
+  cli/            # CLI commands (onboard, pairing, gateway, agent)
+  ai-agent/       # AI provider factory, conversation store, message processor, tools
 tests/
+  unit/           # Unit tests mirror packages/ structure
+  integration/    # End-to-end flow tests
+  contract/       # API surface contract tests
+  __mocks__/      # Shared test mocks
+specs/            # Feature specifications and plans
 ```
 
 ## Commands
 
-npm test && npm run lint
+```bash
+pnpm test                # Run all tests
+pnpm test:coverage       # Run tests with coverage thresholds
+pnpm lint                # Run oxlint
+pnpm format:check        # Check Prettier formatting
+pnpm format              # Auto-fix formatting
+pnpm build               # Build all packages
+```
 
 ## Code Style
 
-TypeScript 5.x (strict mode, no `any`): Follow standard conventions
+TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
 
-- 001-cli-onboard: Added TypeScript 5.x (strict mode, no `any`) + Commander.js (CLI framework), @inquirer/prompts (interactive prompts), grammY (Telegram Bot API), Discord.js (Discord Bot API)
+- 001-cli-onboard: Bot integration CLI, pairing, gateway start, DM policies
+- 002-ai-agent-routing: AI agent with 6 providers, tool calling, conversation management, CLI commands
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
