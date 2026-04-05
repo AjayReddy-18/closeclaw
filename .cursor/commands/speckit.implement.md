@@ -13,6 +13,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 ## Pre-Execution Checks
 
 **Check for extension hooks (before implementation)**:
+
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_implement` key
 - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
@@ -22,6 +23,7 @@ You **MUST** consider the user input before proceeding (if not empty).
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -32,16 +34,19 @@ You **MUST** consider the user input before proceeding (if not empty).
     Prompt: {prompt}
     To execute: `/{command}`
     ```
+
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
     **Automatic Pre-Hook**: {extension}
     Executing: `/{command}`
     EXECUTE_COMMAND: {command}
-    
+
     Wait for the result of the hook command before proceeding to the Outline.
     ```
+
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
 ## Outline
@@ -80,6 +85,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Automatically proceed to step 3
 
 3. Load and analyze the implementation context:
+   - **REQUIRED**: Read `.specify/memory/constitution.md` — this is the supreme authority for all development decisions. Every implementation step, commit, and code change MUST comply with it. Violations are NOT permitted.
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -97,12 +103,12 @@ You **MUST** consider the user input before proceeding (if not empty).
      git rev-parse --git-dir 2>/dev/null
      ```
 
-   - Check if Dockerfile* exists or Docker in plan.md → create/verify .dockerignore
-   - Check if .eslintrc* exists → create/verify .eslintignore
-   - Check if eslint.config.* exists → ensure the config's `ignores` entries cover required patterns
-   - Check if .prettierrc* exists → create/verify .prettierignore
+   - Check if Dockerfile\* exists or Docker in plan.md → create/verify .dockerignore
+   - Check if .eslintrc\* exists → create/verify .eslintignore
+   - Check if eslint.config.\* exists → ensure the config's `ignores` entries cover required patterns
+   - Check if .prettierrc\* exists → create/verify .prettierignore
    - Check if .npmrc or package.json exists → create/verify .npmignore (if publishing)
-   - Check if terraform files (*.tf) exist → create/verify .terraformignore
+   - Check if terraform files (\*.tf) exist → create/verify .terraformignore
    - Check if .helmignore needed (helm charts present) → create/verify .helmignore
 
    **If ignore file already exists**: Verify it contains essential patterns, append missing critical patterns only
@@ -139,7 +145,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 6. Execute implementation following the task plan:
    - **Phase-by-phase execution**: Complete each phase before moving to the next
-   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together  
+   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
    - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
@@ -151,7 +157,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
 
-8. Progress tracking and error handling:
+8. **Constitution Compliance (NON-NEGOTIABLE)**:
+   - Every function MUST be ≤ 20 lines of logic. No exceptions.
+   - Every file MUST be ≤ 200 lines. Split by responsibility when approaching.
+   - NO comments in production code (except legal headers, TODO with issue IDs, mandated doc-strings).
+   - All external dependencies MUST be injected and mockable.
+   - Test coverage MUST meet or exceed configured thresholds.
+   - **Atomic Commits**: After each coherent unit of work (a task or small group of related tasks), create a commit following Conventional Commits format `type(scope): description`. The test suite MUST pass at every commit. Large changes MUST be decomposed into multiple commits, NOT delivered as one monolithic changeset. Use `required_permissions: ["all"]` for all git commands.
+
+9. Progress tracking and error handling:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
@@ -159,16 +173,28 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Completion validation:
-   - Verify all required tasks are completed
-   - Check that implemented features match the original specification
-   - Validate that tests pass and coverage meets requirements
-   - Confirm the implementation follows the technical plan
-   - Report final status with summary of completed work
+10. **Documentation (NON-NEGOTIABLE — Constitution Principle VII)**:
+    - After all implementation tasks are complete and tests pass, update `docs/` to cover the feature just built.
+    - If the feature adds new CLI commands, update `docs/cli-reference.md`.
+    - If the feature introduces a new concept or subsystem, create a dedicated page in `docs/` (e.g., `docs/ai-agent.md`).
+    - If the feature changes getting-started workflow, update `docs/getting-started.md`.
+    - Documentation updates MUST be committed in the same branch as the feature.
+    - A feature is NOT complete until its documentation is written.
+
+11. Completion validation:
+
+- Verify all required tasks are completed
+- Check that implemented features match the original specification
+- Validate that tests pass and coverage meets requirements
+- Confirm the implementation follows the technical plan
+- Verify `docs/` is updated for the feature
+- Run the full verification suite: `pnpm test && pnpm test:coverage && pnpm lint && pnpm format:check && pnpm build`
+- Report final status with summary of completed work
+- Provide the user with **app verification commands** (not just test/lint) so they can manually try the feature end-to-end
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 
-10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
+12. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
     - If it exists, read it and look for entries under the `hooks.after_implement` key
     - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
     - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
@@ -177,6 +203,7 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
       - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
     - For each executable hook, output the following based on its `optional` flag:
       - **Optional hook** (`optional: true`):
+
         ```
         ## Extension Hooks
 
@@ -187,7 +214,9 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
         Prompt: {prompt}
         To execute: `/{command}`
         ```
+
       - **Mandatory hook** (`optional: false`):
+
         ```
         ## Extension Hooks
 
@@ -195,4 +224,5 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
         Executing: `/{command}`
         EXECUTE_COMMAND: {command}
         ```
+
     - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently

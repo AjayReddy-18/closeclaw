@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.log
+.env*
+coverage/
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.pnpm-store/
+*.tsbuildinfo
