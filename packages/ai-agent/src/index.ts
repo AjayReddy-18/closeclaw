@@ -69,7 +69,12 @@ export { createModelProvider } from "./provider-factory.js";
 export { createDatetimeTool } from "./tools/datetime-tool.js";
 export { createHttpRequestTool } from "./tools/http-request-tool.js";
 export { createShellExecuteTool } from "./tools/shell-execute-tool.js";
+export {
+  createSavePreferenceTool,
+  createForgetPreferenceTool,
+} from "./tools/preference-tools.js";
 export { buildToolMap } from "./tool-executor.js";
+export { formatPreferencesForContext } from "./preference-injection.js";
 
 export type { ProviderDisplayInfo } from "./provider-info.js";
 export { PROVIDER_INFO } from "./provider-info.js";

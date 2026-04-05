@@ -14,9 +14,24 @@ import { extractResponseText, retryWithBackoff } from "./ai-retry.js";
 import { trimHistory, estimateTokens } from "./context-trimmer.js";
 import { createModelProvider } from "./provider-factory.js";
 import { buildToolMap } from "./tool-executor.js";
+import type { PreferenceStore } from "./preference-store.js";
+import { formatPreferencesForContext } from "./preference-injection.js";
+import {
+  createSavePreferenceTool,
+  createForgetPreferenceTool,
+} from "./tools/preference-tools.js";
 
-function toolOptionsForGenerate(config: AgentConfig) {
+function toolOptionsForGenerate(
+  config: AgentConfig,
+  prefStore?: PreferenceStore,
+  platform?: BotPlatform,
+  senderId?: string,
+) {
   const tools = buildToolMap(config.tools);
+  if (prefStore && platform && senderId) {
+    tools["save_preference"] = createSavePreferenceTool(prefStore, platform, senderId);
+    tools["forget_preference"] = createForgetPreferenceTool(prefStore, platform, senderId);
+  }
   if (Object.keys(tools).length === 0) return {};
   return { tools, stopWhen: stepCountIs(config.tools.maxCallDepth) };
 }
@@ -26,15 +41,15 @@ export interface CreateMessageProcessorDeps {
   conversationStore: ConversationStore;
   generate?: typeof generateText;
   onAfterResponse?: (platform: BotPlatform, senderId: string) => void;
+  preferenceStore?: PreferenceStore;
 }
 
 export function createMessageProcessor(
   deps: CreateMessageProcessorDeps,
 ): MessageProcessor {
-  const { agentConfig, conversationStore } = deps;
+  const { agentConfig, conversationStore, preferenceStore } = deps;
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
-  const toolOpts = toolOptionsForGenerate(agentConfig);
   const afterHook = deps.onAfterResponse;
 
   async function process(
@@ -43,9 +58,12 @@ export function createMessageProcessor(
     text: string,
     senderDisplayName?: string,
   ): Promise<string> {
+    const toolOpts = toolOptionsForGenerate(
+      agentConfig, preferenceStore, platform, senderId,
+    );
     const result = await handleIncomingText(
       agentConfig, conversationStore, gen, model, toolOpts,
-      platform, senderId, text, senderDisplayName,
+      platform, senderId, text, senderDisplayName, preferenceStore,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -74,6 +92,7 @@ async function handleIncomingText(
   senderId: string,
   text: string,
   senderDisplayName?: string,
+  prefStore?: PreferenceStore,
 ): Promise<string> {
   if (text.trim() === CLEAR_COMMAND) {
     conversationStore.clear(platform, senderId);
@@ -81,13 +100,12 @@ async function handleIncomingText(
   }
   const reject = rejectionForOversizedInput(agentConfig, text);
   if (reject !== undefined) return reject;
-  const c = conversationStore.getOrCreate(
-    platform,
-    senderId,
-    senderDisplayName,
-  );
+  const c = conversationStore.getOrCreate(platform, senderId, senderDisplayName);
   appendUserMessage(c, text);
-  return await invokeModel(c, gen, model, agentConfig, toolOpts);
+  const prefCtx = prefStore
+    ? formatPreferencesForContext(prefStore, platform, senderId)
+    : "";
+  return await invokeModel(c, gen, model, agentConfig, toolOpts, prefCtx);
 }
 
 function appendUserMessage(
@@ -104,8 +122,10 @@ function appendUserMessage(
 function sdkMessagesForGenerate(
   conversation: { messages: ConversationMessage[]; compressedSummary?: { text: string } },
   config: AgentConfig,
+  preferenceContext?: string,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemParts = [config.systemPrompt];
+  if (preferenceContext) systemParts.push(`\n${preferenceContext}`);
   if (conversation.compressedSummary?.text) {
     systemParts.push(
       `\nConversation history summary:\n${conversation.compressedSummary.text}`,
@@ -145,13 +165,14 @@ function pushAssistantMessage(
 }
 
 async function invokeModel(
-  conversation: { messages: ConversationMessage[] },
+  conversation: { messages: ConversationMessage[]; compressedSummary?: { text: string } },
   gen: typeof generateText,
   model: ReturnType<typeof createModelProvider>,
   config: AgentConfig,
   toolOpts: ReturnType<typeof toolOptionsForGenerate>,
+  preferenceContext?: string,
 ): Promise<string> {
-  const messages = sdkMessagesForGenerate(conversation, config);
+  const messages = sdkMessagesForGenerate(conversation, config, preferenceContext);
   const args = {
     model,
     messages,

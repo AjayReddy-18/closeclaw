@@ -6,6 +6,7 @@ import {
   createMessageProcessor,
   createPersistentConversationStore,
   createConversationPersistence,
+  createPreferenceStore,
 } from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
@@ -126,13 +127,15 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   let conversationStore: ReturnType<typeof createPersistentConversationStore> | undefined;
   let messageProcessor: ReturnType<typeof createMessageProcessor> | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    const convDir = join(homedir(), ".closeclaw", "conversations");
-    const persistence = createConversationPersistence(convDir);
+    const baseDir = join(homedir(), ".closeclaw");
+    const persistence = createConversationPersistence(join(baseDir, "conversations"));
+    const prefStore = createPreferenceStore(join(baseDir, "preferences"));
     const pStore = createPersistentConversationStore(persistence);
     conversationStore = pStore;
     messageProcessor = createMessageProcessor({
       agentConfig: config.agent,
       conversationStore: pStore,
+      preferenceStore: prefStore,
       onAfterResponse: (p, s) => pStore.saveToDisk(p, s),
     });
     console.log(

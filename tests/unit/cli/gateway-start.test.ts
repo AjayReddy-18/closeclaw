@@ -25,6 +25,7 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createConversationPersistence: aiMocks.createConversationPersistence,
   createPersistentConversationStore: aiMocks.createPersistentConversationStore,
   createMessageProcessor: aiMocks.createMessageProcessor,
+  createPreferenceStore: vi.fn(() => ({})),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {
@@ -335,6 +336,7 @@ describe("runGatewayStart AI agent assembly", () => {
       expect.objectContaining({
         agentConfig: validAgent,
         conversationStore: aiMocks.mockStore,
+        preferenceStore: expect.any(Object),
         onAfterResponse: expect.any(Function),
       }),
     );
