@@ -11,11 +11,15 @@ export interface AgentConfig {
   systemPrompt: string;
   maxContextTokens: number;
   tools: ToolConfig;
+  compressionThreshold?: number;
+  keepRecentCount?: number;
 }
 
 export const DEFAULT_SYSTEM_PROMPT =
   "You are CloseClaw, a helpful AI assistant.";
 export const DEFAULT_MAX_CONTEXT_TOKENS = 8192;
+export const DEFAULT_COMPRESSION_THRESHOLD = 50;
+export const DEFAULT_KEEP_RECENT_COUNT = 20;
 
 export function requiresApiKey(provider: AiProvider): boolean {
   return (
@@ -50,5 +54,13 @@ export function isValidAgentConfig(value: unknown): value is AgentConfig {
   if (typeof obj["maxContextTokens"] !== "number") return false;
   if (obj["maxContextTokens"] < 1) return false;
   if (!isValidToolConfig(obj["tools"])) return false;
+  if (obj["compressionThreshold"] !== undefined) {
+    if (typeof obj["compressionThreshold"] !== "number") return false;
+    if (obj["compressionThreshold"] < 1) return false;
+  }
+  if (obj["keepRecentCount"] !== undefined) {
+    if (typeof obj["keepRecentCount"] !== "number") return false;
+    if (obj["keepRecentCount"] < 1) return false;
+  }
   return true;
 }

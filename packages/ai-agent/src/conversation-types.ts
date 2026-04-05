@@ -10,11 +10,18 @@ export interface ConversationMessage {
   toolName?: string;
 }
 
+export interface CompressedSummary {
+  text: string;
+  messagesCompressed: number;
+  compressedAt: Date;
+}
+
 export interface Conversation {
   platform: BotPlatform;
   senderId: string;
   senderDisplayName?: string;
   messages: ConversationMessage[];
+  compressedSummary?: CompressedSummary;
   createdAt: Date;
   lastActivityAt: Date;
 }

@@ -25,6 +25,8 @@ export {
   type AgentConfig,
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_MAX_CONTEXT_TOKENS,
+  DEFAULT_COMPRESSION_THRESHOLD,
+  DEFAULT_KEEP_RECENT_COUNT,
   requiresApiKey,
   requiresBaseUrl,
   isValidAgentConfig,
