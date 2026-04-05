@@ -20,6 +20,10 @@ import {
   createAgentConversationsDeps,
   runAgentConversations,
 } from "./commands/agent-conversations.js";
+import {
+  createCronStoreDeps,
+  registerCronCommands,
+} from "./commands/cron-registry.js";
 
 export async function runCli(argv: string[]): Promise<number> {
   const program = new Command();
@@ -67,6 +71,7 @@ export async function runCli(argv: string[]): Promise<number> {
     .action(async () => {
       await runAgentConversations(createAgentConversationsDeps());
     });
+  registerCronCommands(program, createCronStoreDeps());
   try {
     await program.parseAsync(argv);
     return 0;
