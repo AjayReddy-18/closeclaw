@@ -373,7 +373,11 @@ async function runAgentResponse(
   } catch (error) {
     console.error("[gateway] Message processing failed:", error);
     clearTimeout(processingTimer);
-    await adapter.sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED);
+    await adapter
+      .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
+      .catch((sendErr) =>
+        console.error("[gateway] Failed to send error reply:", sendErr),
+      );
   }
 }
 
