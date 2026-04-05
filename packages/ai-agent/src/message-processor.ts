@@ -177,6 +177,22 @@ function pushAssistantMessage(
   });
 }
 
+function extractResponseText(
+  result: Awaited<ReturnType<typeof generateText>>,
+): string {
+  if (result.text && result.text.trim().length > 0) return result.text;
+  const steps = (result as Record<string, unknown>).steps;
+  if (Array.isArray(steps)) {
+    for (let i = steps.length - 1; i >= 0; i--) {
+      const step = steps[i] as Record<string, unknown>;
+      if (typeof step.text === "string" && step.text.trim().length > 0) {
+        return step.text;
+      }
+    }
+  }
+  return EMPTY_RESPONSE_MESSAGE;
+}
+
 async function invokeModel(
   conversation: { messages: ConversationMessage[] },
   gen: typeof generateText,
@@ -192,7 +208,7 @@ async function invokeModel(
   } as Parameters<typeof generateText>[0];
   try {
     const result = await generateWithRetry(gen, args);
-    const responseText = result.text || EMPTY_RESPONSE_MESSAGE;
+    const responseText = extractResponseText(result);
     pushAssistantMessage(conversation, responseText);
     return responseText;
   } catch (error) {

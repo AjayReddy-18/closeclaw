@@ -354,14 +354,24 @@ function logAcceptedMessage(msg: BotIncomingMessage): void {
   console.log(`[${msg.platform}] Message from ${sender}: ${msg.text}`);
 }
 
+const TYPING_INTERVAL_MS = 4000;
+
+function startTypingLoop(adapter: BotAdapter, senderId: string): () => void {
+  const send = () =>
+    void Promise.resolve(adapter.sendTypingIndicator(senderId)).catch(
+      () => {},
+    );
+  send();
+  const id = setInterval(send, TYPING_INTERVAL_MS);
+  return () => clearInterval(id);
+}
+
 async function runAgentResponse(
   adapter: BotAdapter,
   processor: NonNullable<GatewayServerConfig["messageProcessor"]>,
   msg: BotIncomingMessage,
 ): Promise<void> {
-  void Promise.resolve(adapter.sendTypingIndicator(msg.senderId)).catch(
-    () => {},
-  );
+  const stopTyping = startTypingLoop(adapter, msg.senderId);
   const processingTimer = setTimeout(() => {
     void adapter
       .sendMessage(msg.senderId, "Processing your message...")
@@ -375,10 +385,12 @@ async function runAgentResponse(
       msg.senderDisplayName,
     );
     clearTimeout(processingTimer);
+    stopTyping();
     await adapter.sendMessage(msg.senderId, response);
   } catch (error) {
     console.error("[gateway] Message processing failed:", error);
     clearTimeout(processingTimer);
+    stopTyping();
     await adapter
       .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
       .catch((sendErr) =>
