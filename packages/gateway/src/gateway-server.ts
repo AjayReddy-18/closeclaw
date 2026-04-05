@@ -370,7 +370,8 @@ async function runAgentResponse(
     );
     clearTimeout(processingTimer);
     await adapter.sendMessage(msg.senderId, response);
-  } catch {
+  } catch (error) {
+    console.error("[gateway] Message processing failed:", error);
     clearTimeout(processingTimer);
     await adapter.sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED);
   }

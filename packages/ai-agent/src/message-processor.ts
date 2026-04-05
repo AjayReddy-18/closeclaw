@@ -195,7 +195,8 @@ async function invokeModel(
     const responseText = result.text || EMPTY_RESPONSE_MESSAGE;
     pushAssistantMessage(conversation, responseText);
     return responseText;
-  } catch {
+  } catch (error) {
+    console.error("[ai-agent] generateText failed:", error);
     return AI_ERROR_MESSAGE;
   }
 }
