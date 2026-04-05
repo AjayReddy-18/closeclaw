@@ -26,6 +26,9 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createPersistentConversationStore: aiMocks.createPersistentConversationStore,
   createMessageProcessor: aiMocks.createMessageProcessor,
   createPreferenceStore: vi.fn(() => ({})),
+  createConversationCompressor: vi.fn(() => ({ shouldCompress: vi.fn() })),
+  createMemoryFlusher: vi.fn(() => ({ flush: vi.fn() })),
+  createModelProvider: vi.fn(() => ({})),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {

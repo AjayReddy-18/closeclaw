@@ -6,8 +6,15 @@ import {
   createMessageProcessor,
   createPersistentConversationStore,
   createConversationPersistence,
+  createConversationCompressor,
   createPreferenceStore,
+  createMemoryFlusher,
+  createModelProvider,
 } from "@closeclaw/ai-agent";
+import {
+  DEFAULT_COMPRESSION_THRESHOLD,
+  DEFAULT_KEEP_RECENT_COUNT,
+} from "@closeclaw/shared-types";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
@@ -130,7 +137,14 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     const baseDir = join(homedir(), ".closeclaw");
     const persistence = createConversationPersistence(join(baseDir, "conversations"));
     const prefStore = createPreferenceStore(join(baseDir, "preferences"));
-    const pStore = createPersistentConversationStore(persistence);
+    const threshold = config.agent.compressionThreshold ?? DEFAULT_COMPRESSION_THRESHOLD;
+    const keepRecent = config.agent.keepRecentCount ?? DEFAULT_KEEP_RECENT_COUNT;
+    const model = createModelProvider(config.agent);
+    const compressor = createConversationCompressor(threshold, keepRecent, model);
+    const flusher = createMemoryFlusher(prefStore, model);
+    const pStore = createPersistentConversationStore({
+      persistence, compressor, flusher,
+    });
     conversationStore = pStore;
     messageProcessor = createMessageProcessor({
       agentConfig: config.agent,

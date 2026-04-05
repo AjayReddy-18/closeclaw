@@ -58,7 +58,7 @@ export {
   type ConversationCompressor,
 } from "./conversation-compressor.js";
 
-export type { MemoryFlusher } from "./memory-flush.js";
+export { createMemoryFlusher, type MemoryFlusher } from "./memory-flush.js";
 export { trimHistory, estimateTokens } from "./context-trimmer.js";
 export {
   createMessageProcessor,
