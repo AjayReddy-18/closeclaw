@@ -7,10 +7,10 @@ import {
   CLEAR_COMMAND,
   CLEAR_CONFIRMATION,
   AI_ERROR_MESSAGE,
-  EMPTY_RESPONSE_MESSAGE,
   MAX_RETRIES,
   INITIAL_RETRY_DELAY_MS,
 } from "./message-processor-types.js";
+import { extractResponseText, retryWithBackoff } from "./ai-retry.js";
 import { trimHistory, estimateTokens } from "./context-trimmer.js";
 import { createModelProvider } from "./provider-factory.js";
 import { buildToolMap } from "./tool-executor.js";
@@ -116,49 +116,6 @@ function sdkMessagesForGenerate(
   }));
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function errorStatus(error: unknown): number | undefined {
-  if (typeof error !== "object" || error === null) return undefined;
-  const r = error as Record<string, unknown>;
-  const s = r["statusCode"] ?? r["status"];
-  return typeof s === "number" ? s : undefined;
-}
-
-function isRateLimitError(error: unknown): boolean {
-  if (errorStatus(error) === 429) return true;
-  const msg =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : "";
-  return msg.toLowerCase().includes("rate limit");
-}
-
-async function retryWithBackoff<T>(
-  fn: () => Promise<T>,
-  maxRetries: number,
-  initialDelayMs: number,
-): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-      if (attempt < maxRetries && isRateLimitError(error)) {
-        await delay(initialDelayMs * Math.pow(2, attempt));
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw lastError;
-}
-
 async function generateWithRetry(
   gen: typeof generateText,
   args: Parameters<typeof generateText>[0],
@@ -175,22 +132,6 @@ function pushAssistantMessage(
     content,
     timestamp: new Date(),
   });
-}
-
-function extractResponseText(
-  result: Awaited<ReturnType<typeof generateText>>,
-): string {
-  if (result.text && result.text.trim().length > 0) return result.text;
-  const steps = (result as Record<string, unknown>).steps;
-  if (Array.isArray(steps)) {
-    for (let i = steps.length - 1; i >= 0; i--) {
-      const step = steps[i] as Record<string, unknown>;
-      if (typeof step.text === "string" && step.text.trim().length > 0) {
-        return step.text;
-      }
-    }
-  }
-  return EMPTY_RESPONSE_MESSAGE;
 }
 
 async function invokeModel(
