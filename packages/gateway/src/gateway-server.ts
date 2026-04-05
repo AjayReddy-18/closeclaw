@@ -16,6 +16,19 @@ import {
   type PairingManager,
 } from "./pairing-manager.js";
 
+const GATEWAY_PROCESSING_FAILED =
+  "I'm having trouble thinking right now. Please try again in a moment.";
+
+const PROCESSING_ACK_DELAY_MS = 5000;
+
+const senderQueues = new Map<string, Promise<void>>();
+
+function enqueueForSender(key: string, task: () => Promise<void>): void {
+  const prev = senderQueues.get(key) ?? Promise.resolve();
+  const next = prev.then(task, task);
+  senderQueues.set(key, next);
+}
+
 export type GatewayServerConfig = {
   port: number;
   authToken: string;
@@ -24,6 +37,23 @@ export type GatewayServerConfig = {
   getDmSettings?: (platform: BotPlatform) => {
     dmPolicy: DmPolicy;
     allowedSenders?: string[];
+  };
+  messageProcessor?: {
+    processMessage(
+      platform: BotPlatform,
+      senderId: string,
+      text: string,
+      senderDisplayName?: string,
+    ): Promise<string>;
+  };
+  conversationStore?: {
+    list(): Array<{
+      platform: string;
+      senderId: string;
+      senderDisplayName?: string;
+      messageCount: number;
+      lastActivityAt: Date;
+    }>;
   };
 };
 
@@ -95,6 +125,31 @@ async function servePairingList(
 ): Promise<void> {
   const rows = await mgr.listPending();
   writeJsonData(res, 200, rows);
+}
+
+function serveConversationsList(
+  store: GatewayServerConfig["conversationStore"],
+  res: ServerResponse,
+): void {
+  const rows = store?.list() ?? [];
+  writeJsonData(res, 200, rows);
+}
+
+async function routeAgentConversations(
+  method: string | undefined,
+  path: string,
+  req: IncomingMessage,
+  res: ServerResponse,
+  authToken: string,
+  conversationStore: GatewayServerConfig["conversationStore"],
+): Promise<boolean> {
+  if (method !== "GET" || path !== "/agent/conversations") return false;
+  if (!bearerMatches(req, authToken)) {
+    unauthorized(res);
+    return true;
+  }
+  serveConversationsList(conversationStore, res);
+  return true;
 }
 
 async function servePairingApprove(
@@ -172,7 +227,17 @@ async function routeRequest(
   authToken: string,
   pairingManager: PairingManager | undefined,
   req: IncomingMessage,
+  conversationStore: GatewayServerConfig["conversationStore"],
 ): Promise<void> {
+  const agentHit = await routeAgentConversations(
+    method,
+    path,
+    req,
+    res,
+    authToken,
+    conversationStore,
+  );
+  if (agentHit) return;
   const hit = await routeHealthOrPairing(
     method,
     path,
@@ -267,8 +332,47 @@ function wireMessageHandlers(
   if (!resolver) return;
   for (const adapter of cfg.adapters) {
     adapter.onMessage((msg: BotIncomingMessage) => {
-      void handleAdapterMessage(adapter, pairingManager, msg, resolver);
+      void handleAdapterMessage(
+        adapter,
+        pairingManager,
+        msg,
+        resolver,
+        cfg.messageProcessor,
+      );
     });
+  }
+}
+
+function logAcceptedMessage(msg: BotIncomingMessage): void {
+  const sender = msg.senderDisplayName ?? msg.senderId;
+  console.log(`[${msg.platform}] Message from ${sender}: ${msg.text}`);
+}
+
+async function runAgentResponse(
+  adapter: BotAdapter,
+  processor: NonNullable<GatewayServerConfig["messageProcessor"]>,
+  msg: BotIncomingMessage,
+): Promise<void> {
+  void Promise.resolve(adapter.sendTypingIndicator(msg.senderId)).catch(
+    () => {},
+  );
+  const processingTimer = setTimeout(() => {
+    void adapter
+      .sendMessage(msg.senderId, "Processing your message...")
+      .catch(() => {});
+  }, PROCESSING_ACK_DELAY_MS);
+  try {
+    const response = await processor.processMessage(
+      msg.platform,
+      msg.senderId,
+      msg.text,
+      msg.senderDisplayName,
+    );
+    clearTimeout(processingTimer);
+    await adapter.sendMessage(msg.senderId, response);
+  } catch {
+    clearTimeout(processingTimer);
+    await adapter.sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED);
   }
 }
 
@@ -277,6 +381,7 @@ async function handleAdapterMessage(
   pairingManager: PairingManager,
   msg: BotIncomingMessage,
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
+  messageProcessor: GatewayServerConfig["messageProcessor"],
 ): Promise<void> {
   const settings = resolver(msg.platform);
   const enforcer = createDmPolicyEnforcer({
@@ -288,7 +393,19 @@ async function handleAdapterMessage(
     msg.senderId,
     msg.platform,
   );
-  await maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
+  if (!allowed) {
+    await maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
+    return;
+  }
+  if (messageProcessor) {
+    logAcceptedMessage(msg);
+    const key = `${msg.platform}:${msg.senderId}`;
+    enqueueForSender(key, () =>
+      runAgentResponse(adapter, messageProcessor, msg),
+    );
+    return;
+  }
+  logAcceptedMessage(msg);
 }
 
 export function createGatewayServer(
@@ -309,6 +426,7 @@ export function createGatewayServer(
       config.authToken,
       pairingManager,
       req,
+      config.conversationStore,
     ).catch(() => {
       if (!res.headersSent) {
         res.statusCode = 500;
