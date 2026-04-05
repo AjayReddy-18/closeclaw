@@ -78,10 +78,3 @@ export interface MemoryFlusher {
     messages: ConversationFileData["messages"],
   ): Promise<PreferenceEntry[]>;
 }
-
-export interface PreferenceExtractor {
-  extractFromResponse(
-    aiResponse: string,
-    userMessage: string,
-  ): PreferenceEntry[];
-}

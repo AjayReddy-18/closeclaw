@@ -56,12 +56,16 @@ packages/
     agent-config.ts                   # UPDATE: add compressionThreshold, keepRecentCount
   ai-agent/src/
     conversation-types.ts             # UPDATE: add compressedSummary field to Conversation
-    conversation-store.ts             # UPDATE: extend ConversationStore interface with persistence hooks
     conversation-persistence.ts       # NEW: read/write conversation JSON files
     conversation-compressor.ts        # NEW: summarize older messages using AI model
+    persistent-conversation-store.ts  # NEW: decorator wrapping in-memory store with disk I/O
     preference-store.ts               # NEW: read/write/update preference JSON files
-    preference-extractor.ts           # NEW: AI-driven preference extraction from messages
+    persistence-types.ts              # NEW: on-disk data schemas
+    persistence-serializer.ts         # NEW: serialize/deserialize between memory and disk formats
+    preference-injection.ts           # NEW: format preferences for AI context
+    tools/preference-tools.ts         # NEW: save_preference and forget_preference AI tools
     memory-flush.ts                   # NEW: pre-compression fact extraction
+    ai-invoker.ts                     # NEW: AI model invocation logic (extracted from message-processor)
     message-processor.ts              # UPDATE: wire persistence save after each exchange
     index.ts                          # UPDATE: export new modules
   cli/src/commands/
@@ -73,7 +77,8 @@ tests/
     conversation-persistence.test.ts  # NEW
     conversation-compressor.test.ts   # NEW
     preference-store.test.ts          # NEW
-    preference-extractor.test.ts      # NEW
+    preference-tools.test.ts          # NEW
+    preference-injection.test.ts      # NEW
     memory-flush.test.ts              # NEW
   integration/ai-agent/
     persistence-flow.test.ts          # NEW: save → restart → load cycle

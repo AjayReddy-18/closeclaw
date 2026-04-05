@@ -55,6 +55,16 @@ automatically pruned (both in memory and on disk).
 history. The conversation file is deleted but preferences are
 preserved.
 
+## Sender Identity
+
+The AI model automatically receives the sender's display name,
+platform, and ID in the system prompt. This means the bot knows
+who it is talking to from the very first message — it can address
+users by name and personalize responses without needing to be
+told. The display name is extracted from the platform metadata
+(Telegram first/last name, Discord display name) and falls back
+to the sender ID when no name is available.
+
 ## Supported Providers
 
 ### OpenAI

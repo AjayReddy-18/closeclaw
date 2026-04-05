@@ -6,12 +6,8 @@ import type { MessageProcessor } from "./message-processor-types.js";
 import {
   CLEAR_COMMAND,
   CLEAR_CONFIRMATION,
-  AI_ERROR_MESSAGE,
-  MAX_RETRIES,
-  INITIAL_RETRY_DELAY_MS,
 } from "./message-processor-types.js";
-import { extractResponseText, retryWithBackoff } from "./ai-retry.js";
-import { trimHistory, estimateTokens } from "./context-trimmer.js";
+import { estimateTokens } from "./context-trimmer.js";
 import { createModelProvider } from "./provider-factory.js";
 import { buildToolMap } from "./tool-executor.js";
 import type { PreferenceStore } from "./preference-store.js";
@@ -20,6 +16,7 @@ import {
   createSavePreferenceTool,
   createForgetPreferenceTool,
 } from "./tools/preference-tools.js";
+import { invokeModel } from "./ai-invoker.js";
 
 function toolOptionsForGenerate(
   config: AgentConfig,
@@ -158,88 +155,4 @@ export function buildSenderIdentity(
 ): string {
   const name = senderDisplayName ?? senderId;
   return `\nCurrent user: ${name} (platform: ${platform}, id: ${senderId})`;
-}
-
-function sdkMessagesForGenerate(
-  conversation: {
-    messages: ConversationMessage[];
-    compressedSummary?: { text: string };
-  },
-  config: AgentConfig,
-  preferenceContext?: string,
-  senderIdentity?: string,
-): Array<{ role: "system" | "user" | "assistant"; content: string }> {
-  const systemParts = [config.systemPrompt];
-  if (senderIdentity) systemParts.push(senderIdentity);
-  if (preferenceContext) systemParts.push(`\n${preferenceContext}`);
-  if (conversation.compressedSummary?.text) {
-    systemParts.push(
-      `\nConversation history summary:\n${conversation.compressedSummary.text}`,
-    );
-  }
-  const systemMsg: ConversationMessage = {
-    role: "system",
-    content: systemParts.join(""),
-    timestamp: new Date(),
-  };
-  const trimmed = trimHistory(
-    [systemMsg, ...conversation.messages],
-    config.maxContextTokens,
-  );
-  return trimmed.map((m) => ({
-    role: m.role as "system" | "user" | "assistant",
-    content: m.content,
-  }));
-}
-
-async function generateWithRetry(
-  gen: typeof generateText,
-  args: Parameters<typeof generateText>[0],
-): Promise<Awaited<ReturnType<typeof generateText>>> {
-  return retryWithBackoff(() => gen(args), MAX_RETRIES, INITIAL_RETRY_DELAY_MS);
-}
-
-function pushAssistantMessage(
-  conversation: { messages: ConversationMessage[] },
-  content: string,
-): void {
-  conversation.messages.push({
-    role: "assistant",
-    content,
-    timestamp: new Date(),
-  });
-}
-
-async function invokeModel(
-  conversation: {
-    messages: ConversationMessage[];
-    compressedSummary?: { text: string };
-  },
-  gen: typeof generateText,
-  model: ReturnType<typeof createModelProvider>,
-  config: AgentConfig,
-  toolOpts: ReturnType<typeof toolOptionsForGenerate>,
-  preferenceContext?: string,
-  senderIdentity?: string,
-): Promise<string> {
-  const messages = sdkMessagesForGenerate(
-    conversation,
-    config,
-    preferenceContext,
-    senderIdentity,
-  );
-  const args = {
-    model,
-    messages,
-    ...toolOpts,
-  } as Parameters<typeof generateText>[0];
-  try {
-    const result = await generateWithRetry(gen, args);
-    const responseText = extractResponseText(result);
-    pushAssistantMessage(conversation, responseText);
-    return responseText;
-  } catch (error) {
-    console.error("[ai-agent] generateText failed:", error);
-    return AI_ERROR_MESSAGE;
-  }
 }

@@ -113,7 +113,7 @@ Before the system compresses older messages, it performs a "memory flush" — an
 - **FR-010**: Before compression, the system MUST perform a memory flush that asks the AI to identify durable facts and preferences from the messages about to be compressed
 - **FR-011**: Facts and preferences identified during the flush MUST be written to the sender's preference file before compression proceeds
 - **FR-012**: The system MUST store sender preferences in a dedicated file at `~/.closeclaw/preferences/<platform>-<senderId>.json`
-- **FR-013**: Preferences MUST be automatically extracted on every message — the AI always checks for preference-worthy information without the user needing to say "remember" or any trigger word
+- **FR-013**: The AI MUST be prompted to check for preference-worthy information on every message via the `save_preference` tool — the user does not need to say "remember" or any trigger word. Extraction is AI-driven and best-effort
 - **FR-014**: The preference file MUST be loaded and included in the AI's system context for every message from that sender
 - **FR-015**: Preferences MUST persist independently of conversation history — "/clear" does not erase preferences
 - **FR-016**: The sender MUST be able to explicitly request forgetting specific preferences (e.g., "Forget my timezone")

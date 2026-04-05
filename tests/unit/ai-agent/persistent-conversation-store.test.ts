@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { BotPlatform } from "@closeclaw/shared-types";
@@ -103,5 +103,31 @@ describe("createPersistentConversationStore", () => {
     const store = createPersistentConversationStore(persistence);
     store.getOrCreate(BotPlatform.TELEGRAM, "1");
     expect(store.size()).toBe(1);
+  });
+
+  it("saveToDisk continues in memory when disk write fails", () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const failingPersistence = {
+      load: () => null,
+      save: () => {
+        throw new Error("disk full");
+      },
+      remove: () => undefined,
+    };
+    const store = createPersistentConversationStore(failingPersistence);
+    const c = store.getOrCreate(BotPlatform.TELEGRAM, "1");
+    c.messages.push({
+      role: "user",
+      content: "still in memory",
+      timestamp: new Date(),
+    });
+    expect(() => store.saveToDisk(BotPlatform.TELEGRAM, "1")).not.toThrow();
+    const memConv = store.get(BotPlatform.TELEGRAM, "1");
+    expect(memConv?.messages[0].content).toBe("still in memory");
+    expect(err).toHaveBeenCalledWith(
+      expect.stringContaining("disk"),
+      expect.any(Error),
+    );
+    err.mockRestore();
   });
 });

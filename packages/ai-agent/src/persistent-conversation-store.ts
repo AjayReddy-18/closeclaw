@@ -110,7 +110,15 @@ export function createPersistentConversationStore(
   function saveToDisk(platform: BotPlatform, senderId: string): void {
     const c = inner.get(platform, senderId);
     if (!c) return;
-    persistence.save(platform, senderId, conversationToFile(c));
+    try {
+      persistence.save(platform, senderId, conversationToFile(c));
+    } catch (err) {
+      console.error(
+        "[ai-agent] Failed to save to disk, continuing in memory:",
+        err,
+      );
+      return;
+    }
     maybeCompress(platform, senderId, c);
   }
 

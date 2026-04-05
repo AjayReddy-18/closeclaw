@@ -100,7 +100,7 @@
 
 - [x] T023 [US3] Implement `createSavePreferenceTool` and `createForgetPreferenceTool` AI tools in packages/ai-agent/src/tools/preference-tools.ts — save_preference takes key/value and calls preferenceStore.upsertPreference; forget_preference takes key and calls preferenceStore.removePreference
 - [x] T024 [US3] Implement `formatPreferencesForContext` helper in packages/ai-agent/src/preference-injection.ts — loads preferences from PreferenceStore, formats as a string block (e.g., "User preferences:\n- name: Ajay\n- timezone: IST"), returns empty string if no preferences
-- [x] T025 [US3] Wire preference tools into `buildToolMap` in packages/ai-agent/src/tool-executor.ts — when tool calling is enabled, always include save_preference and forget_preference tools alongside existing tools
+- [x] T025 [US3] Wire preference tools into `toolOptionsForGenerate` in packages/ai-agent/src/message-processor.ts — when preferenceStore is available, include save_preference and forget_preference tools alongside existing tools
 - [x] T026 [US3] Wire preference context into `sdkMessagesForGenerate` in packages/ai-agent/src/message-processor.ts — inject preference text into the system prompt so AI has access to stored preferences
 - [x] T027 [US3] Pass PreferenceStore to `createMessageProcessor` deps in packages/ai-agent/src/message-processor.ts and through gateway-start.ts
 

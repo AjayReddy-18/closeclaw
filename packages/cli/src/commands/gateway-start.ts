@@ -2,19 +2,8 @@ import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
-import {
-  createMessageProcessor,
-  createPersistentConversationStore,
-  createConversationPersistence,
-  createConversationCompressor,
-  createPreferenceStore,
-  createMemoryFlusher,
-  createModelProvider,
-} from "@closeclaw/ai-agent";
-import {
-  DEFAULT_COMPRESSION_THRESHOLD,
-  DEFAULT_KEEP_RECENT_COUNT,
-} from "@closeclaw/shared-types";
+import type { createPersistentConversationStore } from "@closeclaw/ai-agent";
+import type { createMessageProcessor } from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
@@ -23,6 +12,7 @@ import {
   isValidAgentConfig,
 } from "@closeclaw/shared-types";
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
+import { assembleAgent } from "./agent-assembly.js";
 
 const require = createRequire(import.meta.url);
 
@@ -131,46 +121,17 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   if (!config) return;
   const adapters = buildAdapters(config, deps.createAdapter);
   let pruneInterval: ReturnType<typeof setInterval> | undefined;
-  let conversationStore:
-    | ReturnType<typeof createPersistentConversationStore>
-    | undefined;
-  let messageProcessor: ReturnType<typeof createMessageProcessor> | undefined;
+  let store: ReturnType<typeof createPersistentConversationStore> | undefined;
+  let processor: ReturnType<typeof createMessageProcessor> | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    const baseDir = join(homedir(), ".closeclaw");
-    const persistence = createConversationPersistence(
-      join(baseDir, "conversations"),
-    );
-    const prefStore = createPreferenceStore(join(baseDir, "preferences"));
-    const threshold =
-      config.agent.compressionThreshold ?? DEFAULT_COMPRESSION_THRESHOLD;
-    const keepRecent =
-      config.agent.keepRecentCount ?? DEFAULT_KEEP_RECENT_COUNT;
-    const model = createModelProvider(config.agent);
-    const compressor = createConversationCompressor(
-      threshold,
-      keepRecent,
-      model,
-    );
-    const flusher = createMemoryFlusher(prefStore, model);
-    const pStore = createPersistentConversationStore({
-      persistence,
-      compressor,
-      flusher,
-    });
-    conversationStore = pStore;
-    messageProcessor = createMessageProcessor({
-      agentConfig: config.agent,
-      conversationStore: pStore,
-      preferenceStore: prefStore,
-      onAfterResponse: (p, s) => pStore.saveToDisk(p, s),
-    });
+    const assembly = assembleAgent(config.agent);
+    store = assembly.conversationStore;
+    processor = assembly.messageProcessor;
     console.log(
       `AI agent active: ${config.agent.provider}/${config.agent.model}`,
     );
     pruneInterval = setInterval(
-      () => {
-        conversationStore?.pruneStale(24 * 60 * 60 * 1000);
-      },
+      () => store?.pruneStale(24 * 60 * 60 * 1000),
       60 * 60 * 1000,
     );
   }
@@ -180,8 +141,8 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     adapters,
     pairingStorePath: deps.pairingStorePath,
     getDmSettings: (p) => dmSettingsFromConfig(config, p),
-    messageProcessor,
-    conversationStore,
+    messageProcessor: processor,
+    conversationStore: store,
   });
   await connectAll(adapters);
   try {

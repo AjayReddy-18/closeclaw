@@ -65,6 +65,7 @@ export {
   buildSenderIdentity,
   type CreateMessageProcessorDeps,
 } from "./message-processor.js";
+export { invokeModel, sdkMessagesForGenerate } from "./ai-invoker.js";
 export { createModelProvider } from "./provider-factory.js";
 
 export { createDatetimeTool } from "./tools/datetime-tool.js";
