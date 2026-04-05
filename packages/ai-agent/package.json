@@ -17,12 +17,13 @@
     "dist"
   ],
   "dependencies": {
-    "@closeclaw/shared-types": "workspace:*",
-    "ai": "^6.0.0",
-    "@ai-sdk/openai": "^3.0.0",
     "@ai-sdk/anthropic": "^3.0.0",
     "@ai-sdk/google": "^3.0.0",
+    "@ai-sdk/openai": "^3.0.0",
     "@ai-sdk/provider": "^3.0.0",
+    "@closeclaw/shared-types": "workspace:*",
+    "ai": "^6.0.0",
+    "cron-parser": "^5.5.0",
     "zod": "^3.25.76"
   }
 }

@@ -7,6 +7,8 @@ import { isValidGatewayConfig, type GatewayConfig } from "./gateway-config.js";
 import { isBotPlatform } from "./bot-platform.js";
 import type { AgentConfig } from "./agent-config.js";
 import { isValidAgentConfig } from "./agent-config.js";
+import type { HeartbeatConfig } from "./heartbeat-config.js";
+import { isValidHeartbeatConfig } from "./heartbeat-config.js";
 
 export interface Configuration {
   version: string;
@@ -14,6 +16,7 @@ export interface Configuration {
   channels: Partial<Record<BotPlatform, BotIntegration>>;
   gateway: GatewayConfig;
   agent?: AgentConfig;
+  heartbeat?: HeartbeatConfig;
 }
 
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
@@ -42,6 +45,13 @@ export function isValidConfiguration(value: unknown): value is Configuration {
   if (!isValidGatewayConfig(obj["gateway"])) return false;
 
   if (obj["agent"] !== undefined && !isValidAgentConfig(obj["agent"])) {
+    return false;
+  }
+
+  if (
+    obj["heartbeat"] !== undefined &&
+    !isValidHeartbeatConfig(obj["heartbeat"])
+  ) {
     return false;
   }
 
