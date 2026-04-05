@@ -3,3 +3,4 @@ packages:
   - "packages/bot-adapters"
   - "packages/gateway"
   - "packages/cli"
+  - "packages/ai-agent"

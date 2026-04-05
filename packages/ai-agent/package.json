@@ -1,0 +1,27 @@
+{
+  "name": "@closeclaw/ai-agent",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@closeclaw/shared-types": "workspace:*",
+    "ai": "^4.0.0",
+    "@ai-sdk/openai": "^3.0.0",
+    "@ai-sdk/anthropic": "^3.0.0",
+    "@ai-sdk/google": "^3.0.0",
+    "zod": "^3.23.0"
+  }
+}

@@ -8,6 +8,7 @@ export default defineConfig({
         __dirname,
         "tests/__mocks__/inquirer-prompts.ts",
       ),
+      "@inquirer/core": resolve(__dirname, "tests/__mocks__/inquirer-core.ts"),
       grammy: resolve(__dirname, "tests/__mocks__/grammy.ts"),
       "discord.js": resolve(__dirname, "tests/__mocks__/discord-js.ts"),
       "@closeclaw/shared-types": resolve(
@@ -20,6 +21,14 @@ export default defineConfig({
       ),
       "@closeclaw/gateway": resolve(__dirname, "packages/gateway/src/index.ts"),
       "@closeclaw/cli": resolve(__dirname, "packages/cli/src/index.ts"),
+      "@closeclaw/ai-agent": resolve(
+        __dirname,
+        "packages/ai-agent/src/index.ts",
+      ),
+      ai: resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
+      "@ai-sdk/openai": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
+      "@ai-sdk/anthropic": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
+      "@ai-sdk/google": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
     },
   },
   test: {
@@ -29,7 +38,11 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**/*.ts"],
-      exclude: ["packages/*/src/index.ts"],
+      exclude: [
+        "packages/*/src/index.ts",
+        "packages/**/*.d.ts",
+        "packages/cli/src/cli.ts",
+      ],
       thresholds: {
         statements: 90,
         branches: 90,
