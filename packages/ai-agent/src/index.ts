@@ -78,7 +78,9 @@ export {
 export { buildToolMap } from "./tool-executor.js";
 export {
   createScheduleTaskTool,
+  createDynamicScheduleTaskTool,
   type ScheduleTaskToolDeps,
+  type DynamicScheduleTaskToolDeps,
 } from "./tools/schedule-task-tool.js";
 export { formatPreferencesForContext } from "./preference-injection.js";
 

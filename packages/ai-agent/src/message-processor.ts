@@ -18,13 +18,17 @@ import {
 } from "./tools/preference-tools.js";
 import { invokeModel } from "./ai-invoker.js";
 
+type AnyTool = ReturnType<typeof createSavePreferenceTool>;
+type ToolMap = Record<string, AnyTool>;
+
 function toolOptionsForGenerate(
   config: AgentConfig,
   prefStore?: PreferenceStore,
   platform?: BotPlatform,
   senderId?: string,
+  extraTools?: ToolMap,
 ) {
-  const tools = buildToolMap(config.tools);
+  const tools: ToolMap = buildToolMap(config.tools);
   if (prefStore && platform && senderId) {
     tools["save_preference"] = createSavePreferenceTool(
       prefStore,
@@ -37,6 +41,7 @@ function toolOptionsForGenerate(
       senderId,
     );
   }
+  if (extraTools) Object.assign(tools, extraTools);
   if (Object.keys(tools).length === 0) return {};
   return { tools, stopWhen: stepCountIs(config.tools.maxCallDepth) };
 }
@@ -47,12 +52,13 @@ export interface CreateMessageProcessorDeps {
   generate?: typeof generateText;
   onAfterResponse?: (platform: BotPlatform, senderId: string) => void;
   preferenceStore?: PreferenceStore;
+  extraTools?: ToolMap;
 }
 
 export function createMessageProcessor(
   deps: CreateMessageProcessorDeps,
 ): MessageProcessor {
-  const { agentConfig, conversationStore, preferenceStore } = deps;
+  const { agentConfig, conversationStore, preferenceStore, extraTools } = deps;
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
   const afterHook = deps.onAfterResponse;
@@ -68,6 +74,7 @@ export function createMessageProcessor(
       preferenceStore,
       platform,
       senderId,
+      extraTools,
     );
     const result = await handleIncomingText(
       agentConfig,

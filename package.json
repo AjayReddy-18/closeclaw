@@ -10,7 +10,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "closeclaw": "tsx packages/cli/src/index.ts"
   },
   "devDependencies": {
     "@inquirer/prompts": "^7.5.0",

@@ -15,7 +15,12 @@ import {
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
 import { assembleAgent } from "./agent-assembly.js";
 import { setupHeartbeat } from "./heartbeat-setup.js";
-import { setupScheduler, type SchedulerAssembly } from "./scheduler-setup.js";
+import {
+  createSchedulerTaskStore,
+  createScheduleToolProxy,
+  setupScheduler,
+  type SchedulerAssembly,
+} from "./scheduler-setup.js";
 
 const require = createRequire(import.meta.url);
 
@@ -96,15 +101,7 @@ async function connectAll(adapters: BotAdapter[]): Promise<void> {
 }
 
 async function disconnectAll(adapters: BotAdapter[]): Promise<void> {
-  await Promise.all(
-    adapters.map(async (a) => {
-      try {
-        await a.disconnect();
-      } catch {
-        void 0;
-      }
-    }),
-  );
+  await Promise.all(adapters.map((a) => a.disconnect().catch(() => {})));
 }
 
 function waitForSigint(): Promise<void> {
@@ -126,23 +123,32 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   let pruneInterval: ReturnType<typeof setInterval> | undefined;
   let store: ReturnType<typeof createPersistentConversationStore> | undefined;
   let processor: ReturnType<typeof createMessageProcessor> | undefined;
+  const taskStore = createSchedulerTaskStore();
+  const schedulerRef: { current?: SchedulerAssembly } = {};
+  const senderRef = { platform: "telegram", senderId: "" };
+  let schedulerAssembly: SchedulerAssembly | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    const assembly = assembleAgent(config.agent);
+    const scheduleTool = createScheduleToolProxy(taskStore, schedulerRef, senderRef);
+    const assembly = assembleAgent(config.agent, { schedule_task: scheduleTool });
     store = assembly.conversationStore;
     processor = assembly.messageProcessor;
-    console.log(
-      `AI agent active: ${config.agent.provider}/${config.agent.model}`,
+    adapters.forEach((a) =>
+      a.onMessage((msg) => {
+        senderRef.platform = a.platform;
+        senderRef.senderId = msg.senderId;
+      }),
     );
+    console.log(`AI agent active: ${config.agent.provider}/${config.agent.model}`);
     pruneInterval = setInterval(
       () => store?.pruneStale(24 * 60 * 60 * 1000),
       60 * 60 * 1000,
     );
   }
   let heartbeat: HeartbeatRunner | undefined;
-  let schedulerAssembly: SchedulerAssembly | undefined;
   if (processor) {
     heartbeat = setupHeartbeat(config, processor, adapters);
-    schedulerAssembly = setupScheduler(processor, adapters);
+    schedulerAssembly = setupScheduler(taskStore, processor, adapters);
+    schedulerRef.current = schedulerAssembly;
   }
   const server = deps.createGatewayServer({
     port: config.gateway.port,

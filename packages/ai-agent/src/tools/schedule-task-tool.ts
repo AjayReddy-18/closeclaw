@@ -16,6 +16,12 @@ export interface ScheduleTaskToolDeps {
   senderId: string;
 }
 
+export interface DynamicScheduleTaskToolDeps {
+  taskStore: TaskStore;
+  scheduler: TaskScheduler;
+  getSender: () => { platform: string; senderId: string };
+}
+
 function buildTask(
   input: { name: string; prompt: string; schedule: string; reason: string },
   platform: string,
@@ -58,6 +64,14 @@ function buildTask(
 }
 
 export function createScheduleTaskTool(deps: ScheduleTaskToolDeps) {
+  return createDynamicScheduleTaskTool({
+    taskStore: deps.taskStore,
+    scheduler: deps.scheduler,
+    getSender: () => ({ platform: deps.platform, senderId: deps.senderId }),
+  });
+}
+
+export function createDynamicScheduleTaskTool(deps: DynamicScheduleTaskToolDeps) {
   return tool({
     description: SCHEDULE_TASK_DESCRIPTION,
     inputSchema: z.object({
@@ -71,7 +85,8 @@ export function createScheduleTaskTool(deps: ScheduleTaskToolDeps) {
         .describe("Why scheduling is needed instead of answering now"),
     }),
     execute: async (input) => {
-      const result = buildTask(input, deps.platform, deps.senderId);
+      const { platform, senderId } = deps.getSender();
+      const result = buildTask(input, platform, senderId);
       if (typeof result === "string") return { success: false, error: result };
       deps.taskStore.addTask(result);
       deps.scheduler.scheduleTask(result);

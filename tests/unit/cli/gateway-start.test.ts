@@ -54,13 +54,14 @@ vi.mock("@closeclaw/ai-agent", () => ({
     unscheduleTask: vi.fn(),
     runNow: vi.fn(),
   })),
+  createDynamicScheduleTaskTool: vi.fn(() => ({ execute: vi.fn() })),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {
   return {
     platform: "telegram",
-    connect: vi.fn(),
-    disconnect: vi.fn(),
+    connect: vi.fn().mockResolvedValue(undefined),
+    disconnect: vi.fn().mockResolvedValue(undefined),
     healthCheck: vi.fn(),
     onMessage: vi.fn(),
     sendMessage: vi.fn(),
@@ -366,6 +367,7 @@ describe("runGatewayStart AI agent assembly", () => {
         conversationStore: aiMocks.mockStore,
         preferenceStore: expect.any(Object),
         onAfterResponse: expect.any(Function),
+        extraTools: expect.objectContaining({ schedule_task: expect.any(Object) }),
       }),
     );
     expect(gwCfg).toMatchObject({

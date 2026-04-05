@@ -6,6 +6,7 @@ import {
   createTaskStore,
   createTaskExecutor,
   createTaskScheduler,
+  createDynamicScheduleTaskTool,
   type TaskScheduler,
   type TaskStore,
 } from "@closeclaw/ai-agent";
@@ -15,13 +16,35 @@ export interface SchedulerAssembly {
   scheduler: TaskScheduler;
 }
 
+export function createSchedulerTaskStore(): TaskStore {
+  const storePath = join(homedir(), ".closeclaw", "cron", "tasks.json");
+  return createTaskStore(storePath);
+}
+
+export function createScheduleToolProxy(
+  taskStore: TaskStore,
+  assemblyRef: { current?: SchedulerAssembly },
+  senderRef: { platform: string; senderId: string },
+) {
+  return createDynamicScheduleTaskTool({
+    taskStore,
+    scheduler: {
+      start: () => {},
+      stop: () => {},
+      scheduleTask: (t) => assemblyRef.current?.scheduler.scheduleTask(t),
+      unscheduleTask: (id) => assemblyRef.current?.scheduler.unscheduleTask(id),
+      runNow: (id) =>
+        assemblyRef.current?.scheduler.runNow(id) ?? Promise.resolve(undefined),
+    },
+    getSender: () => senderRef,
+  });
+}
+
 export function setupScheduler(
+  taskStore: TaskStore,
   processor: ReturnType<typeof createMessageProcessor>,
   adapters: BotAdapter[],
 ): SchedulerAssembly {
-  const baseDir = join(homedir(), ".closeclaw", "cron");
-  const taskStorePath = join(baseDir, "tasks.json");
-  const taskStore = createTaskStore(taskStorePath);
   const executor = createTaskExecutor((platform, senderId, prompt) =>
     processor.processMessage(platform, senderId, prompt),
   );
