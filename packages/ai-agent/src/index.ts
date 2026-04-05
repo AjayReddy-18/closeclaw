@@ -80,3 +80,23 @@ export { formatPreferencesForContext } from "./preference-injection.js";
 
 export type { ProviderDisplayInfo } from "./provider-info.js";
 export { PROVIDER_INFO } from "./provider-info.js";
+
+export type {
+  ScheduledTask,
+  TaskRun,
+  TaskStoreData,
+  ScheduleType,
+  TaskStatus,
+  RunOutcome,
+} from "./scheduler/task-types.js";
+export {
+  TASK_STORE_VERSION,
+  DEFAULT_MAX_RETRIES,
+  MAX_RUNS_PER_TASK,
+} from "./scheduler/task-types.js";
+export { createTaskStore, type TaskStore } from "./scheduler/task-store.js";
+export { parseDuration, formatDuration } from "./scheduler/duration-parser.js";
+export {
+  isValidCronExpression,
+  nextCronOccurrence,
+} from "./scheduler/cron-utils.js";
