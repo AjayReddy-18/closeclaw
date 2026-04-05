@@ -70,7 +70,11 @@ export function createTaskScheduler(
       runCount: task.runCount + 1,
     });
     if (run.outcome === "success" && run.response) {
-      await deliver(task.targetPlatform, task.targetSenderId, run.response);
+      try {
+        await deliver(task.targetPlatform, task.targetSenderId, run.response);
+      } catch (e: unknown) {
+        console.error(`[scheduler] delivery failed for task ${task.id}:`, e);
+      }
     }
     handlePostExecution(task, run);
   }

@@ -14,7 +14,7 @@ function errorMessage(error: unknown): string {
 export class TelegramAdapter implements BotAdapter {
   readonly platform = BotPlatform.TELEGRAM;
   private readonly bot: Bot;
-  private handler?: MessageHandler;
+  private handlers: MessageHandler[] = [];
 
   constructor(options: { token: string }) {
     this.bot = new Bot(options.token);
@@ -27,9 +27,8 @@ export class TelegramAdapter implements BotAdapter {
   }
 
   private emitText(ctx: Context): void {
-    const h = this.handler;
-    if (!h) return;
-    h(this.toIncoming(ctx));
+    const msg = this.toIncoming(ctx);
+    for (const h of this.handlers) h(msg);
   }
 
   private toIncoming(ctx: Context): IncomingMessage {
@@ -81,7 +80,7 @@ export class TelegramAdapter implements BotAdapter {
   }
 
   onMessage(handler: MessageHandler): void {
-    this.handler = handler;
+    this.handlers.push(handler);
   }
 
   async sendMessage(senderId: string, text: string): Promise<void> {
