@@ -2,11 +2,16 @@ import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
+import {
+  createConversationStore,
+  createMessageProcessor,
+} from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
   DmPolicy,
   type Configuration,
+  isValidAgentConfig,
 } from "@closeclaw/shared-types";
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
 
@@ -116,12 +121,33 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const config = readGatewayConfig(deps);
   if (!config) return;
   const adapters = buildAdapters(config, deps.createAdapter);
+  let pruneInterval: ReturnType<typeof setInterval> | undefined;
+  let conversationStore: ReturnType<typeof createConversationStore> | undefined;
+  let messageProcessor: ReturnType<typeof createMessageProcessor> | undefined;
+  if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
+    conversationStore = createConversationStore();
+    messageProcessor = createMessageProcessor({
+      agentConfig: config.agent,
+      conversationStore,
+    });
+    console.log(
+      `AI agent active: ${config.agent.provider}/${config.agent.model}`,
+    );
+    pruneInterval = setInterval(
+      () => {
+        conversationStore?.pruneStale(24 * 60 * 60 * 1000);
+      },
+      60 * 60 * 1000,
+    );
+  }
   const server = deps.createGatewayServer({
     port: config.gateway.port,
     authToken: config.gateway.authToken,
     adapters,
     pairingStorePath: deps.pairingStorePath,
     getDmSettings: (p) => dmSettingsFromConfig(config, p),
+    messageProcessor,
+    conversationStore,
   });
   await connectAll(adapters);
   try {
@@ -129,6 +155,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     console.log("Gateway running. Press Ctrl+C to stop.");
     await (deps.waitForShutdown ?? waitForSigint)();
   } finally {
+    if (pruneInterval !== undefined) clearInterval(pruneInterval);
     await server.stop().catch(() => undefined);
     await disconnectAll(adapters);
   }

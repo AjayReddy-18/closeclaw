@@ -9,6 +9,14 @@ import {
 } from "./commands/gateway-start.js";
 import { runPairingList } from "./commands/pairing-list.js";
 import { runPairingApprove } from "./commands/pairing-approve.js";
+import {
+  createAgentSystemPromptDeps,
+  runAgentSystemPrompt,
+} from "./commands/agent-system-prompt.js";
+import {
+  createAgentConfigureDeps,
+  runAgentConfigure,
+} from "./commands/agent-configure.js";
 
 const program = new Command();
 
@@ -63,6 +71,28 @@ gateway
   .action(async () => {
     try {
       await runGatewayStart(createGatewayStartDeps());
+    } catch {
+      process.exitCode = 1;
+    }
+  });
+
+const agent = program.command("agent").description("Configure the AI agent");
+agent
+  .command("configure")
+  .description("Interactive agent provider and model setup")
+  .action(async () => {
+    try {
+      await runAgentConfigure(createAgentConfigureDeps());
+    } catch {
+      process.exitCode = 1;
+    }
+  });
+agent
+  .command("system-prompt")
+  .description("View or edit the AI agent system prompt")
+  .action(async () => {
+    try {
+      await runAgentSystemPrompt(createAgentSystemPromptDeps());
     } catch {
       process.exitCode = 1;
     }
