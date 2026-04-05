@@ -83,10 +83,7 @@ describe("task-scheduler post-execution paths", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(executor.executeTask).toHaveBeenCalled();
-    expect(store.updateTask).toHaveBeenCalledWith(
-      "t1",
-      expect.objectContaining({ status: "completed" }),
-    );
+    expect(store.removeTask).toHaveBeenCalledWith("t1");
     scheduler.stop();
   });
 

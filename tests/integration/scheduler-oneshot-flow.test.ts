@@ -59,13 +59,8 @@ describe("one-shot task lifecycle", () => {
     expect(processMessage).toHaveBeenCalledTimes(1);
     expect(delivered).toEqual(["Report done"]);
 
-    const runs = store.getRunsForTask("os-1");
-    expect(runs).toHaveLength(1);
-    expect(runs[0].outcome).toBe("success");
-
     const updated = store.getTask("os-1");
-    expect(updated?.status).toBe("completed");
-    expect(updated?.runCount).toBe(1);
+    expect(updated).toBeUndefined();
 
     scheduler.stop();
   });

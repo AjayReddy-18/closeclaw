@@ -97,4 +97,36 @@ describe("createScheduleTaskTool", () => {
     expect(task.targetPlatform).toBe("discord");
     expect(task.targetSenderId).toBe("99");
   });
+
+  it("rejects duplicate task by name", async () => {
+    const deps = makeDeps();
+    deps.taskStore.listTasks = vi.fn(() => [
+      {
+        id: "existing",
+        name: "Reminder",
+        prompt: "Check inbox",
+        scheduleType: "at" as const,
+        scheduleValue: "30m",
+        status: "active" as const,
+        targetPlatform: "telegram" as const,
+        targetSenderId: "42",
+        createdAt: new Date().toISOString(),
+        runCount: 0,
+        maxRetries: 3,
+      },
+    ]);
+    const tool = createScheduleTaskTool(deps);
+    const result = await tool.execute(
+      {
+        name: "Reminder",
+        prompt: "Check inbox again",
+        schedule: "1h",
+        reason: "test",
+      },
+      { toolCallId: "test", messages: [] },
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("similar task already exists");
+    expect(deps.taskStore.addTask).not.toHaveBeenCalled();
+  });
 });

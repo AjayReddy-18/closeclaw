@@ -19,11 +19,15 @@ type DeliverFn = (
   text: string,
 ) => Promise<void>;
 
+const MAX_TIMEOUT_MS = 2_147_483_647;
+
 function computeDelayMs(task: ScheduledTask): number {
   if (task.nextRunAt) {
-    return Math.max(0, new Date(task.nextRunAt).getTime() - Date.now());
+    const raw = Math.max(0, new Date(task.nextRunAt).getTime() - Date.now());
+    return Math.min(raw, MAX_TIMEOUT_MS);
   }
-  return parseDuration(task.scheduleValue) ?? 60_000;
+  const dur = parseDuration(task.scheduleValue) ?? 60_000;
+  return Math.min(dur, MAX_TIMEOUT_MS);
 }
 
 function computeNextRun(task: ScheduledTask): string | undefined {
@@ -81,7 +85,7 @@ export function createTaskScheduler(
 
   function handlePostExecution(task: ScheduledTask, run: TaskRun): void {
     if (task.scheduleType === "at") {
-      store.updateTask(task.id, { status: "completed" });
+      store.removeTask(task.id);
       return;
     }
     if (run.outcome === "failure" && task.runCount + 1 >= task.maxRetries) {
@@ -101,6 +105,11 @@ export function createTaskScheduler(
     }
   }
 
+  function isReadyToFire(task: ScheduledTask): boolean {
+    if (!task.nextRunAt) return true;
+    return new Date(task.nextRunAt).getTime() <= Date.now() + 1000;
+  }
+
   function scheduleTimer(task: ScheduledTask): void {
     clearExistingTimer(task.id);
     const delay = computeDelayMs(task);
@@ -108,6 +117,10 @@ export function createTaskScheduler(
       timers.delete(task.id);
       const current = store.getTask(task.id);
       if (!current || current.status !== "active") return;
+      if (!isReadyToFire(current)) {
+        scheduleTimer(current);
+        return;
+      }
       queue.push(current);
       void processQueue();
     }, delay);
