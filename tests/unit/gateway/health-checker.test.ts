@@ -13,6 +13,7 @@ function mockAdapter(
     healthCheck: vi.fn(() => Promise.resolve(result)),
     onMessage: vi.fn(),
     sendMessage: vi.fn(),
+    sendTypingIndicator: vi.fn(),
   };
 }
 

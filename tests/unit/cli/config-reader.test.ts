@@ -64,4 +64,10 @@ describe("readConfig", () => {
       "Invalid configuration schema",
     );
   });
+
+  it("throws ConfigReadError for non-ENOENT read failures", () => {
+    mkdirSync(configPath, { recursive: true });
+    expect(() => readConfig(configPath)).toThrow(ConfigReadError);
+    expect(() => readConfig(configPath)).toThrow("Failed to read config");
+  });
 });

@@ -83,6 +83,7 @@ describe("platform availability for onboard", () => {
       ),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
     try {
       const deps: OnboardDeps = {

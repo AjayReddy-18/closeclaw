@@ -21,6 +21,7 @@ describe("runOnboard", () => {
     ),
     onMessage: vi.fn(),
     sendMessage: vi.fn(),
+    sendTypingIndicator: vi.fn(),
   };
 
   beforeEach(() => {
@@ -201,5 +202,100 @@ describe("runOnboard", () => {
     expect(unlink).toHaveBeenCalledWith("/tmp/cfg.json");
     expect(vi.mocked(deps.readConfig)).toHaveBeenCalledTimes(2);
     expect(deps.writeConfig).toHaveBeenCalledTimes(1);
+  });
+
+  it("rethrows non-ConfigReadError exceptions from readConfig", async () => {
+    const deps = baseDeps({
+      readConfig: vi.fn(() => {
+        throw new TypeError("unexpected");
+      }),
+    });
+    await expect(runOnboard(deps)).rejects.toThrow("unexpected");
+  });
+
+  it("exits with 130 on ExitPromptError", async () => {
+    const { ExitPromptError } = await import("@inquirer/core");
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`exit:${String(code)}`);
+    });
+    const deps = baseDeps({
+      selectPlatform: vi.fn(async () => {
+        throw new ExitPromptError();
+      }),
+    });
+    await expect(runOnboard(deps)).rejects.toThrow("exit:130");
+    exitSpy.mockRestore();
+  });
+
+  it("persists allowlist senders when dm policy is allowlist", async () => {
+    const deps = baseDeps({
+      selectDmPolicy: vi.fn(async () => DmPolicy.ALLOWLIST),
+      inputAllowlistSenders: vi.fn(async () => ["user1", "user2"]),
+    });
+    await runOnboard(deps);
+    expect(deps.writeConfig).toHaveBeenCalledTimes(1);
+    const written = vi.mocked(deps.writeConfig).mock.calls[0]![1];
+    expect(written.channels.telegram?.allowedSenders).toEqual([
+      "user1",
+      "user2",
+    ]);
+  });
+
+  it("throws when allowlist policy has no inputAllowlistSenders dep", async () => {
+    const deps = baseDeps({
+      selectDmPolicy: vi.fn(async () => DmPolicy.ALLOWLIST),
+    });
+    delete (deps as Record<string, unknown>).inputAllowlistSenders;
+    await expect(runOnboard(deps)).rejects.toThrow(
+      "inputAllowlistSenders required",
+    );
+  });
+
+  it("prints instructions when getInstructions returns text", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const deps = baseDeps({
+      getInstructions: vi.fn(() => "Step 1: Do this\nStep 2: Do that"),
+    });
+    await runOnboard(deps);
+    expect(logSpy).toHaveBeenCalledWith("Step 1: Do this\nStep 2: Do that");
+    logSpy.mockRestore();
+  });
+
+  it("preserves existing gateway config on second bot addition", async () => {
+    const existingGw = {
+      bindAddress: "127.0.0.1",
+      port: 18790,
+      authToken: "x".repeat(64),
+    };
+    const existingConfig: Configuration = {
+      version: "0.1.0",
+      lastModified: new Date().toISOString(),
+      channels: {
+        telegram: {
+          platform: "telegram",
+          botToken: "old-tg",
+          enabled: true,
+          dmPolicy: DmPolicy.PAIRING,
+          createdAt: new Date().toISOString(),
+        },
+      },
+      gateway: existingGw,
+    };
+    const deps = baseDeps({
+      readConfig: vi.fn(() => existingConfig),
+      detectConfig: vi.fn(() => ({
+        exists: true,
+        configuredPlatforms: ["telegram"] as BotPlatform[],
+        availablePlatforms: ["discord"] as BotPlatform[],
+        allPlatformsConfigured: false,
+      })),
+      selectAction: vi.fn(async () => "add-integration" as const),
+      selectPlatform: vi.fn(async (): Promise<BotPlatform> => "discord"),
+      inputBotToken: vi.fn(async () => "discord-token"),
+    });
+    await runOnboard(deps);
+    const written = vi.mocked(deps.writeConfig).mock.calls[0]![1];
+    expect(written.gateway).toEqual(existingGw);
+    expect(deps.generateGatewayConfig).not.toHaveBeenCalled();
   });
 });

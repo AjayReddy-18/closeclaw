@@ -41,6 +41,7 @@ describe("first-time onboard flow", () => {
       ),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
 
     await runOnboard({
@@ -83,6 +84,7 @@ describe("first-time onboard flow", () => {
       ),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
 
     await runOnboard({

@@ -20,6 +20,7 @@ describe("runOnboard defer after instructions", () => {
     ),
     onMessage: vi.fn(),
     sendMessage: vi.fn(),
+    sendTypingIndicator: vi.fn(),
   };
 
   beforeEach(() => {

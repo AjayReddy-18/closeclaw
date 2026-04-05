@@ -100,4 +100,43 @@ describe("writeConfig", () => {
     expect(caught).toBeInstanceOf(ConfigWriteError);
     expect((caught as ConfigWriteError).message).toContain("Permission denied");
   });
+
+  it("throws ConfigWriteError when writeFileSync fails with EACCES", () => {
+    writeConfig(configPath, validConfig);
+    const origWrite = fs.writeFileSync;
+    vi.spyOn(fs, "writeFileSync").mockImplementationOnce(() => {
+      const err = new Error("nope") as NodeJS.ErrnoException;
+      err.code = "EACCES";
+      throw err;
+    });
+    let caught: unknown;
+    try {
+      writeConfig(configPath, validConfig);
+    } catch (e: unknown) {
+      caught = e;
+    }
+    vi.mocked(fs.writeFileSync).mockImplementation(origWrite);
+    expect(caught).toBeInstanceOf(ConfigWriteError);
+    expect((caught as ConfigWriteError).message).toContain("Permission denied");
+  });
+
+  it("throws ConfigWriteError without Permission denied for non-EACCES write error", () => {
+    writeConfig(configPath, validConfig);
+    vi.spyOn(fs, "writeFileSync").mockImplementationOnce(() => {
+      throw new Error("disk full");
+    });
+    let caught: unknown;
+    try {
+      writeConfig(configPath, validConfig);
+    } catch (e: unknown) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(ConfigWriteError);
+    expect((caught as ConfigWriteError).message).toContain(
+      "Failed to write config",
+    );
+    expect((caught as ConfigWriteError).message).not.toContain(
+      "Permission denied",
+    );
+  });
 });

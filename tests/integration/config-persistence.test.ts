@@ -62,6 +62,7 @@ describe("onboard add-new config persistence", () => {
       ),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
 
     await runOnboard({
@@ -135,6 +136,7 @@ describe("onboard add-new config persistence", () => {
       ),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
 
     await runOnboard({

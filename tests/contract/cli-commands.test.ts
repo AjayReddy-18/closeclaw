@@ -92,6 +92,7 @@ describe("gateway pairing HTTP", () => {
       healthCheck: vi.fn(() => Promise.resolve({ connected: true })),
       onMessage: vi.fn(),
       sendMessage: vi.fn(),
+      sendTypingIndicator: vi.fn(),
     };
   }
 
