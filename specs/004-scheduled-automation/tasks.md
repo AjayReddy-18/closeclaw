@@ -75,13 +75,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Write unit tests for task executor in tests/unit/ai-agent/scheduler/task-executor.test.ts
-- [ ] T020 [P] [US2] Write unit tests for task scheduler in tests/unit/ai-agent/scheduler/task-scheduler.test.ts
+- [x] T019 [P] [US2] Write unit tests for task executor in tests/unit/ai-agent/scheduler/task-executor.test.ts
+- [x] T020 [P] [US2] Write unit tests for task scheduler in tests/unit/ai-agent/scheduler/task-scheduler.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Implement task executor (run a single task via AI model, record result) in packages/ai-agent/src/scheduler/task-executor.ts
-- [ ] T022 [US2] Implement task scheduler (timer management, execution queue, one-shot scheduling, startup reconciliation) in packages/ai-agent/src/scheduler/task-scheduler.ts
+- [x] T021 [US2] Implement task executor (run a single task via AI model, record result) in packages/ai-agent/src/scheduler/task-executor.ts
+- [x] T022 [US2] Implement task scheduler (timer management, execution queue, one-shot scheduling, startup reconciliation) in packages/ai-agent/src/scheduler/task-scheduler.ts
 - [ ] T023 [US2] Wire task scheduler into gateway startup and shutdown in packages/cli/src/commands/gateway-start.ts
 - [ ] T024 [US2] Write integration test for one-shot task lifecycle (create, fire, deliver, auto-remove) in tests/integration/scheduler-oneshot-flow.test.ts
 
