@@ -29,6 +29,31 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createConversationCompressor: vi.fn(() => ({ shouldCompress: vi.fn() })),
   createMemoryFlusher: vi.fn(() => ({ flush: vi.fn() })),
   createModelProvider: vi.fn(() => ({})),
+  createHeartbeatRunner: vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    isRunning: vi.fn(() => false),
+    runNow: vi.fn(),
+  })),
+  createTaskStore: vi.fn(() => ({
+    listTasks: vi.fn(() => []),
+    getTask: vi.fn(),
+    addTask: vi.fn(),
+    removeTask: vi.fn(),
+    updateTask: vi.fn(),
+    addRun: vi.fn(),
+    getRunsForTask: vi.fn(() => []),
+  })),
+  createTaskExecutor: vi.fn(() => ({
+    executeTask: vi.fn(),
+  })),
+  createTaskScheduler: vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    scheduleTask: vi.fn(),
+    unscheduleTask: vi.fn(),
+    runNow: vi.fn(),
+  })),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {

@@ -104,3 +104,11 @@ export {
   createHeartbeatRunner,
   type HeartbeatRunner,
 } from "./scheduler/heartbeat-runner.js";
+export {
+  createTaskExecutor,
+  type TaskExecutor,
+} from "./scheduler/task-executor.js";
+export {
+  createTaskScheduler,
+  type TaskScheduler,
+} from "./scheduler/task-scheduler.js";

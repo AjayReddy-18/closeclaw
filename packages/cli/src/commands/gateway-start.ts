@@ -15,6 +15,7 @@ import {
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
 import { assembleAgent } from "./agent-assembly.js";
 import { setupHeartbeat } from "./heartbeat-setup.js";
+import { setupScheduler, type SchedulerAssembly } from "./scheduler-setup.js";
 
 const require = createRequire(import.meta.url);
 
@@ -138,8 +139,10 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     );
   }
   let heartbeat: HeartbeatRunner | undefined;
+  let schedulerAssembly: SchedulerAssembly | undefined;
   if (processor) {
     heartbeat = setupHeartbeat(config, processor, adapters);
+    schedulerAssembly = setupScheduler(processor, adapters);
   }
   const server = deps.createGatewayServer({
     port: config.gateway.port,
@@ -157,9 +160,15 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
       heartbeat.start();
       console.log(`Heartbeat active: every ${config.heartbeat?.every}`);
     }
+    if (schedulerAssembly) {
+      schedulerAssembly.scheduler.start();
+      const count = schedulerAssembly.taskStore.listTasks().length;
+      if (count > 0) console.log(`Scheduler active: ${String(count)} tasks`);
+    }
     console.log("Gateway running. Press Ctrl+C to stop.");
     await (deps.waitForShutdown ?? waitForSigint)();
   } finally {
+    schedulerAssembly?.scheduler.stop();
     heartbeat?.stop();
     if (pruneInterval !== undefined) clearInterval(pruneInterval);
     await server.stop().catch(() => undefined);

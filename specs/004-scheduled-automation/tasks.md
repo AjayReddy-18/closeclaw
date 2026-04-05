@@ -55,13 +55,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Write unit tests for heartbeat runner in tests/unit/ai-agent/scheduler/heartbeat-runner.test.ts
+- [x] T015 [P] [US1] Write unit tests for heartbeat runner in tests/unit/ai-agent/scheduler/heartbeat-runner.test.ts
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement heartbeat runner (interval loop, HEARTBEAT.md reading, active hours check, HEARTBEAT_OK suppression) in packages/ai-agent/src/scheduler/heartbeat-runner.ts
-- [ ] T017 [US1] Wire heartbeat runner into gateway startup in packages/cli/src/commands/gateway-start.ts
-- [ ] T018 [US1] Write integration test for heartbeat lifecycle (start, fire, suppress OK, stop) in tests/integration/scheduler-heartbeat-flow.test.ts
+- [x] T016 [US1] Implement heartbeat runner (interval loop, HEARTBEAT.md reading, active hours check, HEARTBEAT_OK suppression) in packages/ai-agent/src/scheduler/heartbeat-runner.ts
+- [x] T017 [US1] Wire heartbeat runner into gateway startup in packages/cli/src/commands/gateway-start.ts
+- [x] T018 [US1] Write integration test for heartbeat lifecycle (start, fire, suppress OK, stop) in tests/integration/scheduler-heartbeat-flow.test.ts
 
 **Checkpoint**: Heartbeat works end-to-end. Gateway starts heartbeat timer, AI reads HEARTBEAT.md, alerts are delivered, HEARTBEAT_OK is suppressed.
 
