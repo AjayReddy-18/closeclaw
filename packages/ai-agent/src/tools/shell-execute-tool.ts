@@ -19,7 +19,7 @@ export function createShellExecuteTool() {
   return tool({
     description:
       "Execute a shell command and return stdout, stderr, and exit code",
-    parameters: z.object({
+    inputSchema: z.object({
       command: z.string().describe("Shell command to execute"),
       workingDirectory: z
         .string()

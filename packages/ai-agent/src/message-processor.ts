@@ -1,5 +1,5 @@
 import type { BotPlatform, AgentConfig } from "@closeclaw/shared-types";
-import { generateText } from "ai";
+import { generateText, stepCountIs } from "ai";
 import type { ConversationMessage } from "./conversation-types.js";
 import type { ConversationStore } from "./conversation-types.js";
 import type { MessageProcessor } from "./message-processor-types.js";
@@ -18,7 +18,7 @@ import { buildToolMap } from "./tool-executor.js";
 function toolOptionsForGenerate(config: AgentConfig) {
   const tools = buildToolMap(config.tools);
   if (Object.keys(tools).length === 0) return {};
-  return { tools, maxSteps: config.tools.maxCallDepth };
+  return { tools, stopWhen: stepCountIs(config.tools.maxCallDepth) };
 }
 
 export interface CreateMessageProcessorDeps {

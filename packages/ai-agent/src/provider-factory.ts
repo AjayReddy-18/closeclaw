@@ -2,11 +2,11 @@ import { type AgentConfig } from "@closeclaw/shared-types";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import type { LanguageModelV1 } from "ai";
+import type { LanguageModelV2 } from "@ai-sdk/provider";
 
 const KIMI_BASE_URL = "https://api.moonshot.ai/v1";
 
-export function createModelProvider(config: AgentConfig): LanguageModelV1 {
+export function createModelProvider(config: AgentConfig): LanguageModelV2 {
   switch (config.provider) {
     case "openai":
       return createOpenAI({ apiKey: config.apiKey! })(config.model);

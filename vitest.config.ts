@@ -29,6 +29,10 @@ export default defineConfig({
       "@ai-sdk/openai": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/anthropic": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/google": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
+      "@ai-sdk/provider": resolve(
+        __dirname,
+        "tests/__mocks__/ai-sdk-provider.ts",
+      ),
     },
   },
   test: {

@@ -10,10 +10,14 @@ export const generateText = vi.fn().mockResolvedValue({
 
 export function tool(config: {
   description: string;
-  parameters: unknown;
+  inputSchema: unknown;
   execute?: (...args: unknown[]) => unknown;
 }) {
   return { ...config, type: "function" as const };
+}
+
+export function stepCountIs(n: number) {
+  return { type: "step-count" as const, count: n };
 }
 
 function createMockModelFactory(providerName: string) {
@@ -22,7 +26,7 @@ function createMockModelFactory(providerName: string) {
       provider: providerName,
       modelId,
       options,
-      specificationVersion: "v1",
+      specificationVersion: "v2",
     }));
     return modelFactory;
   });

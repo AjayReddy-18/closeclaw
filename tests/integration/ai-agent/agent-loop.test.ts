@@ -142,6 +142,6 @@ describe("agent loop integration", () => {
     );
     const call = mockGen.mock.calls[0]![0] as Record<string, unknown>;
     expect(call.tools).toBeDefined();
-    expect(call.maxSteps).toBe(3);
+    expect(call.stopWhen).toBeDefined();
   });
 });

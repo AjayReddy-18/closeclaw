@@ -39,7 +39,7 @@ async function runRequest(
 export function createHttpRequestTool() {
   return tool({
     description: "Make an HTTP request to a URL and return the response",
-    parameters: z.object({
+    inputSchema: z.object({
       method: z.enum(HTTP_METHODS).describe("HTTP method"),
       url: z.string().url().describe("URL to request"),
       headers: z.record(z.string()).optional().describe("Request headers"),

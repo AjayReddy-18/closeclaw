@@ -6,7 +6,7 @@ describe("createDatetimeTool", () => {
     const t = createDatetimeTool();
     expect(t.type).toBe("function");
     expect(t.description).toContain("date");
-    expect(t.parameters).toBeDefined();
+    expect(t.inputSchema).toBeDefined();
     expect(t.execute).toBeTypeOf("function");
   });
 

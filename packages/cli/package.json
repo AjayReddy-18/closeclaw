@@ -21,7 +21,7 @@
     "@closeclaw/bot-adapters": "workspace:*",
     "@closeclaw/gateway": "workspace:*",
     "@closeclaw/shared-types": "workspace:*",
-    "ai": "^4.0.0",
+    "ai": "^6.0.0",
     "@inquirer/core": "^10.1.0",
     "@inquirer/prompts": "^7.5.0",
     "commander": "^13.1.0"

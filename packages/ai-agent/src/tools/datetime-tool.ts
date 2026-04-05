@@ -4,7 +4,7 @@ import { tool } from "ai";
 export function createDatetimeTool() {
   return tool({
     description: "Get the current date and time with timezone information",
-    parameters: z.object({}),
+    inputSchema: z.object({}),
     execute: async () => {
       const now = new Date();
       return {

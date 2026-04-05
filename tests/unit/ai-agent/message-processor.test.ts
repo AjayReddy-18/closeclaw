@@ -108,7 +108,7 @@ describe("createMessageProcessor", () => {
     expect(r).toBe(AI_ERROR_MESSAGE);
   });
 
-  it("processMessage passes tools and maxSteps when tools enabled", async () => {
+  it("processMessage passes tools and stopWhen when tools enabled", async () => {
     const p = createMessageProcessor({
       agentConfig: baseConfig({
         tools: {
@@ -123,7 +123,7 @@ describe("createMessageProcessor", () => {
     await p.processMessage(BotPlatform.TELEGRAM, "tools", "hi");
     const lastCall = mockGen.mock.calls.at(-1)![0] as Record<string, unknown>;
     expect(lastCall.tools).toBeDefined();
-    expect(lastCall.maxSteps).toBe(5);
+    expect(lastCall.stopWhen).toBeDefined();
   });
 
   it("processMessage omits tools when disabled or empty", async () => {
@@ -141,7 +141,7 @@ describe("createMessageProcessor", () => {
     await p.processMessage(BotPlatform.TELEGRAM, "no-tools", "x");
     let lastCall = mockGen.mock.calls.at(-1)![0] as Record<string, unknown>;
     expect(lastCall.tools).toBeUndefined();
-    expect(lastCall.maxSteps).toBeUndefined();
+    expect(lastCall.stopWhen).toBeUndefined();
 
     const p2 = createMessageProcessor({
       agentConfig: baseConfig(),

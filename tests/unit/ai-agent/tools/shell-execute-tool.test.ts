@@ -28,7 +28,7 @@ describe("createShellExecuteTool", () => {
     const t = createShellExecuteTool();
     expect(t.type).toBe("function");
     expect(t.description).toContain("shell");
-    expect(t.parameters).toBeDefined();
+    expect(t.inputSchema).toBeDefined();
     expect(t.execute).toBeTypeOf("function");
   });
 
