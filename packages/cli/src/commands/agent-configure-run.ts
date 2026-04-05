@@ -27,10 +27,10 @@ export interface AgentConfigureDeps {
   configPath: string;
   readConfig: (path: string) => Configuration | null;
   writeConfig: (path: string, config: Configuration) => void;
-  select: (opts: {
+  select: <T extends string = string>(opts: {
     message: string;
-    choices: { name: string; value: AiProvider }[];
-  }) => Promise<AiProvider>;
+    choices: { name: string; value: T }[];
+  }) => Promise<T>;
   input: (opts: {
     message: string;
     default?: string;
@@ -63,7 +63,26 @@ async function pickProvider(deps: AgentConfigureDeps): Promise<AiProvider> {
   return deps.select({ message: "AI provider", choices });
 }
 
-async function promptModel(deps: AgentConfigureDeps): Promise<string> {
+const CUSTOM_MODEL_SENTINEL = "__custom__";
+
+async function promptModel(
+  deps: AgentConfigureDeps,
+  provider: AiProvider,
+): Promise<string> {
+  const models = PROVIDER_INFO[provider].exampleModels;
+  if (models.length === 0) return promptCustomModelName(deps);
+  const choices = [
+    ...models.map((m) => ({ name: m, value: m })),
+    { name: "Custom (enter manually)", value: CUSTOM_MODEL_SENTINEL },
+  ];
+  const picked = await deps.select({ message: "Model", choices });
+  if (picked === CUSTOM_MODEL_SENTINEL) return promptCustomModelName(deps);
+  return picked;
+}
+
+async function promptCustomModelName(
+  deps: AgentConfigureDeps,
+): Promise<string> {
   return deps.input({
     message: "Model name",
     validate: (v) => (v.trim().length > 0 ? true : "Required"),
@@ -170,7 +189,7 @@ export async function executeAgentConfigure(
   if (!existing) return;
   if (!(await shouldReconfigure(deps, existing))) return;
   const provider = await pickProvider(deps);
-  const model = await promptModel(deps);
+  const model = await promptModel(deps, provider);
   const apiKey = await promptApiKeyMaybe(deps, provider);
   const baseUrl = await promptBaseUrlMaybe(deps, provider);
   const tools = await collectTools(deps);

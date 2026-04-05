@@ -15,7 +15,15 @@ export const PROVIDER_INFO: Record<AiProvider, ProviderDisplayInfo> = {
     description: "GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo",
     requiresApiKey: true,
     requiresBaseUrl: false,
-    exampleModels: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+    exampleModels: [
+      "gpt-4o",
+      "gpt-4o-mini",
+      "gpt-4-turbo",
+      "gpt-3.5-turbo",
+      "o3",
+      "o3-mini",
+      "o4-mini",
+    ],
   },
   anthropic: {
     name: "Anthropic Claude",
@@ -24,8 +32,9 @@ export const PROVIDER_INFO: Record<AiProvider, ProviderDisplayInfo> = {
     requiresBaseUrl: false,
     exampleModels: [
       "claude-sonnet-4-20250514",
-      "claude-3-5-haiku-20241022",
       "claude-opus-4-20250514",
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
     ],
   },
   google: {
@@ -33,7 +42,12 @@ export const PROVIDER_INFO: Record<AiProvider, ProviderDisplayInfo> = {
     description: "Gemini 2.0 Flash, Gemini 1.5 Pro",
     requiresApiKey: true,
     requiresBaseUrl: false,
-    exampleModels: ["gemini-2.0-flash", "gemini-1.5-pro"],
+    exampleModels: [
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-pro",
+    ],
   },
   ollama: {
     name: "Ollama (Local)",
@@ -41,7 +55,15 @@ export const PROVIDER_INFO: Record<AiProvider, ProviderDisplayInfo> = {
     requiresApiKey: false,
     requiresBaseUrl: true,
     defaultBaseUrl: "http://localhost:11434",
-    exampleModels: ["llama3.2", "mistral", "codellama"],
+    exampleModels: [
+      "llama3.2",
+      "llama3.1",
+      "mistral",
+      "codellama",
+      "gemma2",
+      "phi3",
+      "deepseek-r1",
+    ],
   },
   kimi: {
     name: "Kimi (Moonshot AI)",

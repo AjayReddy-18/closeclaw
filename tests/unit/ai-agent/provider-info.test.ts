@@ -40,4 +40,33 @@ describe("PROVIDER_INFO", () => {
       expect(PROVIDER_INFO[p].exampleModels.length).toBeGreaterThan(0);
     }
   });
+
+  it("custom provider has an empty exampleModels array", () => {
+    expect(PROVIDER_INFO.custom.exampleModels).toEqual([]);
+  });
+
+  it("openai includes gpt-4o and gpt-4o-mini", () => {
+    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-4o");
+    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-4o-mini");
+  });
+
+  it("anthropic includes claude-sonnet-4 and claude-opus-4", () => {
+    expect(PROVIDER_INFO.anthropic.exampleModels).toContain(
+      "claude-sonnet-4-20250514",
+    );
+    expect(PROVIDER_INFO.anthropic.exampleModels).toContain(
+      "claude-opus-4-20250514",
+    );
+  });
+
+  it("google includes gemini-2.5-pro and gemini-2.5-flash", () => {
+    expect(PROVIDER_INFO.google.exampleModels).toContain("gemini-2.5-pro");
+    expect(PROVIDER_INFO.google.exampleModels).toContain("gemini-2.5-flash");
+  });
+
+  it("ollama includes llama3.2, deepseek-r1, and gemma2", () => {
+    expect(PROVIDER_INFO.ollama.exampleModels).toContain("llama3.2");
+    expect(PROVIDER_INFO.ollama.exampleModels).toContain("deepseek-r1");
+    expect(PROVIDER_INFO.ollama.exampleModels).toContain("gemma2");
+  });
 });
