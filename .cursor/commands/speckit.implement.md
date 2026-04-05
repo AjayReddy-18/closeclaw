@@ -173,19 +173,28 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-10. Completion validation:
+10. **Documentation (NON-NEGOTIABLE — Constitution Principle VII)**:
+    - After all implementation tasks are complete and tests pass, update `docs/` to cover the feature just built.
+    - If the feature adds new CLI commands, update `docs/cli-reference.md`.
+    - If the feature introduces a new concept or subsystem, create a dedicated page in `docs/` (e.g., `docs/ai-agent.md`).
+    - If the feature changes getting-started workflow, update `docs/getting-started.md`.
+    - Documentation updates MUST be committed in the same branch as the feature.
+    - A feature is NOT complete until its documentation is written.
+
+11. Completion validation:
 
 - Verify all required tasks are completed
 - Check that implemented features match the original specification
 - Validate that tests pass and coverage meets requirements
 - Confirm the implementation follows the technical plan
+- Verify `docs/` is updated for the feature
 - Run the full verification suite: `pnpm test && pnpm test:coverage && pnpm lint && pnpm format:check && pnpm build`
 - Report final status with summary of completed work
 - Provide the user with **app verification commands** (not just test/lint) so they can manually try the feature end-to-end
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 
-11. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
+12. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
     - If it exists, read it and look for entries under the `hooks.after_implement` key
     - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
     - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.

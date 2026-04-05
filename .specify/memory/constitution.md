@@ -1,23 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ===================
-Version change: 1.0.0 → 1.1.0
-Modified principles: None renamed or redefined
+Version change: 1.1.0 → 1.2.0
+Modified principles:
+  - IV. Atomic Commits: added build verification rule before committing
 Added sections:
-  - Technology Stack (new section between Code Quality Standards
-    and Development Workflow)
+  - VII. Living Documentation (new principle under Core Principles)
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ aligned
-    (Technical Context section already supports language/deps/testing)
+    (Project Structure section already includes docs/)
   - .specify/templates/spec-template.md ✅ aligned
-    (technology-agnostic by design, no conflict)
+    (technology-agnostic, no conflict)
   - .specify/templates/tasks-template.md ✅ aligned
-    (path conventions already support src/ layout)
-  - .specify/templates/checklist-template.md ✅ aligned
-    (generic, no constitution references)
-  - .specify/templates/agent-file-template.md ✅ aligned
-    (Active Technologies section will be populated from plans)
+    (Phase N: Polish already lists "Documentation updates in docs/")
 Follow-up TODOs: None
 -->
 
@@ -69,6 +65,9 @@ Follow-up TODOs: None
 - Every commit MUST represent a single, coherent, working change
 - The test suite MUST pass at every commit; no commit is allowed to
   break the build
+- All packages MUST be rebuilt before committing when source files
+  that produce dist/ artifacts have changed; stale dist/ outputs
+  are treated as a broken build
 - Commit messages MUST follow Conventional Commits format:
   `type(scope): description`
 - Permitted types: feat, fix, refactor, test, docs, chore, ci
@@ -99,6 +98,21 @@ Follow-up TODOs: None
 - Circular dependencies between modules are FORBIDDEN
 - New features MUST start as isolated modules before integrating into
   the broader system
+
+### VII. Living Documentation (NON-NEGOTIABLE)
+
+- A `docs/` directory MUST exist at the repository root containing
+  user-facing documentation for the tool
+- Documentation MUST be updated as part of every feature delivery;
+  a feature is not complete until its documentation is written
+- Each completed feature MUST have a corresponding section or page
+  in `docs/` explaining its usage, configuration, and examples
+- Documentation MUST stay in sync with the codebase; outdated
+  documentation is treated as a bug
+- The `docs/` directory MUST include at minimum: a getting-started
+  guide, CLI command reference, and per-feature usage guides
+- Documentation updates MUST be included in the same branch as the
+  feature implementation, not deferred to a follow-up
 
 ## Code Quality Standards
 
@@ -150,7 +164,7 @@ reasons:
 - Every feature branch MUST have a corresponding specification before
   implementation begins
 - The development cycle for every change is: Specify → Plan → Test →
-  Implement → Refactor → Commit → Review
+  Implement → Refactor → Document → Commit → Review
 - Code review is MANDATORY for all changes; self-review is acceptable
   for solo development but MUST follow a documented checklist
 - Continuous Integration MUST run the full test suite, linter, and
@@ -173,4 +187,4 @@ reasons:
 - Complexity beyond these principles MUST be justified in writing and
   tracked in the plan's Complexity Tracking table
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-05
+**Version**: 1.2.0 | **Ratified**: 2026-04-05 | **Last Amended**: 2026-04-05

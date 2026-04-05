@@ -17,6 +17,7 @@ The constitution at `.specify/memory/constitution.md` is the supreme authority f
 - **Atomic Commits**: Every commit = single coherent working change. Test suite passes at every commit. Conventional Commits format: `type(scope): description`. Large changes MUST be decomposed into multiple commits.
 - **Design**: SOLID, DRY, KISS, YAGNI. Composition over inheritance. Dependency injection for all external deps.
 - **Coverage**: ≥ 90% for statements, branches, functions, and lines.
+- **Documentation**: `docs/` MUST be updated with every feature. A feature is not complete until documented. Outdated docs = bug.
 
 ## Git Operations
 
@@ -45,6 +46,7 @@ tests/
   integration/    # End-to-end flow tests
   contract/       # API surface contract tests
   __mocks__/      # Shared test mocks
+docs/             # User-facing documentation (getting-started, CLI ref, feature guides)
 specs/            # Feature specifications and plans
 ```
 
@@ -67,6 +69,7 @@ TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency i
 
 - 001-cli-onboard: Bot integration CLI, pairing, gateway start, DM policies
 - 002-ai-agent-routing: AI agent with 6 providers, tool calling, conversation management, CLI commands
+- Constitution v1.2.0: Added Principle VII (Living Documentation) and build verification rule
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
