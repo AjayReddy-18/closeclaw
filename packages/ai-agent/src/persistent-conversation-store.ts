@@ -7,18 +7,31 @@ import type {
 import { conversationKey } from "./conversation-types.js";
 import { createConversationStore } from "./conversation-store.js";
 import type { ConversationPersistence } from "./conversation-persistence.js";
+import type { ConversationCompressor } from "./conversation-compressor.js";
+import type { MemoryFlusher } from "./memory-flush.js";
 import {
   conversationFromFile,
   conversationToFile,
+  messageToFile,
 } from "./persistence-serializer.js";
 
 export interface PersistentConversationStore extends ConversationStore {
   saveToDisk(platform: BotPlatform, senderId: string): void;
 }
 
+export interface PersistentStoreOptions {
+  persistence: ConversationPersistence;
+  compressor?: ConversationCompressor;
+  flusher?: MemoryFlusher;
+}
+
 export function createPersistentConversationStore(
-  persistence: ConversationPersistence,
+  persistenceOrOpts: ConversationPersistence | PersistentStoreOptions,
 ): PersistentConversationStore {
+  const opts = isPersistenceOnly(persistenceOrOpts)
+    ? { persistence: persistenceOrOpts }
+    : persistenceOrOpts;
+  const { persistence, compressor, flusher } = opts;
   const inner = createConversationStore();
   const loaded = new Set<string>();
 
@@ -35,9 +48,7 @@ export function createPersistentConversationStore(
   }
 
   function hydrateInner(
-    platform: BotPlatform,
-    senderId: string,
-    disk: Conversation,
+    platform: BotPlatform, senderId: string, disk: Conversation,
   ): Conversation {
     const c = inner.getOrCreate(platform, senderId, disk.senderDisplayName);
     c.messages = disk.messages;
@@ -48,20 +59,15 @@ export function createPersistentConversationStore(
   }
 
   function getOrCreate(
-    platform: BotPlatform,
-    senderId: string,
-    senderDisplayName?: string,
+    platform: BotPlatform, senderId: string, senderDisplayName?: string,
   ): Conversation {
     const disk = tryLoadFromDisk(platform, senderId);
     if (disk) return hydrateInner(platform, senderId, disk);
     return inner.getOrCreate(platform, senderId, senderDisplayName);
   }
 
-  function get(
-    platform: BotPlatform,
-    senderId: string,
-  ): Conversation | undefined {
-    return inner.get(platform, senderId);
+  function get(p: BotPlatform, s: string): Conversation | undefined {
+    return inner.get(p, s);
   }
 
   function clear(platform: BotPlatform, senderId: string): boolean {
@@ -87,8 +93,7 @@ export function createPersistentConversationStore(
     maxAgeMs: number,
   ): { platform: BotPlatform; senderId: string }[] {
     const cutoff = Date.now() - maxAgeMs;
-    return inner
-      .list()
+    return inner.list()
       .filter((s) => s.lastActivityAt.getTime() < cutoff)
       .map((s) => ({ platform: s.platform, senderId: s.senderId }));
   }
@@ -101,7 +106,68 @@ export function createPersistentConversationStore(
     const c = inner.get(platform, senderId);
     if (!c) return;
     persistence.save(platform, senderId, conversationToFile(c));
+    maybeCompress(platform, senderId, c);
+  }
+
+  function maybeCompress(
+    platform: BotPlatform, senderId: string, c: Conversation,
+  ): void {
+    if (!compressor || !compressor.shouldCompress(c.messages.length)) return;
+    queueMicrotask(() => void runCompression(platform, senderId, c));
+  }
+
+  async function runCompression(
+    platform: BotPlatform, senderId: string, c: Conversation,
+  ): Promise<void> {
+    try {
+      if (flusher) await flushBeforeCompress(platform, senderId, c);
+      await compressMessages(platform, senderId, c);
+    } catch (err) {
+      console.error("[ai-agent] Compression failed:", err);
+    }
+  }
+
+  async function flushBeforeCompress(
+    platform: BotPlatform, senderId: string, c: Conversation,
+  ): Promise<void> {
+    if (!flusher) return;
+    const toCompress = c.messages.slice(0, -keepRecentCount(c));
+    const fileMessages = toCompress.map(messageToFile);
+    try {
+      await flusher.flush(platform, senderId, fileMessages);
+    } catch {
+      void 0;
+    }
+  }
+
+  function keepRecentCount(c: Conversation): number {
+    return Math.min(c.messages.length, 20);
+  }
+
+  async function compressMessages(
+    platform: BotPlatform, senderId: string, c: Conversation,
+  ): Promise<void> {
+    if (!compressor) return;
+    const keep = keepRecentCount(c);
+    const older = c.messages.slice(0, -keep);
+    const fileMessages = older.map(messageToFile);
+    const existing = c.compressedSummary?.text;
+    const summary = await compressor.compress(fileMessages, existing);
+    if (!summary) return;
+    c.compressedSummary = {
+      text: summary,
+      messagesCompressed: older.length + (c.compressedSummary?.messagesCompressed ?? 0),
+      compressedAt: new Date(),
+    };
+    c.messages = c.messages.slice(-keep);
+    persistence.save(platform, senderId, conversationToFile(c));
   }
 
   return { getOrCreate, get, clear, list, pruneStale, size, saveToDisk };
+}
+
+function isPersistenceOnly(
+  v: ConversationPersistence | PersistentStoreOptions,
+): v is ConversationPersistence {
+  return typeof (v as ConversationPersistence).load === "function";
 }

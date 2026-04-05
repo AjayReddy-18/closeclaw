@@ -102,12 +102,18 @@ function appendUserMessage(
 }
 
 function sdkMessagesForGenerate(
-  conversation: { messages: ConversationMessage[] },
+  conversation: { messages: ConversationMessage[]; compressedSummary?: { text: string } },
   config: AgentConfig,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
+  const systemParts = [config.systemPrompt];
+  if (conversation.compressedSummary?.text) {
+    systemParts.push(
+      `\nConversation history summary:\n${conversation.compressedSummary.text}`,
+    );
+  }
   const systemMsg: ConversationMessage = {
     role: "system",
-    content: config.systemPrompt,
+    content: systemParts.join(""),
     timestamp: new Date(),
   };
   const trimmed = trimHistory(

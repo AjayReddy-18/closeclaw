@@ -50,7 +50,15 @@ export {
 export {
   createPersistentConversationStore,
   type PersistentConversationStore,
+  type PersistentStoreOptions,
 } from "./persistent-conversation-store.js";
+
+export {
+  createConversationCompressor,
+  type ConversationCompressor,
+} from "./conversation-compressor.js";
+
+export type { MemoryFlusher } from "./memory-flush.js";
 export { trimHistory, estimateTokens } from "./context-trimmer.js";
 export {
   createMessageProcessor,
