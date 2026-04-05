@@ -82,6 +82,11 @@ export {
   type ScheduleTaskToolDeps,
   type DynamicScheduleTaskToolDeps,
 } from "./tools/schedule-task-tool.js";
+export {
+  createUnscheduleTaskTool,
+  createListTasksTool,
+  type TaskManagementDeps,
+} from "./tools/task-management-tools.js";
 export { formatPreferencesForContext } from "./preference-injection.js";
 
 export type { ProviderDisplayInfo } from "./provider-info.js";

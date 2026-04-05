@@ -7,7 +7,14 @@ import type { TaskScheduler } from "../scheduler/task-scheduler.js";
 import { parseDuration } from "../scheduler/duration-parser.js";
 import { isValidCronExpression } from "../scheduler/cron-utils.js";
 
-const SCHEDULE_TASK_DESCRIPTION = `Schedule a task for future execution. Only use this when the user explicitly asks to be reminded, to schedule something, or to set up periodic checks. Do NOT schedule tasks for things that can be answered immediately. You MUST provide a reason justifying why scheduling is needed.`;
+const SCHEDULE_TASK_DESCRIPTION = [
+  "Schedule a task for future execution.",
+  "ONE-SHOT: use a duration like '3m', '1h', '30s' to run ONCE after that delay.",
+  "RECURRING: use a cron expression like '0 9 * * *' to run repeatedly on a schedule.",
+  "IMPORTANT: If the user asks for something 'just once' or 'only today', use a duration (one-shot), NOT cron.",
+  "Only use this when the user explicitly asks to be reminded or schedule something.",
+  "Do NOT schedule tasks for things that can be answered immediately.",
+].join(" ");
 
 export interface ScheduleTaskToolDeps {
   taskStore: TaskStore;
@@ -79,7 +86,9 @@ export function createDynamicScheduleTaskTool(deps: DynamicScheduleTaskToolDeps)
       prompt: z.string().describe("The prompt to execute when the task fires"),
       schedule: z
         .string()
-        .describe("When to run: duration like '30m' or cron like '0 9 * * *'"),
+        .describe(
+          "For one-shot: duration like '30s','5m','2h','1d'. For recurring: cron expression like '0 9 * * *'. Use duration for 'just once' requests.",
+        ),
       reason: z
         .string()
         .describe("Why scheduling is needed instead of answering now"),

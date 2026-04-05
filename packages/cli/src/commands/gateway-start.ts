@@ -17,7 +17,7 @@ import { assembleAgent } from "./agent-assembly.js";
 import { setupHeartbeat } from "./heartbeat-setup.js";
 import {
   createSchedulerTaskStore,
-  createScheduleToolProxy,
+  createSchedulerTools,
   setupScheduler,
   type SchedulerAssembly,
 } from "./scheduler-setup.js";
@@ -128,8 +128,8 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const senderRef = { platform: "telegram", senderId: "" };
   let schedulerAssembly: SchedulerAssembly | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    const scheduleTool = createScheduleToolProxy(taskStore, schedulerRef, senderRef);
-    const assembly = assembleAgent(config.agent, { schedule_task: scheduleTool });
+    const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
+    const assembly = assembleAgent(config.agent, schedTools);
     store = assembly.conversationStore;
     processor = assembly.messageProcessor;
     adapters.forEach((a) =>

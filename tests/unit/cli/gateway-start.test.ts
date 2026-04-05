@@ -55,6 +55,8 @@ vi.mock("@closeclaw/ai-agent", () => ({
     runNow: vi.fn(),
   })),
   createDynamicScheduleTaskTool: vi.fn(() => ({ execute: vi.fn() })),
+  createUnscheduleTaskTool: vi.fn(() => ({ execute: vi.fn() })),
+  createListTasksTool: vi.fn(() => ({ execute: vi.fn() })),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {

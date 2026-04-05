@@ -7,6 +7,8 @@ import {
   createTaskExecutor,
   createTaskScheduler,
   createDynamicScheduleTaskTool,
+  createUnscheduleTaskTool,
+  createListTasksTool,
   type TaskScheduler,
   type TaskStore,
 } from "@closeclaw/ai-agent";
@@ -21,23 +23,36 @@ export function createSchedulerTaskStore(): TaskStore {
   return createTaskStore(storePath);
 }
 
-export function createScheduleToolProxy(
+export function createSchedulerTools(
   taskStore: TaskStore,
   assemblyRef: { current?: SchedulerAssembly },
   senderRef: { platform: string; senderId: string },
-) {
-  return createDynamicScheduleTaskTool({
-    taskStore,
-    scheduler: {
-      start: () => {},
-      stop: () => {},
-      scheduleTask: (t) => assemblyRef.current?.scheduler.scheduleTask(t),
-      unscheduleTask: (id) => assemblyRef.current?.scheduler.unscheduleTask(id),
-      runNow: (id) =>
-        assemblyRef.current?.scheduler.runNow(id) ?? Promise.resolve(undefined),
-    },
-    getSender: () => senderRef,
-  });
+): Record<string, unknown> {
+  const schedulerProxy = {
+    start: () => {},
+    stop: () => {},
+    scheduleTask: (t: Parameters<TaskScheduler["scheduleTask"]>[0]) =>
+      assemblyRef.current?.scheduler.scheduleTask(t),
+    unscheduleTask: (id: string) =>
+      assemblyRef.current?.scheduler.unscheduleTask(id),
+    runNow: (id: string) =>
+      assemblyRef.current?.scheduler.runNow(id) ?? Promise.resolve(undefined),
+  };
+  return {
+    schedule_task: createDynamicScheduleTaskTool({
+      taskStore,
+      scheduler: schedulerProxy,
+      getSender: () => senderRef,
+    }),
+    unschedule_task: createUnscheduleTaskTool({
+      taskStore,
+      scheduler: schedulerProxy,
+    }),
+    list_tasks: createListTasksTool({
+      taskStore,
+      scheduler: schedulerProxy,
+    }),
+  };
 }
 
 export function setupScheduler(
