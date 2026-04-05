@@ -24,6 +24,10 @@ import {
   createCronStoreDeps,
   registerCronCommands,
 } from "./commands/cron-registry.js";
+import {
+  registerHeartbeatCommands,
+  createHeartbeatDeps,
+} from "./commands/heartbeat-registry.js";
 
 export async function runCli(argv: string[]): Promise<number> {
   const program = new Command();
@@ -72,6 +76,7 @@ export async function runCli(argv: string[]): Promise<number> {
       await runAgentConversations(createAgentConversationsDeps());
     });
   registerCronCommands(program, createCronStoreDeps());
+  registerHeartbeatCommands(program, createHeartbeatDeps());
   try {
     await program.parseAsync(argv);
     return 0;
