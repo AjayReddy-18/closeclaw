@@ -18,6 +18,9 @@ export class TelegramAdapter implements BotAdapter {
 
   constructor(options: { token: string }) {
     this.bot = new Bot(options.token);
+    this.bot.catch((err) => {
+      console.error("[telegram] Bot error:", err.error);
+    });
     this.bot.on("message:text", (ctx) => {
       this.emitText(ctx);
     });
