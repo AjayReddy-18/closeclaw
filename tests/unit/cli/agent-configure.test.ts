@@ -46,8 +46,8 @@ function baseDeps(over: Partial<AgentConfigureDeps> = {}): AgentConfigureDeps {
     select: vi
       .fn()
       .mockResolvedValueOnce("openai")
-      .mockResolvedValueOnce("gpt-4o"),
-    input: vi.fn().mockResolvedValue("gpt-4o"),
+      .mockResolvedValueOnce("gpt-5.4"),
+    input: vi.fn().mockResolvedValue("gpt-5.4"),
     password: vi.fn(async () => "sk-test"),
     confirm: vi.fn().mockResolvedValue(false),
     checkbox: vi.fn(),
@@ -69,7 +69,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       confirm: vi.fn().mockResolvedValue(false),
     });
     await executeAgentConfigure(deps);
@@ -80,7 +80,7 @@ describe("executeAgentConfigure", () => {
     expect(written.channels).toEqual(existing.channels);
     expect(written.gateway).toEqual(existing.gateway);
     expect(written.agent?.provider).toBe("openai");
-    expect(written.agent?.model).toBe("gpt-4o");
+    expect(written.agent?.model).toBe("gpt-5.4");
     expect(written.agent?.apiKey).toBe("sk-test");
   });
 
@@ -124,7 +124,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("ollama")
-        .mockResolvedValueOnce("llama3.2"),
+        .mockResolvedValueOnce("llama4"),
       input: vi.fn().mockResolvedValueOnce("http://localhost:11434"),
       confirm: vi.fn().mockResolvedValue(false),
     });
@@ -138,7 +138,7 @@ describe("executeAgentConfigure", () => {
     );
     const written = vi.mocked(deps.writeConfig).mock.calls[0]![1];
     expect(written.agent?.provider).toBe("ollama");
-    expect(written.agent?.model).toBe("llama3.2");
+    expect(written.agent?.model).toBe("llama4");
     expect(written.agent?.baseUrl).toBe("http://localhost:11434");
   });
 
@@ -175,7 +175,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       confirm: vi.fn().mockResolvedValueOnce(true).mockResolvedValue(false),
     });
     await executeAgentConfigure(deps);
@@ -188,7 +188,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       generateText: vi
         .fn()
         .mockRejectedValueOnce(new Error("network"))
@@ -209,7 +209,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       confirm: vi
         .fn()
         .mockResolvedValueOnce(true)
@@ -228,7 +228,7 @@ describe("executeAgentConfigure", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       confirm: vi
         .fn()
         .mockResolvedValueOnce(true)
@@ -261,7 +261,7 @@ describe("executeAgentConfigure validation exit", () => {
       select: vi
         .fn()
         .mockResolvedValueOnce("openai")
-        .mockResolvedValueOnce("gpt-4o"),
+        .mockResolvedValueOnce("gpt-5.4"),
       generateText: vi.fn(async () => {
         throw new Error("fail");
       }),

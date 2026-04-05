@@ -45,28 +45,33 @@ describe("PROVIDER_INFO", () => {
     expect(PROVIDER_INFO.custom.exampleModels).toEqual([]);
   });
 
-  it("openai includes gpt-4o and gpt-4o-mini", () => {
-    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-4o");
-    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-4o-mini");
+  it("openai includes gpt-5.4 and gpt-5.4-pro", () => {
+    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-5.4");
+    expect(PROVIDER_INFO.openai.exampleModels).toContain("gpt-5.4-pro");
   });
 
-  it("anthropic includes claude-sonnet-4 and claude-opus-4", () => {
+  it("anthropic includes claude-opus-4-6 and claude-sonnet-4-6", () => {
+    expect(PROVIDER_INFO.anthropic.exampleModels).toContain("claude-opus-4-6");
     expect(PROVIDER_INFO.anthropic.exampleModels).toContain(
-      "claude-sonnet-4-20250514",
-    );
-    expect(PROVIDER_INFO.anthropic.exampleModels).toContain(
-      "claude-opus-4-20250514",
+      "claude-sonnet-4-6",
     );
   });
 
-  it("google includes gemini-2.5-pro and gemini-2.5-flash", () => {
+  it("google includes gemini-3.1-pro-preview and gemini-2.5-pro", () => {
+    expect(PROVIDER_INFO.google.exampleModels).toContain(
+      "gemini-3.1-pro-preview",
+    );
     expect(PROVIDER_INFO.google.exampleModels).toContain("gemini-2.5-pro");
-    expect(PROVIDER_INFO.google.exampleModels).toContain("gemini-2.5-flash");
   });
 
-  it("ollama includes llama3.2, deepseek-r1, and gemma2", () => {
-    expect(PROVIDER_INFO.ollama.exampleModels).toContain("llama3.2");
+  it("ollama includes llama4, llama3.3, and deepseek-r1", () => {
+    expect(PROVIDER_INFO.ollama.exampleModels).toContain("llama4");
+    expect(PROVIDER_INFO.ollama.exampleModels).toContain("llama3.3");
     expect(PROVIDER_INFO.ollama.exampleModels).toContain("deepseek-r1");
-    expect(PROVIDER_INFO.ollama.exampleModels).toContain("gemma2");
+  });
+
+  it("kimi includes kimi-k2.5 and kimi-code", () => {
+    expect(PROVIDER_INFO.kimi.exampleModels).toContain("kimi-k2.5");
+    expect(PROVIDER_INFO.kimi.exampleModels).toContain("kimi-code");
   });
 });
