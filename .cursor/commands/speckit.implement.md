@@ -174,13 +174,14 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
 10. Completion validation:
-   - Verify all required tasks are completed
-   - Check that implemented features match the original specification
-   - Validate that tests pass and coverage meets requirements
-   - Confirm the implementation follows the technical plan
-   - Run the full verification suite: `pnpm test && pnpm test:coverage && pnpm lint && pnpm format:check && pnpm build`
-   - Report final status with summary of completed work
-   - Provide the user with **app verification commands** (not just test/lint) so they can manually try the feature end-to-end
+
+- Verify all required tasks are completed
+- Check that implemented features match the original specification
+- Validate that tests pass and coverage meets requirements
+- Confirm the implementation follows the technical plan
+- Run the full verification suite: `pnpm test && pnpm test:coverage && pnpm lint && pnpm format:check && pnpm build`
+- Report final status with summary of completed work
+- Provide the user with **app verification commands** (not just test/lint) so they can manually try the feature end-to-end
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 

@@ -72,7 +72,7 @@ Expected prompts:
 
 1. Select provider → **Ollama (Local)**
 2. Ollama server URL → **http://localhost:11434** (default)
-3. Model name → **llama3.2**
+3. Select model → choose from list: **llama3.2**, llama3.1, mistral, codellama, gemma2, phi3, deepseek-r1, Custom (enter manually)
 4. Enable tool calling? → **Yes**
 5. Enable shell execution? → **No** (or Yes with warning acknowledgment)
 

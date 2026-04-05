@@ -12,6 +12,7 @@
 - Q: What is the scope of "routing to other processes"? → A: The AI model can call tools/functions that execute predefined actions (shell commands, HTTP calls, file operations) and decide whether to send the result to the user, chain into another tool call, or end the conversation turn.
 - Q: Should conversation context be preserved across messages? → A: Yes, each sender has an ongoing conversation with history, up to a configurable context window. History resets when the context limit is reached or the user explicitly clears it.
 - Q: How are AI providers configured? → A: Via `closeclaw agent configure` CLI command that prompts for provider, model, and API key. Configuration is stored in `~/.closeclaw/closeclaw.json` alongside existing bot settings.
+- Q: How should the model name be selected during configuration? → A: After choosing a provider, show a selectable list of popular models for that provider plus a "Custom (enter manually)" option at the end for free-text entry. This prevents typos while supporting unlisted/fine-tuned models.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -26,9 +27,9 @@ After completing bot onboarding (feature 001), the user runs `closeclaw agent co
 **Acceptance Scenarios**:
 
 1. **Given** a completed onboarding with at least one bot configured, **When** the user runs `closeclaw agent configure`, **Then** the system presents a list of supported AI providers to choose from
-2. **Given** the user selects a cloud provider (OpenAI, Anthropic, Gemini, Kimi), **When** prompted for API credentials, **Then** the system collects the API key via masked input and the desired model name
-3. **Given** the user selects Ollama (local provider), **When** prompted for configuration, **Then** the system asks for the Ollama server URL (defaulting to `http://localhost:11434`) and the model name, without requiring an API key
-4. **Given** the user selects "Custom (OpenAI-compatible)" provider, **When** prompted, **Then** the system collects a base URL, optional API key, and model name — enabling any provider that exposes an OpenAI-compatible chat completions endpoint
+2. **Given** the user selects a cloud provider (OpenAI, Anthropic, Gemini, Kimi), **When** prompted for API credentials, **Then** the system collects the API key via masked input and presents a selectable list of popular models for the chosen provider with a "Custom (enter manually)" option for free-text entry
+3. **Given** the user selects Ollama (local provider), **When** prompted for configuration, **Then** the system asks for the Ollama server URL (defaulting to `http://localhost:11434`) and presents a selectable list of popular Ollama models with a "Custom (enter manually)" option, without requiring an API key
+4. **Given** the user selects "Custom (OpenAI-compatible)" provider, **When** prompted, **Then** the system collects a base URL, optional API key, and prompts for a model name via free-text input (no predefined list) — enabling any provider that exposes an OpenAI-compatible chat completions endpoint
 5. **Given** the provider details are entered, **When** the system validates the configuration, **Then** it makes a lightweight test request (a simple prompt) to confirm the provider is reachable and the credentials are valid, displaying a clear pass/fail result
 6. **Given** validation succeeds, **When** the configuration is saved, **Then** the agent configuration is written to `~/.closeclaw/closeclaw.json` under a new `agent` section without overwriting existing bot or gateway settings
 7. **Given** validation fails (unreachable server, invalid API key, unknown model), **When** the failure is displayed, **Then** the system offers to re-enter credentials or exit without saving
@@ -123,7 +124,7 @@ Users can manage their conversation history with the bot. A sender can clear the
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST provide a `closeclaw agent configure` command to set up the AI model provider, model name, and credentials
+- **FR-001**: The system MUST provide a `closeclaw agent configure` command to set up the AI model provider, model selection (via a list of popular models per provider with a "Custom" free-text option), and credentials
 - **FR-002**: The system MUST support the following AI providers: OpenAI, Anthropic Claude, Google Gemini, Ollama (local), Kimi (Moonshot AI), and any OpenAI-compatible endpoint via a custom base URL
 - **FR-003**: The system MUST validate the AI provider configuration by making a lightweight test request before saving
 - **FR-004**: The AI agent configuration MUST be persisted in `~/.closeclaw/closeclaw.json` under a dedicated `agent` section without overwriting existing bot or gateway settings
