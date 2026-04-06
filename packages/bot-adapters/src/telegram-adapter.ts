@@ -1,3 +1,5 @@
+import { Agent as HttpsAgent } from "node:https";
+import { Resolver } from "node:dns";
 import { Bot, type Context } from "grammy";
 import { BotPlatform } from "@closeclaw/shared-types";
 import type {
@@ -11,13 +13,30 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function createPublicDnsAgent(): HttpsAgent {
+  const resolver = new Resolver();
+  resolver.setServers(["8.8.8.8", "1.1.1.1"]);
+  return new HttpsAgent({
+    keepAlive: true,
+    lookup: (hostname, opts, cb) => {
+      resolver.resolve4(hostname, (err, addresses) => {
+        if (err) return cb(err, "", 4);
+        cb(null, addresses[0], 4);
+      });
+    },
+  });
+}
+
 export class TelegramAdapter implements BotAdapter {
   readonly platform = BotPlatform.TELEGRAM;
   private readonly bot: Bot;
   private handlers: MessageHandler[] = [];
 
   constructor(options: { token: string }) {
-    this.bot = new Bot(options.token);
+    const agent = createPublicDnsAgent();
+    this.bot = new Bot(options.token, {
+      client: { baseFetchConfig: { agent, compress: true } },
+    });
     this.bot.catch((err) => {
       console.error("[telegram] Bot error:", err.error);
     });
