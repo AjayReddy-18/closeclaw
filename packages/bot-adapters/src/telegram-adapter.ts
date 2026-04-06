@@ -18,10 +18,19 @@ function createPublicDnsAgent(): HttpsAgent {
   resolver.setServers(["8.8.8.8", "1.1.1.1"]);
   return new HttpsAgent({
     keepAlive: true,
-    lookup: (hostname, opts, cb) => {
+    lookup: (hostname, options, callback) => {
+      if (typeof options === "function") {
+        callback = options;
+        options = {};
+      }
       resolver.resolve4(hostname, (err, addresses) => {
-        if (err) return cb(err, "", 4);
-        cb(null, addresses[0], 4);
+        if (err) return callback(err);
+        const all = typeof options === "object" && options !== null && "all" in options && options.all;
+        if (all) {
+          callback(null, addresses.map((a) => ({ address: a, family: 4 })) as never);
+        } else {
+          callback(null, addresses[0], 4);
+        }
       });
     },
   });
