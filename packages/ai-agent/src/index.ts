@@ -123,3 +123,8 @@ export {
   createTaskScheduler,
   type TaskScheduler,
 } from "./scheduler/task-scheduler.js";
+export {
+  evaluateResponse,
+  type SuppressionContext,
+  type SuppressionResult,
+} from "./scheduler/suppression-filter.js";
