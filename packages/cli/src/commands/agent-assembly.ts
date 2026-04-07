@@ -8,6 +8,7 @@ import {
   createPreferenceStore,
   createMemoryFlusher,
   createModelProvider,
+  type CreateMessageProcessorDeps,
 } from "@closeclaw/ai-agent";
 import {
   DEFAULT_COMPRESSION_THRESHOLD,
@@ -20,7 +21,10 @@ export interface AgentAssemblyResult {
   messageProcessor: ReturnType<typeof createMessageProcessor>;
 }
 
-export function assembleAgent(agent: AgentConfig): AgentAssemblyResult {
+export function assembleAgent(
+  agent: AgentConfig,
+  extraTools?: Record<string, unknown>,
+): AgentAssemblyResult {
   const baseDir = join(homedir(), ".closeclaw");
   const persistence = createConversationPersistence(
     join(baseDir, "conversations"),
@@ -41,6 +45,7 @@ export function assembleAgent(agent: AgentConfig): AgentAssemblyResult {
     conversationStore,
     preferenceStore: prefStore,
     onAfterResponse: (p, s) => conversationStore.saveToDisk(p, s),
+    extraTools: extraTools as CreateMessageProcessorDeps["extraTools"],
   });
   return { conversationStore, messageProcessor };
 }

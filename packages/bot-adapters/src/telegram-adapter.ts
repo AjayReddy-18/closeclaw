@@ -1,3 +1,5 @@
+import { Agent as HttpsAgent } from "node:https";
+import { Resolver } from "node:dns";
 import { Bot, type Context } from "grammy";
 import { BotPlatform } from "@closeclaw/shared-types";
 import type {
@@ -11,13 +13,39 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function createPublicDnsAgent(): HttpsAgent {
+  const resolver = new Resolver();
+  resolver.setServers(["8.8.8.8", "1.1.1.1"]);
+  return new HttpsAgent({
+    keepAlive: true,
+    lookup: (hostname, options, callback) => {
+      if (typeof options === "function") {
+        callback = options;
+        options = {};
+      }
+      resolver.resolve4(hostname, (err, addresses) => {
+        if (err) return callback(err);
+        const all = typeof options === "object" && options !== null && "all" in options && options.all;
+        if (all) {
+          callback(null, addresses.map((a) => ({ address: a, family: 4 })) as never);
+        } else {
+          callback(null, addresses[0], 4);
+        }
+      });
+    },
+  });
+}
+
 export class TelegramAdapter implements BotAdapter {
   readonly platform = BotPlatform.TELEGRAM;
   private readonly bot: Bot;
-  private handler?: MessageHandler;
+  private handlers: MessageHandler[] = [];
 
   constructor(options: { token: string }) {
-    this.bot = new Bot(options.token);
+    const agent = createPublicDnsAgent();
+    this.bot = new Bot(options.token, {
+      client: { baseFetchConfig: { agent, compress: true } },
+    });
     this.bot.catch((err) => {
       console.error("[telegram] Bot error:", err.error);
     });
@@ -27,9 +55,8 @@ export class TelegramAdapter implements BotAdapter {
   }
 
   private emitText(ctx: Context): void {
-    const h = this.handler;
-    if (!h) return;
-    h(this.toIncoming(ctx));
+    const msg = this.toIncoming(ctx);
+    for (const h of this.handlers) h(msg);
   }
 
   private toIncoming(ctx: Context): IncomingMessage {
@@ -81,7 +108,7 @@ export class TelegramAdapter implements BotAdapter {
   }
 
   onMessage(handler: MessageHandler): void {
-    this.handler = handler;
+    this.handlers.push(handler);
   }
 
   async sendMessage(senderId: string, text: string): Promise<void> {

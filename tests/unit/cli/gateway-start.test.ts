@@ -29,13 +29,41 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createConversationCompressor: vi.fn(() => ({ shouldCompress: vi.fn() })),
   createMemoryFlusher: vi.fn(() => ({ flush: vi.fn() })),
   createModelProvider: vi.fn(() => ({})),
+  createHeartbeatRunner: vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    isRunning: vi.fn(() => false),
+    runNow: vi.fn(),
+  })),
+  createTaskStore: vi.fn(() => ({
+    listTasks: vi.fn(() => []),
+    getTask: vi.fn(),
+    addTask: vi.fn(),
+    removeTask: vi.fn(),
+    updateTask: vi.fn(),
+    addRun: vi.fn(),
+    getRunsForTask: vi.fn(() => []),
+  })),
+  createTaskExecutor: vi.fn(() => ({
+    executeTask: vi.fn(),
+  })),
+  createTaskScheduler: vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    scheduleTask: vi.fn(),
+    unscheduleTask: vi.fn(),
+    runNow: vi.fn(),
+  })),
+  createDynamicScheduleTaskTool: vi.fn(() => ({ execute: vi.fn() })),
+  createUnscheduleTaskTool: vi.fn(() => ({ execute: vi.fn() })),
+  createListTasksTool: vi.fn(() => ({ execute: vi.fn() })),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {
   return {
     platform: "telegram",
-    connect: vi.fn(),
-    disconnect: vi.fn(),
+    connect: vi.fn().mockResolvedValue(undefined),
+    disconnect: vi.fn().mockResolvedValue(undefined),
     healthCheck: vi.fn(),
     onMessage: vi.fn(),
     sendMessage: vi.fn(),
@@ -341,6 +369,7 @@ describe("runGatewayStart AI agent assembly", () => {
         conversationStore: aiMocks.mockStore,
         preferenceStore: expect.any(Object),
         onAfterResponse: expect.any(Function),
+        extraTools: expect.objectContaining({ schedule_task: expect.any(Object) }),
       }),
     );
     expect(gwCfg).toMatchObject({

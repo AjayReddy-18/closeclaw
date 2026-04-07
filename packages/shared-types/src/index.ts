@@ -33,6 +33,15 @@ export {
 } from "./agent-config.js";
 
 export {
+  type HeartbeatConfig,
+  type ActiveHours,
+  type HeartbeatTarget,
+  DEFAULT_HEARTBEAT_INTERVAL,
+  DEFAULT_HEARTBEAT_TARGET,
+  isValidHeartbeatConfig,
+} from "./heartbeat-config.js";
+
+export {
   PairingStatus,
   isPairingStatus,
   type PairingRequest,

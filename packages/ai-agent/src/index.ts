@@ -76,7 +76,50 @@ export {
   createForgetPreferenceTool,
 } from "./tools/preference-tools.js";
 export { buildToolMap } from "./tool-executor.js";
+export {
+  createScheduleTaskTool,
+  createDynamicScheduleTaskTool,
+  type ScheduleTaskToolDeps,
+  type DynamicScheduleTaskToolDeps,
+} from "./tools/schedule-task-tool.js";
+export {
+  createUnscheduleTaskTool,
+  createListTasksTool,
+  type TaskManagementDeps,
+} from "./tools/task-management-tools.js";
 export { formatPreferencesForContext } from "./preference-injection.js";
 
 export type { ProviderDisplayInfo } from "./provider-info.js";
 export { PROVIDER_INFO } from "./provider-info.js";
+
+export type {
+  ScheduledTask,
+  TaskRun,
+  TaskStoreData,
+  ScheduleType,
+  TaskStatus,
+  RunOutcome,
+} from "./scheduler/task-types.js";
+export {
+  TASK_STORE_VERSION,
+  DEFAULT_MAX_RETRIES,
+  MAX_RUNS_PER_TASK,
+} from "./scheduler/task-types.js";
+export { createTaskStore, type TaskStore } from "./scheduler/task-store.js";
+export { parseDuration, formatDuration } from "./scheduler/duration-parser.js";
+export {
+  isValidCronExpression,
+  nextCronOccurrence,
+} from "./scheduler/cron-utils.js";
+export {
+  createHeartbeatRunner,
+  type HeartbeatRunner,
+} from "./scheduler/heartbeat-runner.js";
+export {
+  createTaskExecutor,
+  type TaskExecutor,
+} from "./scheduler/task-executor.js";
+export {
+  createTaskScheduler,
+  type TaskScheduler,
+} from "./scheduler/task-scheduler.js";

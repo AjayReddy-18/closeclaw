@@ -15,7 +15,7 @@ export class DiscordAdapter implements BotAdapter {
   readonly platform = BotPlatform.DISCORD;
   private readonly client: Client;
   private readonly token: string;
-  private handler?: MessageHandler;
+  private handlers: MessageHandler[] = [];
 
   constructor(options: { token: string }) {
     this.token = options.token;
@@ -33,9 +33,8 @@ export class DiscordAdapter implements BotAdapter {
 
   private onDiscordMessage(message: Message): void {
     if (!this.isDmFromUser(message)) return;
-    const h = this.handler;
-    if (!h) return;
-    h(this.messageToIncoming(message));
+    const msg = this.messageToIncoming(message);
+    for (const h of this.handlers) h(msg);
   }
 
   private isDmFromUser(message: Message): boolean {
@@ -109,7 +108,7 @@ export class DiscordAdapter implements BotAdapter {
   }
 
   onMessage(handler: MessageHandler): void {
-    this.handler = handler;
+    this.handlers.push(handler);
   }
 
   async sendMessage(senderId: string, text: string): Promise<void> {
