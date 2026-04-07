@@ -16,12 +16,20 @@ export interface IncomingMessage {
 
 export type MessageHandler = (message: IncomingMessage) => void;
 
+export interface SendMessageOptions {
+  parseMode?: "HTML";
+}
+
 export interface BotAdapter {
   readonly platform: BotPlatform;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   healthCheck(): Promise<BotHealthResult>;
   onMessage(handler: MessageHandler): void;
-  sendMessage(senderId: string, text: string): Promise<void>;
+  sendMessage(
+    senderId: string,
+    text: string,
+    options?: SendMessageOptions,
+  ): Promise<void>;
   sendTypingIndicator(senderId: string): Promise<void>;
 }

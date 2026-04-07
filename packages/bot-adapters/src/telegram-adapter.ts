@@ -7,6 +7,7 @@ import type {
   BotHealthResult,
   IncomingMessage,
   MessageHandler,
+  SendMessageOptions,
 } from "./adapter.js";
 
 function errorMessage(error: unknown): string {
@@ -111,8 +112,14 @@ export class TelegramAdapter implements BotAdapter {
     this.handlers.push(handler);
   }
 
-  async sendMessage(senderId: string, text: string): Promise<void> {
-    await this.bot.api.sendMessage(Number(senderId), text);
+  async sendMessage(
+    senderId: string,
+    text: string,
+    options?: SendMessageOptions,
+  ): Promise<void> {
+    await this.bot.api.sendMessage(Number(senderId), text, {
+      parse_mode: options?.parseMode,
+    });
   }
 
   async sendTypingIndicator(senderId: string): Promise<void> {

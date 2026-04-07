@@ -79,7 +79,21 @@ describe("TelegramAdapter", () => {
     const bot = grammyBotInstances().at(-1)!;
     bot.api.sendMessage.mockResolvedValue(undefined);
     await adapter.sendMessage("77", "hello back");
-    expect(bot.api.sendMessage).toHaveBeenCalledWith(77, "hello back");
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(77, "hello back", {
+      parse_mode: undefined,
+    });
+  });
+
+  it("sendMessage passes parse_mode HTML when options provided", async () => {
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    const bot = grammyBotInstances().at(-1)!;
+    bot.api.sendMessage.mockResolvedValue(undefined);
+    await adapter.sendMessage("77", "<b>hi</b>", { parseMode: "HTML" });
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(77, "<b>hi</b>", {
+      parse_mode: "HTML",
+    });
   });
 
   it("emitText does nothing when no handler is registered", async () => {
