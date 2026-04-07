@@ -9,6 +9,8 @@ import type {
   MessageHandler,
   SendMessageOptions,
 } from "./adapter.js";
+import { formatForTelegram } from "./formatter/markdown-to-telegram.js";
+import { splitMessage } from "./formatter/message-splitter.js";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -117,9 +119,25 @@ export class TelegramAdapter implements BotAdapter {
     text: string,
     options?: SendMessageOptions,
   ): Promise<void> {
-    await this.bot.api.sendMessage(Number(senderId), text, {
-      parse_mode: options?.parseMode,
-    });
+    const formatted = formatForTelegram(text);
+    const chunks = splitMessage(formatted);
+    for (const chunk of chunks) {
+      await this.sendSingleChunk(senderId, chunk.text, chunk.parseMode);
+    }
+  }
+
+  private async sendSingleChunk(
+    senderId: string,
+    text: string,
+    parseMode: "HTML" | undefined,
+  ): Promise<void> {
+    try {
+      await this.bot.api.sendMessage(Number(senderId), text, {
+        parse_mode: parseMode,
+      });
+    } catch {
+      await this.bot.api.sendMessage(Number(senderId), text);
+    }
   }
 
   async sendTypingIndicator(senderId: string): Promise<void> {
