@@ -23,6 +23,7 @@ The `HEARTBEAT.md` file is a free-form checklist. Example:
 
 ```markdown
 # Heartbeat checklist
+
 - [ ] Check open Jira issues
 - [ ] Verify CI pipeline status
 - [ ] Report any failures
@@ -33,11 +34,11 @@ The `HEARTBEAT.md` file is a free-form checklist. Example:
 Tasks are AI prompts that execute on a schedule. Three schedule types
 are supported:
 
-| Type   | Example           | Description                     |
-| ------ | ----------------- | ------------------------------- |
-| `at`   | `30m`             | One-shot: runs once after delay |
-| `every`| `2h`              | Recurring: runs at an interval  |
-| `cron` | `0 9 * * *`       | Recurring: cron expression      |
+| Type    | Example     | Description                     |
+| ------- | ----------- | ------------------------------- |
+| `at`    | `30m`       | One-shot: runs once after delay |
+| `every` | `2h`        | Recurring: runs at an interval  |
+| `cron`  | `0 9 * * *` | Recurring: cron expression      |
 
 Duration values use a compact format: `30s`, `5m`, `2h`, `1d`.
 
@@ -69,9 +70,27 @@ serialized execution queue to prevent concurrent AI calls.
 2. The task is placed in the execution queue.
 3. The queue processes tasks one at a time via `TaskExecutor`.
 4. The executor invokes `MessageProcessor.processMessage`.
-5. The result is recorded as a `TaskRun` and delivered to the user.
-6. For one-shot tasks, the status is set to `completed`.
-7. For recurring tasks, the next run is computed and a new timer is set.
+5. The response is evaluated by the **suppression filter**.
+6. If suppressed, the response is logged but not sent to the user.
+7. If actionable, the result is delivered and `lastDeliveredAt` is updated.
+8. For one-shot tasks, the task is auto-deleted from the store.
+9. For recurring tasks, the next run is computed and a new timer is set.
+
+### Smart Suppression
+
+When monitoring tasks poll periodically, interim "still running"
+responses are suppressed. Only meaningful updates are delivered:
+
+- **TASK_COMPLETE:** prefix — delivered immediately (prefix stripped)
+- **TASK_FAILED:** prefix — delivered immediately (prefix stripped)
+- **TASK_IN_PROGRESS:** prefix — suppressed
+- Keyword-based fallback classifies responses without prefixes
+- **Safety valve:** If no response has been delivered for 30 minutes,
+  the next response is delivered regardless of classification
+
+The system prompt instructs the AI to use these prefixes when
+responding to scheduled task prompts. The `lastDeliveredAt` field
+on each task tracks the last successful delivery time.
 
 ### Failure Handling
 

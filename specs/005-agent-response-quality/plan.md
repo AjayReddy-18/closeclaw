@@ -23,15 +23,15 @@ Enhance CloseClaw's agent response pipeline with three improvements: (1) platfor
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-| --- | --- | --- |
-| I. TDD | PASS | All new modules (formatter, suppression filter, system prompt) will be test-first |
-| II. Clean Code | PASS | Functions ≤ 20 lines, files ≤ 200 lines, no comments, descriptive names |
-| III. Design Principles | PASS | Formatter uses Strategy pattern (per-platform); suppression is a pure filter function; DI throughout |
-| IV. Atomic Commits | PASS | Each phase is independently committable and testable |
-| V. Automation-First | PASS | Smart suppression directly reduces manual "noise" in automated monitoring |
-| VI. Modular Architecture | PASS | Formatter is a new module in `bot-adapters`, suppression filter in `ai-agent/scheduler`, system prompt in `ai-agent` |
-| VII. Living Documentation | PASS | `docs/` updated with response formatting and suppression behavior |
+| Principle                 | Status | Notes                                                                                                                |
+| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
+| I. TDD                    | PASS   | All new modules (formatter, suppression filter, system prompt) will be test-first                                    |
+| II. Clean Code            | PASS   | Functions ≤ 20 lines, files ≤ 200 lines, no comments, descriptive names                                              |
+| III. Design Principles    | PASS   | Formatter uses Strategy pattern (per-platform); suppression is a pure filter function; DI throughout                 |
+| IV. Atomic Commits        | PASS   | Each phase is independently committable and testable                                                                 |
+| V. Automation-First       | PASS   | Smart suppression directly reduces manual "noise" in automated monitoring                                            |
+| VI. Modular Architecture  | PASS   | Formatter is a new module in `bot-adapters`, suppression filter in `ai-agent/scheduler`, system prompt in `ai-agent` |
+| VII. Living Documentation | PASS   | `docs/` updated with response formatting and suppression behavior                                                    |
 
 No violations. No entries needed in Complexity Tracking.
 

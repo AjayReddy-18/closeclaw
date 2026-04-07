@@ -55,9 +55,7 @@ function buildIdentitySection(): string {
 function buildBehaviorSections(platform?: string): string {
   const sections = [RESPONSE_STYLE];
   if (platform) {
-    sections.push(
-      PLATFORM_AWARENESS.replace("Telegram/Discord", platform),
-    );
+    sections.push(PLATFORM_AWARENESS.replace("Telegram/Discord", platform));
   } else {
     sections.push(PLATFORM_AWARENESS);
   }
@@ -70,7 +68,9 @@ function buildContextSections(parts: SystemPromptParts): string {
   if (parts.senderIdentity) sections.push(parts.senderIdentity);
   if (parts.preferenceContext) sections.push(parts.preferenceContext);
   if (parts.conversationSummary) {
-    sections.push(`Conversation history summary:\n${parts.conversationSummary}`);
+    sections.push(
+      `Conversation history summary:\n${parts.conversationSummary}`,
+    );
   }
   return sections.length > 0 ? "\n\n" + sections.join("\n\n") : "";
 }

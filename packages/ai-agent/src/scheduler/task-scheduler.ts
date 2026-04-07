@@ -90,11 +90,17 @@ export function createTaskScheduler(
     };
     const result = evaluateResponse(response, context);
     if (result.suppressed) {
-      console.log(`[scheduler] suppressed for task ${task.id}: ${result.reason}`);
+      console.log(
+        `[scheduler] suppressed for task ${task.id}: ${result.reason}`,
+      );
       return;
     }
     try {
-      await deliver(task.targetPlatform, task.targetSenderId, result.cleanedResponse);
+      await deliver(
+        task.targetPlatform,
+        task.targetSenderId,
+        result.cleanedResponse,
+      );
       store.updateTask(task.id, { lastDeliveredAt: new Date().toISOString() });
     } catch (e: unknown) {
       console.error(`[scheduler] delivery failed for task ${task.id}:`, e);

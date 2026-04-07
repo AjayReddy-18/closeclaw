@@ -161,6 +161,38 @@ trusted machines.
   sent to the user
 - The gateway process remains stable through transient errors
 
+## Enhanced System Prompt
+
+The AI agent uses a multi-section built-in system prompt that
+guides response quality:
+
+- **Identity:** Defines CloseClaw's role and personality
+- **Response Style:** Enforces conciseness, no filler phrases,
+  structured formatting for complex answers
+- **Platform Awareness:** Adjusts for mobile-friendly chat
+- **Tool Usage:** Instructs proactive tool use over speculation
+- **Scheduling Behavior:** Defines the structured prefix protocol
+  (TASK_COMPLETE, TASK_IN_PROGRESS, TASK_FAILED)
+- **Preferences:** Guides the agent to respect and save user
+  verbosity preferences
+
+User-configured `systemPrompt` is prepended as "Owner Instructions"
+and takes priority over the built-in sections.
+
+## Response Formatting
+
+AI responses are automatically formatted for each platform:
+
+- **Telegram:** Markdown is converted to Telegram-compatible HTML.
+  Headers become bold text, code blocks use `<pre>/<code>` tags,
+  tables are converted to readable plain text. Messages exceeding
+  Telegram's 4096-character limit are split at natural boundaries.
+  Falls back to plain text if the API rejects the HTML.
+- **Discord:** Markdown is passed through as-is since Discord
+  natively renders it.
+
+See `docs/response-formatting.md` for details.
+
 ## Response Delivery
 
 While the AI processes a message:
@@ -169,7 +201,7 @@ While the AI processes a message:
    4 seconds for continuous feedback
 2. After 5 seconds, a "Processing your message..." notification
    is sent
-3. The final AI response is delivered as a batch message
+3. The final AI response is delivered as formatted message(s)
 
 If the AI makes tool calls but produces no final text, the system
 extracts the last textual output from intermediate steps.

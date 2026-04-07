@@ -1,6 +1,13 @@
 import { input, confirm, select } from "@inquirer/prompts";
-import type { HeartbeatConfig, HeartbeatTarget, Configuration } from "@closeclaw/shared-types";
-import { DEFAULT_HEARTBEAT_INTERVAL, DEFAULT_HEARTBEAT_TARGET } from "@closeclaw/shared-types";
+import type {
+  HeartbeatConfig,
+  HeartbeatTarget,
+  Configuration,
+} from "@closeclaw/shared-types";
+import {
+  DEFAULT_HEARTBEAT_INTERVAL,
+  DEFAULT_HEARTBEAT_TARGET,
+} from "@closeclaw/shared-types";
 
 export interface HeartbeatConfigureDeps {
   readConfig: () => Configuration | null;
@@ -25,12 +32,20 @@ async function promptActiveHours(
   const useHours = await ask({ message: "Set active hours?", default: false });
   if (!useHours) return undefined;
   const promptFn = deps.prompt ?? input;
-  const start = await promptFn({ message: "Start time (HH:MM):", default: "09:00" });
-  const end = await promptFn({ message: "End time (HH:MM):", default: "22:00" });
+  const start = await promptFn({
+    message: "Start time (HH:MM):",
+    default: "09:00",
+  });
+  const end = await promptFn({
+    message: "End time (HH:MM):",
+    default: "22:00",
+  });
   return { start, end };
 }
 
-async function promptTarget(deps: HeartbeatConfigureDeps): Promise<HeartbeatTarget> {
+async function promptTarget(
+  deps: HeartbeatConfigureDeps,
+): Promise<HeartbeatTarget> {
   const ask = deps.selectPrompt ?? select;
   return (await ask({
     message: "Delivery target:",
@@ -42,7 +57,9 @@ async function promptTarget(deps: HeartbeatConfigureDeps): Promise<HeartbeatTarg
   })) as HeartbeatTarget;
 }
 
-export async function runHeartbeatConfigure(deps: HeartbeatConfigureDeps): Promise<void> {
+export async function runHeartbeatConfigure(
+  deps: HeartbeatConfigureDeps,
+): Promise<void> {
   const config = deps.readConfig();
   if (!config) {
     console.error("Configuration not found. Run closeclaw onboard first.");

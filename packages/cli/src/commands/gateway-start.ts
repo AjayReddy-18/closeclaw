@@ -138,7 +138,9 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
         senderRef.senderId = msg.senderId;
       }),
     );
-    console.log(`AI agent active: ${config.agent.provider}/${config.agent.model}`);
+    console.log(
+      `AI agent active: ${config.agent.provider}/${config.agent.model}`,
+    );
     pruneInterval = setInterval(
       () => store?.pruneStale(24 * 60 * 60 * 1000),
       60 * 60 * 1000,

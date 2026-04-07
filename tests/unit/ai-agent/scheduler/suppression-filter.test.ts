@@ -19,21 +19,30 @@ const neverDelivered = {
 describe("evaluateResponse", () => {
   describe("structured prefixes", () => {
     it("delivers TASK_COMPLETE and strips prefix", () => {
-      const result = evaluateResponse("TASK_COMPLETE: Job done!", recentContext);
+      const result = evaluateResponse(
+        "TASK_COMPLETE: Job done!",
+        recentContext,
+      );
       expect(result.suppressed).toBe(false);
       expect(result.cleanedResponse).toBe("Job done!");
       expect(result.reason).toBe("structured-prefix-complete");
     });
 
     it("delivers TASK_FAILED and strips prefix", () => {
-      const result = evaluateResponse("TASK_FAILED: Error occurred", recentContext);
+      const result = evaluateResponse(
+        "TASK_FAILED: Error occurred",
+        recentContext,
+      );
       expect(result.suppressed).toBe(false);
       expect(result.cleanedResponse).toBe("Error occurred");
       expect(result.reason).toBe("structured-prefix-failed");
     });
 
     it("suppresses TASK_IN_PROGRESS", () => {
-      const result = evaluateResponse("TASK_IN_PROGRESS: Still checking", recentContext);
+      const result = evaluateResponse(
+        "TASK_IN_PROGRESS: Still checking",
+        recentContext,
+      );
       expect(result.suppressed).toBe(true);
       expect(result.reason).toBe("structured-prefix-in-progress");
     });
@@ -41,7 +50,10 @@ describe("evaluateResponse", () => {
 
   describe("keyword heuristics - delivery", () => {
     it("delivers when response contains completion keywords", () => {
-      const result = evaluateResponse("The deployment is done and ready", recentContext);
+      const result = evaluateResponse(
+        "The deployment is done and ready",
+        recentContext,
+      );
       expect(result.suppressed).toBe(false);
       expect(result.reason).toBe("keyword-delivery-signal");
     });
@@ -67,7 +79,10 @@ describe("evaluateResponse", () => {
 
   describe("safety valve", () => {
     it("delivers suppressed response when safety valve expired", () => {
-      const result = evaluateResponse("Still running the check", expiredContext);
+      const result = evaluateResponse(
+        "Still running the check",
+        expiredContext,
+      );
       expect(result.suppressed).toBe(false);
       expect(result.reason).toBe("safety-valve-expired");
       expect(result.cleanedResponse).toContain("Status update:");

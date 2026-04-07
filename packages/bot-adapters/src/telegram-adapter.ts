@@ -28,9 +28,16 @@ function createPublicDnsAgent(): HttpsAgent {
       }
       resolver.resolve4(hostname, (err, addresses) => {
         if (err) return callback(err);
-        const all = typeof options === "object" && options !== null && "all" in options && options.all;
+        const all =
+          typeof options === "object" &&
+          options !== null &&
+          "all" in options &&
+          options.all;
         if (all) {
-          callback(null, addresses.map((a) => ({ address: a, family: 4 })) as never);
+          callback(
+            null,
+            addresses.map((a) => ({ address: a, family: 4 })) as never,
+          );
         } else {
           callback(null, addresses[0], 4);
         }
@@ -117,7 +124,7 @@ export class TelegramAdapter implements BotAdapter {
   async sendMessage(
     senderId: string,
     text: string,
-    options?: SendMessageOptions,
+    _options?: SendMessageOptions,
   ): Promise<void> {
     const formatted = formatForTelegram(text);
     const chunks = splitMessage(formatted);

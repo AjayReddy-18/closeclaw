@@ -15,7 +15,9 @@ export function createUnscheduleTaskTool(deps: TaskManagementDeps) {
       "remove, cancel, stop, or delete a previously scheduled task. You can find " +
       "task IDs by calling list_tasks first.",
     inputSchema: z.object({
-      taskId: z.string().describe("The task ID to remove (8-character hex string)"),
+      taskId: z
+        .string()
+        .describe("The task ID to remove (8-character hex string)"),
       reason: z.string().describe("Why this task is being removed"),
     }),
     execute: async (input) => {
@@ -38,12 +40,16 @@ export function createListTasksTool(deps: TaskManagementDeps) {
     inputSchema: z.object({}),
     execute: async () => {
       const tasks = deps.taskStore.listTasks();
-      if (tasks.length === 0) return { tasks: [], message: "No scheduled tasks." };
+      if (tasks.length === 0)
+        return { tasks: [], message: "No scheduled tasks." };
       return {
         tasks: tasks.map((t) => ({
           id: t.id,
           name: t.name,
-          schedule: t.scheduleType === "cron" ? `cron: ${t.scheduleValue}` : `${t.scheduleType}: ${t.scheduleValue}`,
+          schedule:
+            t.scheduleType === "cron"
+              ? `cron: ${t.scheduleValue}`
+              : `${t.scheduleType}: ${t.scheduleValue}`,
           status: t.status,
           runs: t.runCount,
         })),

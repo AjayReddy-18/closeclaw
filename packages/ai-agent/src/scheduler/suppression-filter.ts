@@ -17,16 +17,33 @@ const PREFIX_IN_PROGRESS = "TASK_IN_PROGRESS:";
 const HEARTBEAT_OK = "HEARTBEAT_OK";
 
 const DELIVERY_KEYWORDS = [
-  "done", "finished", "completed", "succeeded",
-  "failed", "error", "deployed", "built", "ready",
-  "here are", "results", "summary", "report",
+  "done",
+  "finished",
+  "completed",
+  "succeeded",
+  "failed",
+  "error",
+  "deployed",
+  "built",
+  "ready",
+  "here are",
+  "results",
+  "summary",
+  "report",
 ];
 
 const SUPPRESSION_KEYWORDS = [
-  "still running", "in progress", "no change",
-  "no update", "checking", "waiting for",
-  "polling", "monitoring", "not yet",
-  "same as before", "no new",
+  "still running",
+  "in progress",
+  "no change",
+  "no update",
+  "checking",
+  "waiting for",
+  "polling",
+  "monitoring",
+  "not yet",
+  "same as before",
+  "no new",
 ];
 
 function stripPrefix(response: string, prefix: string): string {

@@ -369,7 +369,9 @@ describe("runGatewayStart AI agent assembly", () => {
         conversationStore: aiMocks.mockStore,
         preferenceStore: expect.any(Object),
         onAfterResponse: expect.any(Function),
-        extraTools: expect.objectContaining({ schedule_task: expect.any(Object) }),
+        extraTools: expect.objectContaining({
+          schedule_task: expect.any(Object),
+        }),
       }),
     );
     expect(gwCfg).toMatchObject({

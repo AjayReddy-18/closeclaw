@@ -20,7 +20,9 @@ export function runHeartbeatStatus(deps: HeartbeatStatusDeps): void {
   console.log(`  Interval: ${hb.every}`);
   console.log(`  Target: ${hb.target}`);
   if (hb.activeHours) {
-    console.log(`  Active hours: ${hb.activeHours.start} - ${hb.activeHours.end}`);
+    console.log(
+      `  Active hours: ${hb.activeHours.start} - ${hb.activeHours.end}`,
+    );
   }
   if (hb.timezone) {
     console.log(`  Timezone: ${hb.timezone}`);

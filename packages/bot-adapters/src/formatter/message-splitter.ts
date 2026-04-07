@@ -8,7 +8,8 @@ export interface MessageChunk {
 const TELEGRAM_MAX_LENGTH = 4096;
 
 function findOpenTags(text: string): string[] {
-  const openPattern = /<(b|i|s|u|a|code|pre|blockquote|strong|em)(?:\s[^>]*)?>/gi;
+  const openPattern =
+    /<(b|i|s|u|a|code|pre|blockquote|strong|em)(?:\s[^>]*)?>/gi;
   const closePattern = /<\/(b|i|s|u|a|code|pre|blockquote|strong|em)>/gi;
   const stack: string[] = [];
   for (const match of text.matchAll(openPattern)) {
@@ -23,7 +24,10 @@ function findOpenTags(text: string): string[] {
 }
 
 function closeOpenTags(tags: string[]): string {
-  return [...tags].reverse().map((t) => `</${t}>`).join("");
+  return [...tags]
+    .reverse()
+    .map((t) => `</${t}>`)
+    .join("");
 }
 
 function reopenTags(tags: string[]): string {
@@ -59,10 +63,7 @@ function hardSplit(text: string, maxLen: number): string[] {
   return chunks;
 }
 
-function splitSingleChunk(
-  text: string,
-  maxLen: number,
-): string[] {
+function splitSingleChunk(text: string, maxLen: number): string[] {
   if (text.length <= maxLen) return [text];
   const byLine = splitAtBoundary(text, maxLen, "\n");
   const result: string[] = [];
@@ -86,13 +87,11 @@ function repairTagsAcrossChunks(
   const result: MessageChunk[] = [];
   let carryTags: string[] = [];
   for (const chunk of rawChunks) {
-    const withReopen = carryTags.length > 0
-      ? reopenTags(carryTags) + chunk
-      : chunk;
+    const withReopen =
+      carryTags.length > 0 ? reopenTags(carryTags) + chunk : chunk;
     const openTags = findOpenTags(withReopen);
-    const closedText = openTags.length > 0
-      ? withReopen + closeOpenTags(openTags)
-      : withReopen;
+    const closedText =
+      openTags.length > 0 ? withReopen + closeOpenTags(openTags) : withReopen;
     result.push({ text: closedText, parseMode });
     carryTags = openTags;
   }
@@ -109,11 +108,7 @@ export function splitMessage(
   if (formatted.text.length <= maxLength) {
     return [{ text: formatted.text, parseMode: formatted.parseMode }];
   }
-  const paragraphChunks = splitAtBoundary(
-    formatted.text,
-    maxLength,
-    "\n\n",
-  );
+  const paragraphChunks = splitAtBoundary(formatted.text, maxLength, "\n\n");
   const allChunks: string[] = [];
   for (const para of paragraphChunks) {
     if (para.length <= maxLength) {

@@ -144,16 +144,16 @@ closeclaw cron add --name "CI check" --message "run tests" --every 2h
 
 **Options:**
 
-| Flag               | Description                          |
-| ------------------ | ------------------------------------ |
-| `--name <name>`    | Task name (required)                 |
-| `--message <msg>`  | Prompt sent to the AI agent          |
-| `--at <duration>`  | One-shot delay (e.g. 30m, 1h, 1d)   |
-| `--every <dur>`    | Recurring interval (e.g. 2h, 30m)   |
-| `--cron <expr>`    | Cron expression (e.g. `0 9 * * *`)  |
-| `--tz <timezone>`  | Timezone for cron (e.g. UTC)         |
-| `--platform <plat>`| Target platform (default: telegram)  |
-| `--sender-id <id>` | Target sender ID (default: default)  |
+| Flag                | Description                         |
+| ------------------- | ----------------------------------- |
+| `--name <name>`     | Task name (required)                |
+| `--message <msg>`   | Prompt sent to the AI agent         |
+| `--at <duration>`   | One-shot delay (e.g. 30m, 1h, 1d)   |
+| `--every <dur>`     | Recurring interval (e.g. 2h, 30m)   |
+| `--cron <expr>`     | Cron expression (e.g. `0 9 * * *`)  |
+| `--tz <timezone>`   | Timezone for cron (e.g. UTC)        |
+| `--platform <plat>` | Target platform (default: telegram) |
+| `--sender-id <id>`  | Target sender ID (default: default) |
 
 Exactly one of `--at`, `--every`, or `--cron` must be specified.
 

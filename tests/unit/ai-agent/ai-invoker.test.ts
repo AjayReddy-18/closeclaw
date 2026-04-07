@@ -10,7 +10,12 @@ describe("buildSystemPrompt", () => {
       maxContextTokens: 8192,
       tools: { enabled: false, allowed: [] },
     };
-    const prompt = buildSystemPrompt(config, "sender: Ajay", "prefs", "summary");
+    const prompt = buildSystemPrompt(
+      config,
+      "sender: Ajay",
+      "prefs",
+      "summary",
+    );
     expect(prompt).toContain("Owner Instructions");
     expect(prompt).toContain("Custom instructions");
     expect(prompt).toContain("sender: Ajay");

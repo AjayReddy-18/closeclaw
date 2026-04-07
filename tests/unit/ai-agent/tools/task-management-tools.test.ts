@@ -34,7 +34,11 @@ describe("unschedule_task tool", () => {
     const tool = createUnscheduleTaskTool({ taskStore: store, scheduler });
     const result = await tool.execute(
       { taskId: "abc123", reason: "no longer needed" },
-      { toolCallId: "t1", messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: "t1",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
     expect(scheduler.unscheduleTask).toHaveBeenCalledWith("abc123");
     expect(store.removeTask).toHaveBeenCalledWith("abc123");
@@ -48,7 +52,11 @@ describe("unschedule_task tool", () => {
     const tool = createUnscheduleTaskTool({ taskStore: store, scheduler });
     const result = await tool.execute(
       { taskId: "missing", reason: "test" },
-      { toolCallId: "t1", messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: "t1",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
     expect(result).toEqual({
       success: false,
@@ -64,7 +72,11 @@ describe("list_tasks tool", () => {
     const tool = createListTasksTool({ taskStore: store, scheduler });
     const result = await tool.execute(
       {},
-      { toolCallId: "t1", messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: "t1",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
     expect(result.tasks).toEqual([]);
     expect(result.message).toBe("No scheduled tasks.");
@@ -91,7 +103,11 @@ describe("list_tasks tool", () => {
     const tool = createListTasksTool({ taskStore: store, scheduler });
     const result = await tool.execute(
       {},
-      { toolCallId: "t1", messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: "t1",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
     expect(result.tasks).toHaveLength(1);
     expect(result.tasks[0]).toEqual({

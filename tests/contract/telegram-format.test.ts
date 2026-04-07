@@ -2,20 +2,38 @@ import { describe, it, expect } from "vitest";
 import { formatForTelegram } from "../../packages/bot-adapters/src/formatter/markdown-to-telegram.js";
 
 const ALLOWED_TAGS = [
-  "b", "strong", "i", "em", "u", "ins", "s", "strike", "del",
-  "code", "pre", "a", "blockquote", "span",
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "ins",
+  "s",
+  "strike",
+  "del",
+  "code",
+  "pre",
+  "a",
+  "blockquote",
+  "span",
 ];
 
 function extractTags(html: string): string[] {
   const matches = html.match(/<\/?([a-z]+)[\s>]/gi) ?? [];
   return matches.map((m) =>
-    m.replace(/<\/?/, "").replace(/[\s>].*/, "").toLowerCase(),
+    m
+      .replace(/<\/?/, "")
+      .replace(/[\s>].*/, "")
+      .toLowerCase(),
   );
 }
 
 function hasUnescapedSpecialChars(html: string): boolean {
   const withoutTags = html.replace(/<[^>]+>/g, "");
-  return /[<>]/.test(withoutTags) || /&(?!amp;|lt;|gt;|quot;|#x[0-9a-f]+;)/i.test(withoutTags);
+  return (
+    /[<>]/.test(withoutTags) ||
+    /&(?!amp;|lt;|gt;|quot;|#x[0-9a-f]+;)/i.test(withoutTags)
+  );
 }
 
 describe("Telegram HTML contract", () => {
