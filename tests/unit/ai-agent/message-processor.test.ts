@@ -156,12 +156,12 @@ describe("createMessageProcessor", () => {
   });
 
   it("processMessage trims context when history is long", async () => {
-    const maxTok = 50;
+    const maxTok = 1000;
     const p = createMessageProcessor({
       agentConfig: baseConfig({ maxContextTokens: maxTok }),
       conversationStore: store,
     });
-    const long = "x".repeat(200);
+    const long = "x".repeat(5000);
     await p.processMessage(BotPlatform.TELEGRAM, "trim", long);
     await p.processMessage(BotPlatform.TELEGRAM, "trim", "short");
     expect(mockGen).toHaveBeenCalled();

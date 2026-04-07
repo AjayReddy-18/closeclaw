@@ -128,3 +128,7 @@ export {
   type SuppressionContext,
   type SuppressionResult,
 } from "./scheduler/suppression-filter.js";
+export {
+  buildFullSystemPrompt,
+  type SystemPromptParts,
+} from "./system-prompt-builder.js";
