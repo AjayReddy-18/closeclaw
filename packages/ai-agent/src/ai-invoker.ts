@@ -9,6 +9,7 @@ import {
 import { extractResponseText, retryWithBackoff } from "./ai-retry.js";
 import { trimHistory } from "./context-trimmer.js";
 import type { createModelProvider } from "./provider-factory.js";
+import { buildFullSystemPrompt } from "./system-prompt-builder.js";
 
 export function buildSystemPrompt(
   config: AgentConfig,
@@ -16,13 +17,12 @@ export function buildSystemPrompt(
   preferenceContext?: string,
   summaryText?: string,
 ): string {
-  const parts = [config.systemPrompt];
-  if (senderIdentity) parts.push(senderIdentity);
-  if (preferenceContext) parts.push(`\n${preferenceContext}`);
-  if (summaryText) {
-    parts.push(`\nConversation history summary:\n${summaryText}`);
-  }
-  return parts.join("");
+  return buildFullSystemPrompt({
+    userCustomPrompt: config.systemPrompt,
+    senderIdentity,
+    preferenceContext,
+    conversationSummary: summaryText,
+  });
 }
 
 export function sdkMessagesForGenerate(

@@ -111,7 +111,11 @@ export class DiscordAdapter implements BotAdapter {
     this.handlers.push(handler);
   }
 
-  async sendMessage(senderId: string, text: string): Promise<void> {
+  async sendMessage(
+    senderId: string,
+    text: string,
+    _options?: import("./adapter.js").SendMessageOptions,
+  ): Promise<void> {
     const user = await this.client.users.fetch(senderId);
     await user.send(text);
   }

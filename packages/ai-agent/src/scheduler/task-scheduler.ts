@@ -4,6 +4,7 @@ import type { TaskStore } from "./task-store.js";
 import type { TaskExecutor } from "./task-executor.js";
 import { parseDuration } from "./duration-parser.js";
 import { nextCronOccurrence } from "./cron-utils.js";
+import { evaluateResponse } from "./suppression-filter.js";
 
 export interface TaskScheduler {
   start(): void;
@@ -74,13 +75,36 @@ export function createTaskScheduler(
       runCount: task.runCount + 1,
     });
     if (run.outcome === "success" && run.response) {
-      try {
-        await deliver(task.targetPlatform, task.targetSenderId, run.response);
-      } catch (e: unknown) {
-        console.error(`[scheduler] delivery failed for task ${task.id}:`, e);
-      }
+      await attemptDelivery(task, run.response);
     }
     handlePostExecution(task, run);
+  }
+
+  async function attemptDelivery(
+    task: ScheduledTask,
+    response: string,
+  ): Promise<void> {
+    const context = {
+      lastDeliveredAt: task.lastDeliveredAt,
+      safetyValveMs: 30 * 60 * 1000,
+    };
+    const result = evaluateResponse(response, context);
+    if (result.suppressed) {
+      console.log(
+        `[scheduler] suppressed for task ${task.id}: ${result.reason}`,
+      );
+      return;
+    }
+    try {
+      await deliver(
+        task.targetPlatform,
+        task.targetSenderId,
+        result.cleanedResponse,
+      );
+      store.updateTask(task.id, { lastDeliveredAt: new Date().toISOString() });
+    } catch (e: unknown) {
+      console.error(`[scheduler] delivery failed for task ${task.id}:`, e);
+    }
   }
 
   function handlePostExecution(task: ScheduledTask, run: TaskRun): void {

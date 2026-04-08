@@ -72,14 +72,30 @@ describe("TelegramAdapter", () => {
     );
   });
 
-  it("sendMessage calls bot.api.sendMessage with numeric chat id", async () => {
+  it("sendMessage formats text and sends with HTML parse_mode", async () => {
     const { TelegramAdapter } =
       await import("../../../packages/bot-adapters/src/telegram-adapter.js");
     const adapter = new TelegramAdapter({ token: "1:a" });
     const bot = grammyBotInstances().at(-1)!;
     bot.api.sendMessage.mockResolvedValue(undefined);
-    await adapter.sendMessage("77", "hello back");
-    expect(bot.api.sendMessage).toHaveBeenCalledWith(77, "hello back");
+    await adapter.sendMessage("77", "**bold** text");
+    expect(bot.api.sendMessage).toHaveBeenCalledWith(
+      77,
+      expect.stringContaining("<b>bold</b>"),
+      { parse_mode: "HTML" },
+    );
+  });
+
+  it("sendMessage falls back to plain text on API rejection", async () => {
+    const { TelegramAdapter } =
+      await import("../../../packages/bot-adapters/src/telegram-adapter.js");
+    const adapter = new TelegramAdapter({ token: "1:a" });
+    const bot = grammyBotInstances().at(-1)!;
+    bot.api.sendMessage
+      .mockRejectedValueOnce(new Error("Bad Request: can't parse"))
+      .mockResolvedValueOnce(undefined);
+    await adapter.sendMessage("77", "**bold**");
+    expect(bot.api.sendMessage).toHaveBeenCalledTimes(2);
   });
 
   it("emitText does nothing when no handler is registered", async () => {

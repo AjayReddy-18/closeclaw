@@ -66,9 +66,7 @@ describe("heartbeat configure", () => {
       readConfig: () => null,
       writeConfig: vi.fn(),
     });
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("not found"),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("not found"));
   });
 });
 
@@ -100,16 +98,12 @@ describe("heartbeat status", () => {
     expect(consoleSpy).toHaveBeenCalledWith("Heartbeat: enabled");
     expect(consoleSpy).toHaveBeenCalledWith("  Interval: 1h");
     expect(consoleSpy).toHaveBeenCalledWith("  Target: last");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "  Active hours: 09:00 - 22:00",
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("  Active hours: 09:00 - 22:00");
     expect(consoleSpy).toHaveBeenCalledWith("  Timezone: America/New_York");
   });
 
   it("shows error when config is missing", () => {
     runHeartbeatStatus({ readConfig: () => null });
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("not found"),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("not found"));
   });
 });

@@ -81,12 +81,22 @@ export function createScheduleTaskTool(deps: ScheduleTaskToolDeps) {
   });
 }
 
-export function createDynamicScheduleTaskTool(deps: DynamicScheduleTaskToolDeps) {
+export function createDynamicScheduleTaskTool(
+  deps: DynamicScheduleTaskToolDeps,
+) {
   return tool({
     description: SCHEDULE_TASK_DESCRIPTION,
     inputSchema: z.object({
-      name: z.string().describe("Short name reflecting ONLY what the user asked for — do not embellish"),
-      prompt: z.string().describe("The EXACT instruction to execute later — only include what the user requested, nothing extra"),
+      name: z
+        .string()
+        .describe(
+          "Short name reflecting ONLY what the user asked for — do not embellish",
+        ),
+      prompt: z
+        .string()
+        .describe(
+          "The EXACT instruction to execute later — only include what the user requested, nothing extra",
+        ),
       schedule: z
         .string()
         .describe(
@@ -99,7 +109,9 @@ export function createDynamicScheduleTaskTool(deps: DynamicScheduleTaskToolDeps)
     execute: async (input) => {
       const existing = deps.taskStore.listTasks();
       const similar = existing.find(
-        (t) => t.status === "active" && t.name.toLowerCase() === input.name.toLowerCase(),
+        (t) =>
+          t.status === "active" &&
+          t.name.toLowerCase() === input.name.toLowerCase(),
       );
       if (similar) {
         return {

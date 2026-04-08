@@ -15,8 +15,7 @@ export interface AgentConfig {
   keepRecentCount?: number;
 }
 
-export const DEFAULT_SYSTEM_PROMPT =
-  "You are CloseClaw, a helpful AI assistant.";
+export const DEFAULT_SYSTEM_PROMPT = "";
 export const DEFAULT_MAX_CONTEXT_TOKENS = 8192;
 export const DEFAULT_COMPRESSION_THRESHOLD = 50;
 export const DEFAULT_KEEP_RECENT_COUNT = 20;

@@ -69,7 +69,9 @@ afterEach(() => {
 describe("task-scheduler post-execution paths", () => {
   it("marks one-shot task as completed after timer fires", async () => {
     vi.useFakeTimers();
-    const task = sampleTask({ nextRunAt: new Date(Date.now() + 100).toISOString() });
+    const task = sampleTask({
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
     const store = makeStore([task]);
     const executor: TaskExecutor = {
       executeTask: vi.fn(async (t) => successRun(t.id)),
@@ -134,7 +136,8 @@ describe("task-scheduler post-execution paths", () => {
     vi.advanceTimersByTime(200);
     await vi.advanceTimersByTimeAsync(0);
 
-    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock.calls;
+    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock
+      .calls;
     const nextRunUpdate = updateCalls.find(
       ([, u]: [string, Partial<ScheduledTask>]) => u.nextRunAt !== undefined,
     );
@@ -161,7 +164,8 @@ describe("task-scheduler post-execution paths", () => {
     vi.advanceTimersByTime(200);
     await vi.advanceTimersByTimeAsync(0);
 
-    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock.calls;
+    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock
+      .calls;
     const nextRunUpdate = updateCalls.find(
       ([, u]: [string, Partial<ScheduledTask>]) => u.nextRunAt !== undefined,
     );
@@ -171,7 +175,9 @@ describe("task-scheduler post-execution paths", () => {
 
   it("does not deliver when run has no response", async () => {
     vi.useFakeTimers();
-    const task = sampleTask({ nextRunAt: new Date(Date.now() + 100).toISOString() });
+    const task = sampleTask({
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
     const store = makeStore([task]);
     const noResponseRun: TaskRun = {
       ...successRun("t1"),
@@ -193,7 +199,9 @@ describe("task-scheduler post-execution paths", () => {
 
   it("skips execution when task is no longer active at fire time", async () => {
     vi.useFakeTimers();
-    const task = sampleTask({ nextRunAt: new Date(Date.now() + 100).toISOString() });
+    const task = sampleTask({
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
     const store = makeStore([task]);
     const executor: TaskExecutor = {
       executeTask: vi.fn(async (t) => successRun(t.id)),

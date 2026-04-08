@@ -19,6 +19,7 @@ export interface ScheduledTask {
   lastRunAt?: string;
   runCount: number;
   maxRetries: number;
+  lastDeliveredAt?: string;
 }
 
 export interface TaskRun {
