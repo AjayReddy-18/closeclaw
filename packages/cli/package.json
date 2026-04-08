@@ -20,6 +20,7 @@
     "@closeclaw/ai-agent": "workspace:*",
     "@closeclaw/bot-adapters": "workspace:*",
     "@closeclaw/gateway": "workspace:*",
+    "@closeclaw/mcp-client": "workspace:*",
     "@closeclaw/shared-types": "workspace:*",
     "ai": "^6.0.0",
     "@inquirer/core": "^10.1.0",

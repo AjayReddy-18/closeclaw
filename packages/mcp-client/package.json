@@ -1,0 +1,25 @@
+{
+  "name": "@closeclaw/mcp-client",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@ai-sdk/mcp": "^1.0.35",
+    "@ai-sdk/provider": "^3.0.0",
+    "@closeclaw/shared-types": "workspace:*",
+    "zod": "^3.25.76"
+  }
+}

@@ -4,3 +4,4 @@ packages:
   - "packages/gateway"
   - "packages/cli"
   - "packages/ai-agent"
+  - "packages/mcp-client"
