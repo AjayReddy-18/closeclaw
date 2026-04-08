@@ -27,3 +27,15 @@ export {
   serverExists,
   type ServerListEntry,
 } from "./mcp-config-writer.js";
+export {
+  createTransport,
+  type McpTransport,
+  type SseTransportConfig,
+} from "./mcp-transport-factory.js";
+export {
+  createConnectionManager,
+  type McpConnectionManager,
+  type McpConnectionResult,
+  type McpConnectionStatus,
+  type ConnectionManagerDeps,
+} from "./mcp-connection-manager.js";

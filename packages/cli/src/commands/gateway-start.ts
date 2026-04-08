@@ -2,9 +2,11 @@ import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
-import type { createPersistentConversationStore } from "@closeclaw/ai-agent";
-import type { createMessageProcessor } from "@closeclaw/ai-agent";
-import type { HeartbeatRunner } from "@closeclaw/ai-agent";
+import type {
+  createPersistentConversationStore,
+  createMessageProcessor,
+  HeartbeatRunner,
+} from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
@@ -12,6 +14,13 @@ import {
   type Configuration,
   isValidAgentConfig,
 } from "@closeclaw/shared-types";
+import type { McpConnectionManager } from "@closeclaw/mcp-client";
+import { connectMcpServers } from "./mcp-connect.js";
+import {
+  connectAllAdapters,
+  disconnectAllAdapters,
+  waitForSigint,
+} from "./gateway-lifecycle.js";
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
 import { assembleAgent } from "./agent-assembly.js";
 import { setupHeartbeat } from "./heartbeat-setup.js";
@@ -26,6 +35,7 @@ const require = createRequire(import.meta.url);
 
 export interface GatewayStartDeps {
   configPath: string;
+  mcpConfigPath: string;
   pairingStorePath: string;
   readConfig: (path: string) => Configuration | null;
   createAdapter: (platform: BotPlatform, token: string) => BotAdapter;
@@ -96,25 +106,6 @@ function readGatewayConfig(deps: GatewayStartDeps): Configuration | null {
   }
 }
 
-async function connectAll(adapters: BotAdapter[]): Promise<void> {
-  await Promise.all(adapters.map((a) => a.connect()));
-}
-
-async function disconnectAll(adapters: BotAdapter[]): Promise<void> {
-  await Promise.all(adapters.map((a) => a.disconnect().catch(() => {})));
-}
-
-function waitForSigint(): Promise<void> {
-  return new Promise((resolve) => {
-    const done = (): void => {
-      process.off("SIGINT", done);
-      process.off("SIGTERM", done);
-      resolve();
-    };
-    process.on("SIGINT", done);
-    process.on("SIGTERM", done);
-  });
-}
 
 export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const config = readGatewayConfig(deps);
@@ -127,9 +118,13 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const schedulerRef: { current?: SchedulerAssembly } = {};
   const senderRef = { platform: "telegram", senderId: "" };
   let schedulerAssembly: SchedulerAssembly | undefined;
+  let mcpManager: McpConnectionManager | undefined;
   if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
     const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
-    const assembly = assembleAgent(config.agent, schedTools);
+    const mcpTools = await connectMcpServers(deps.mcpConfigPath);
+    mcpManager = mcpTools.manager;
+    const extraTools = { ...schedTools, ...mcpTools.tools };
+    const assembly = assembleAgent(config.agent, extraTools);
     store = assembly.conversationStore;
     processor = assembly.messageProcessor;
     adapters.forEach((a) =>
@@ -161,7 +156,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     messageProcessor: processor,
     conversationStore: store,
   });
-  await connectAll(adapters);
+  await connectAllAdapters(adapters);
   try {
     await server.start();
     if (heartbeat) {
@@ -179,14 +174,16 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     schedulerAssembly?.scheduler.stop();
     heartbeat?.stop();
     if (pruneInterval !== undefined) clearInterval(pruneInterval);
+    await mcpManager?.closeAll().catch(() => undefined);
     await server.stop().catch(() => undefined);
-    await disconnectAll(adapters);
+    await disconnectAllAdapters(adapters);
   }
 }
 
 export function createGatewayStartDeps(): GatewayStartDeps {
   return {
     configPath: join(homedir(), ".closeclaw", "config.json"),
+    mcpConfigPath: join(homedir(), ".closeclaw", "mcp.json"),
     pairingStorePath: join(homedir(), ".closeclaw", "pairing.json"),
     readConfig,
     createAdapter: createAdapterFromPackage,
