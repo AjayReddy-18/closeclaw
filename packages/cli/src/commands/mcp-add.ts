@@ -3,8 +3,15 @@ import type { McpServerConfigEntry } from "@closeclaw/mcp-client";
 export interface McpAddDeps {
   configPath: string;
   serverExists: (configPath: string, name: string) => boolean;
-  addServer: (configPath: string, name: string, entry: McpServerConfigEntry) => void;
-  promptSelect: (opts: { message: string; choices: { value: string }[] }) => Promise<string>;
+  addServer: (
+    configPath: string,
+    name: string,
+    entry: McpServerConfigEntry,
+  ) => void;
+  promptSelect: (opts: {
+    message: string;
+    choices: { value: string }[];
+  }) => Promise<string>;
   promptInput: (opts: { message: string }) => Promise<string>;
   promptConfirm: (opts: { message: string }) => Promise<boolean>;
 }
@@ -48,10 +55,7 @@ function parseKeyValuePairs(raw: string): Record<string, string> {
   return result;
 }
 
-export async function runMcpAdd(
-  name: string,
-  deps: McpAddDeps,
-): Promise<void> {
+export async function runMcpAdd(name: string, deps: McpAddDeps): Promise<void> {
   if (deps.serverExists(deps.configPath, name)) {
     const replace = await deps.promptConfirm({
       message: `Server "${name}" already exists. Replace?`,
@@ -63,10 +67,7 @@ export async function runMcpAdd(
   }
   const transportType = await deps.promptSelect({
     message: "Transport type:",
-    choices: [
-      { value: "stdio" },
-      { value: "http" },
-    ],
+    choices: [{ value: "stdio" }, { value: "http" }],
   });
   const entry =
     transportType === "stdio"

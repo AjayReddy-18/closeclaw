@@ -25,16 +25,16 @@ Enable the CloseClaw AI agent to discover and invoke tools from MCP (Model Conte
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                     | Status | Notes                                                                      |
-| ----------------------------- | ------ | -------------------------------------------------------------------------- |
-| I. TDD (NON-NEGOTIABLE)       | PASS   | All code via Red-Green-Refactor; unit/integration/contract tests planned    |
-| II. Clean Code (NON-NEGOTIABLE)| PASS  | No comments, functions ≤ 20 lines, files ≤ 200 lines, descriptive names    |
-| III. Design Principles        | PASS   | DI for MCP client creation, composition for tool merging, adapter pattern   |
-| IV. Atomic Commits            | PASS   | Each task = one commit, Conventional Commits format                         |
-| V. Automation-First           | PASS   | MCP tools eliminate manual HTTP configuration for each service              |
-| VI. Modular Architecture      | PASS   | New `packages/mcp-client` package with explicit boundaries                  |
-| VII. Living Documentation     | PASS   | `docs/mcp-integration.md` + CLI reference update                            |
-| Code Quality Standards        | PASS   | Strict TypeScript, input validation at boundaries, explicit error handling  |
+| Principle                       | Status | Notes                                                                      |
+| ------------------------------- | ------ | -------------------------------------------------------------------------- |
+| I. TDD (NON-NEGOTIABLE)         | PASS   | All code via Red-Green-Refactor; unit/integration/contract tests planned   |
+| II. Clean Code (NON-NEGOTIABLE) | PASS   | No comments, functions ≤ 20 lines, files ≤ 200 lines, descriptive names    |
+| III. Design Principles          | PASS   | DI for MCP client creation, composition for tool merging, adapter pattern  |
+| IV. Atomic Commits              | PASS   | Each task = one commit, Conventional Commits format                        |
+| V. Automation-First             | PASS   | MCP tools eliminate manual HTTP configuration for each service             |
+| VI. Modular Architecture        | PASS   | New `packages/mcp-client` package with explicit boundaries                 |
+| VII. Living Documentation       | PASS   | `docs/mcp-integration.md` + CLI reference update                           |
+| Code Quality Standards          | PASS   | Strict TypeScript, input validation at boundaries, explicit error handling |
 
 **Post-Phase 1 Re-check**: All gates pass. The new `packages/mcp-client` package adds one dependency (`@ai-sdk/mcp`) which is the official adapter. No violations detected.
 

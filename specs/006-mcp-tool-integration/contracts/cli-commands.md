@@ -8,15 +8,15 @@
 
 **Interactive Prompts**:
 
-| Step | Prompt                      | Type    | Options/Validation          |
-| ---- | --------------------------- | ------- | --------------------------- |
-| 1    | Transport type              | select  | `stdio`, `http`             |
-| 2a   | Command (stdio only)        | input   | non-empty string            |
-| 2b   | Arguments (stdio only)      | input   | comma-separated, optional   |
-| 2c   | Environment vars (stdio)    | input   | KEY=VALUE pairs, optional   |
-| 3a   | URL (http only)             | input   | valid URL                   |
-| 3b   | Headers (http only)         | input   | KEY=VALUE pairs, optional   |
-| 4    | Replace existing? (if dup)  | confirm | yes/no                      |
+| Step | Prompt                     | Type    | Options/Validation        |
+| ---- | -------------------------- | ------- | ------------------------- |
+| 1    | Transport type             | select  | `stdio`, `http`           |
+| 2a   | Command (stdio only)       | input   | non-empty string          |
+| 2b   | Arguments (stdio only)     | input   | comma-separated, optional |
+| 2c   | Environment vars (stdio)   | input   | KEY=VALUE pairs, optional |
+| 3a   | URL (http only)            | input   | valid URL                 |
+| 3b   | Headers (http only)        | input   | KEY=VALUE pairs, optional |
+| 4    | Replace existing? (if dup) | confirm | yes/no                    |
 
 **Exit codes**: 0 on success, 1 on error
 

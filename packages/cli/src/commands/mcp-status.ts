@@ -16,8 +16,7 @@ function displayResults(results: McpConnectionResult[]): void {
     return;
   }
   const header =
-    `${"Name".padEnd(20)}${"Status".padEnd(10)}` +
-    `${"Tools".padEnd(8)}Error`;
+    `${"Name".padEnd(20)}${"Status".padEnd(10)}` + `${"Tools".padEnd(8)}Error`;
   console.log(`\n${header}`);
   console.log("-".repeat(70));
   for (const r of results) {

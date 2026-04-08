@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { runMcpStatus, type McpStatusDeps } from "../../../packages/cli/src/commands/mcp-status.js";
+import {
+  runMcpStatus,
+  type McpStatusDeps,
+} from "../../../packages/cli/src/commands/mcp-status.js";
 import type { McpConnectionResult } from "../../../packages/mcp-client/src/mcp-connection-manager.js";
 
 function connectedResult(name: string, toolCount: number): McpConnectionResult {
@@ -7,7 +10,10 @@ function connectedResult(name: string, toolCount: number): McpConnectionResult {
     serverName: name,
     status: "connected",
     toolCount,
-    toolNames: Array.from({ length: toolCount }, (_, i) => `${name}__tool${String(i)}`),
+    toolNames: Array.from(
+      { length: toolCount },
+      (_, i) => `${name}__tool${String(i)}`,
+    ),
     error: undefined,
   };
 }
@@ -60,9 +66,7 @@ describe("runMcpStatus", () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const deps: McpStatusDeps = {
       loadConfigs: () => [],
-      connectAndGetStatus: async () => [
-        connectedResult("datadog", 12),
-      ],
+      connectAndGetStatus: async () => [connectedResult("datadog", 12)],
     };
     await runMcpStatus(deps);
     const output = logSpy.mock.calls.map((c) => c[0]).join("\n");

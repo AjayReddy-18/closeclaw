@@ -152,6 +152,19 @@ arbitrary commands, so use with caution.
 wizard shows a risk acknowledgment prompt. Only enable on
 trusted machines.
 
+## MCP Tool Discovery
+
+The AI agent can use tools from external MCP servers configured
+in `~/.closeclaw/mcp.json`. At gateway startup, the agent connects
+to all enabled MCP servers, discovers their tools, and registers
+them alongside built-in tools.
+
+MCP tools are namespaced as `serverName__toolName` (e.g.,
+`jira__search_issues`) to prevent collisions with built-in tools.
+The AI model sees all available tools and can call them during
+conversation. See `docs/mcp-integration.md` for configuration
+details.
+
 ## Retry and Error Handling
 
 - Rate limit errors (HTTP 429) trigger automatic retry with

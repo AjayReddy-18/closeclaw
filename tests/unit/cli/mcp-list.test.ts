@@ -5,8 +5,18 @@ import type { ServerListEntry } from "../../../packages/mcp-client/src/mcp-confi
 describe("runMcpList", () => {
   it("displays table of configured servers", () => {
     const servers: ServerListEntry[] = [
-      { name: "jira", type: "http", detail: "http://localhost:8000/mcp", enabled: true },
-      { name: "fs", type: "stdio", detail: "npx -y @mcp/server", enabled: false },
+      {
+        name: "jira",
+        type: "http",
+        detail: "http://localhost:8000/mcp",
+        enabled: true,
+      },
+      {
+        name: "fs",
+        type: "stdio",
+        detail: "npx -y @mcp/server",
+        enabled: false,
+      },
     ];
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     runMcpList({ configPath: "/fake", listServers: () => servers });
@@ -34,7 +44,8 @@ describe("runMcpList", () => {
       {
         name: "very-long-server-name-that-exceeds-limit",
         type: "http",
-        detail: "http://a-very-long-url-that-should-be-truncated-because-it-exceeds-the-max.com/mcp/endpoint",
+        detail:
+          "http://a-very-long-url-that-should-be-truncated-because-it-exceeds-the-max.com/mcp/endpoint",
         enabled: true,
       },
     ];

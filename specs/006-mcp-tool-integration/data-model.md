@@ -8,16 +8,16 @@
 
 Represents a single MCP server entry in the configuration file.
 
-| Field     | Type                     | Required | Default | Description                                          |
-| --------- | ------------------------ | -------- | ------- | ---------------------------------------------------- |
-| name      | string                   | yes      | —       | Server name (the key in the mcpServers object)       |
-| type      | `"stdio"` \| `"http"`    | yes      | —       | Transport mechanism                                  |
-| command   | string                   | stdio    | —       | Executable command (e.g., `npx`, `node`)             |
-| args      | string[]                 | no       | `[]`    | Command arguments                                    |
-| env       | Record<string, string>   | no       | `{}`    | Environment variables for the server process         |
-| url       | string                   | http     | —       | Server URL (e.g., `http://localhost:8000/mcp`)       |
-| headers   | Record<string, string>   | no       | `{}`    | HTTP headers (supports `${env:VAR}` interpolation)   |
-| enabled   | boolean                  | no       | `true`  | Whether the server is active                         |
+| Field   | Type                   | Required | Default | Description                                        |
+| ------- | ---------------------- | -------- | ------- | -------------------------------------------------- |
+| name    | string                 | yes      | —       | Server name (the key in the mcpServers object)     |
+| type    | `"stdio"` \| `"http"`  | yes      | —       | Transport mechanism                                |
+| command | string                 | stdio    | —       | Executable command (e.g., `npx`, `node`)           |
+| args    | string[]               | no       | `[]`    | Command arguments                                  |
+| env     | Record<string, string> | no       | `{}`    | Environment variables for the server process       |
+| url     | string                 | http     | —       | Server URL (e.g., `http://localhost:8000/mcp`)     |
+| headers | Record<string, string> | no       | `{}`    | HTTP headers (supports `${env:VAR}` interpolation) |
+| enabled | boolean                | no       | `true`  | Whether the server is active                       |
 
 Discriminated union on `type`:
 
@@ -28,9 +28,9 @@ Discriminated union on `type`:
 
 Top-level structure of `~/.closeclaw/mcp.json`.
 
-| Field      | Type                                  | Required | Description                        |
-| ---------- | ------------------------------------- | -------- | ---------------------------------- |
-| mcpServers | Record<string, McpServerConfigEntry>  | yes      | Map of server name → server config |
+| Field      | Type                                 | Required | Description                        |
+| ---------- | ------------------------------------ | -------- | ---------------------------------- |
+| mcpServers | Record<string, McpServerConfigEntry> | yes      | Map of server name → server config |
 
 `McpServerConfigEntry` is the raw JSON shape (without the derived `name` field).
 
@@ -38,48 +38,48 @@ Top-level structure of `~/.closeclaw/mcp.json`.
 
 Runtime state of a connected MCP server (not persisted).
 
-| Field       | Type                       | Description                                        |
-| ----------- | -------------------------- | -------------------------------------------------- |
-| serverName  | string                     | Matches the config key                             |
-| status      | `"connected"` \| `"failed"` \| `"closed"` | Connection state                  |
-| toolCount   | number                     | Number of tools discovered                         |
-| tools       | Record<string, Tool>       | AI SDK tool objects (namespaced keys)              |
-| client      | MCPClient                  | Reference to the AI SDK MCP client for cleanup     |
-| error       | string \| undefined        | Error message if connection failed                 |
+| Field      | Type                                      | Description                                    |
+| ---------- | ----------------------------------------- | ---------------------------------------------- |
+| serverName | string                                    | Matches the config key                         |
+| status     | `"connected"` \| `"failed"` \| `"closed"` | Connection state                               |
+| toolCount  | number                                    | Number of tools discovered                     |
+| tools      | Record<string, Tool>                      | AI SDK tool objects (namespaced keys)          |
+| client     | MCPClient                                 | Reference to the AI SDK MCP client for cleanup |
+| error      | string \| undefined                       | Error message if connection failed             |
 
 ### McpConnectionManager
 
 Manages the full lifecycle of all MCP connections.
 
-| Method          | Signature                                         | Description                                        |
-| --------------- | ------------------------------------------------- | -------------------------------------------------- |
-| connectAll      | `(configs: McpServerConfig[]) => Promise<McpConnectionResult[]>` | Connect to all servers in parallel |
-| getAllTools      | `() => Record<string, Tool>`                      | Merged tool map from all connected servers          |
-| getStatus       | `() => McpConnectionStatus[]`                     | Status of each server                              |
-| closeAll        | `() => Promise<void>`                             | Disconnect all clients                             |
+| Method      | Signature                                                        | Description                                |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------ |
+| connectAll  | `(configs: McpServerConfig[]) => Promise<McpConnectionResult[]>` | Connect to all servers in parallel         |
+| getAllTools | `() => Record<string, Tool>`                                     | Merged tool map from all connected servers |
+| getStatus   | `() => McpConnectionStatus[]`                                    | Status of each server                      |
+| closeAll    | `() => Promise<void>`                                            | Disconnect all clients                     |
 
 ### McpConnectionResult
 
 Returned from connectAll for each server.
 
-| Field       | Type                   | Description                     |
-| ----------- | ---------------------- | ------------------------------- |
-| serverName  | string                 | Server name from config         |
-| status      | `"connected"` \| `"failed"` | Outcome                    |
-| toolCount   | number                 | Tools discovered (0 if failed)  |
-| toolNames   | string[]               | List of namespaced tool names   |
-| error       | string \| undefined    | Error message if failed         |
+| Field      | Type                        | Description                    |
+| ---------- | --------------------------- | ------------------------------ |
+| serverName | string                      | Server name from config        |
+| status     | `"connected"` \| `"failed"` | Outcome                        |
+| toolCount  | number                      | Tools discovered (0 if failed) |
+| toolNames  | string[]                    | List of namespaced tool names  |
+| error      | string \| undefined         | Error message if failed        |
 
 ### McpConnectionStatus
 
 Used by `closeclaw mcp status` and startup logging.
 
-| Field       | Type                              | Description              |
-| ----------- | --------------------------------- | ------------------------ |
-| serverName  | string                            | Server name              |
-| status      | `"connected"` \| `"failed"` \| `"closed"` | Current state  |
-| toolCount   | number                            | Discovered tool count    |
-| error       | string \| undefined               | Error if applicable      |
+| Field      | Type                                      | Description           |
+| ---------- | ----------------------------------------- | --------------------- |
+| serverName | string                                    | Server name           |
+| status     | `"connected"` \| `"failed"` \| `"closed"` | Current state         |
+| toolCount  | number                                    | Discovered tool count |
+| error      | string \| undefined                       | Error if applicable   |
 
 ## State Transitions
 

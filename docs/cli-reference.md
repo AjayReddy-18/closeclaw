@@ -46,6 +46,7 @@ closeclaw gateway start
 - Connects all enabled bot adapters
 - Starts the HTTP server on the configured port
 - If an AI agent is configured, activates message processing
+- Connects to configured MCP servers and discovers their tools
 - Logs accepted messages to stdout
 - Shows continuous typing indicator while AI processes
 - Sends "Processing your message..." after 5 seconds of processing
@@ -197,3 +198,45 @@ closeclaw heartbeat status
 ```
 
 Shows whether heartbeat is enabled, the interval, target, active hours, and timezone.
+
+## mcp add
+
+Add a new MCP server configuration.
+
+```bash
+closeclaw mcp add <name>
+```
+
+Interactive prompts ask for transport type (stdio or http) and
+connection details. If a server with the same name exists, asks
+whether to replace it.
+
+## mcp remove
+
+Remove an MCP server configuration.
+
+```bash
+closeclaw mcp remove <name>
+```
+
+## mcp list
+
+List all configured MCP servers.
+
+```bash
+closeclaw mcp list
+```
+
+Displays a table with Name, Type, URL/Command, and Enabled columns.
+
+## mcp status
+
+Check connection health of all MCP servers.
+
+```bash
+closeclaw mcp status
+```
+
+Connects to each server, shows status and tool count, then
+disconnects. Useful for verifying servers are reachable before
+starting the gateway.

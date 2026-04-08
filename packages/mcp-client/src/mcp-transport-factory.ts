@@ -11,7 +11,9 @@ export interface SseTransportConfig {
 
 export type McpTransport = StdioTransport | SseTransportConfig;
 
-function createStdioTransport(config: McpServerConfig & { type: "stdio" }): StdioTransport {
+function createStdioTransport(
+  config: McpServerConfig & { type: "stdio" },
+): StdioTransport {
   return new StdioMCPTransport({
     command: config.command,
     args: config.args,
@@ -19,8 +21,11 @@ function createStdioTransport(config: McpServerConfig & { type: "stdio" }): Stdi
   });
 }
 
-function createSseTransport(config: McpServerConfig & { type: "http" }): SseTransportConfig {
-  const headers = Object.keys(config.headers).length > 0 ? config.headers : undefined;
+function createSseTransport(
+  config: McpServerConfig & { type: "http" },
+): SseTransportConfig {
+  const headers =
+    Object.keys(config.headers).length > 0 ? config.headers : undefined;
   return { type: "sse", url: config.url, headers };
 }
 

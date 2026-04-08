@@ -2,8 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { runMcpAdd, type McpAddDeps } from "../../../packages/cli/src/commands/mcp-add.js";
-import { addServer, serverExists } from "../../../packages/mcp-client/src/mcp-config-writer.js";
+import {
+  runMcpAdd,
+  type McpAddDeps,
+} from "../../../packages/cli/src/commands/mcp-add.js";
+import {
+  addServer,
+  serverExists,
+} from "../../../packages/mcp-client/src/mcp-config-writer.js";
 
 describe("runMcpAdd", () => {
   let tempDir: string;

@@ -1,10 +1,14 @@
 import type { BotAdapter } from "@closeclaw/bot-adapters";
 
-export async function connectAllAdapters(adapters: BotAdapter[]): Promise<void> {
+export async function connectAllAdapters(
+  adapters: BotAdapter[],
+): Promise<void> {
   await Promise.all(adapters.map((a) => a.connect()));
 }
 
-export async function disconnectAllAdapters(adapters: BotAdapter[]): Promise<void> {
+export async function disconnectAllAdapters(
+  adapters: BotAdapter[],
+): Promise<void> {
   await Promise.all(adapters.map((a) => a.disconnect().catch(() => {})));
 }
 

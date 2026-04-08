@@ -106,7 +106,6 @@ function readGatewayConfig(deps: GatewayStartDeps): Configuration | null {
   }
 }
 
-
 export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const config = readGatewayConfig(deps);
   if (!config) return;

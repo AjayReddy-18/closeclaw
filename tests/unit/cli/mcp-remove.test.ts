@@ -3,7 +3,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runMcpRemove } from "../../../packages/cli/src/commands/mcp-remove.js";
-import { addServer, removeServer } from "../../../packages/mcp-client/src/mcp-config-writer.js";
+import {
+  addServer,
+  removeServer,
+} from "../../../packages/mcp-client/src/mcp-config-writer.js";
 
 describe("runMcpRemove", () => {
   let tempDir: string;
@@ -19,7 +22,10 @@ describe("runMcpRemove", () => {
   });
 
   it("removes existing server and logs success", () => {
-    addServer(configPath, "jira", { type: "http", url: "http://localhost/mcp" });
+    addServer(configPath, "jira", {
+      type: "http",
+      url: "http://localhost/mcp",
+    });
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     runMcpRemove("jira", { configPath, removeServer });
     expect(logSpy).toHaveBeenCalledWith('Server "jira" removed.');

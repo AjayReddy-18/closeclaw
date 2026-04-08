@@ -1,6 +1,9 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import type { McpConfigFile, McpServerConfigEntry } from "./mcp-config-types.js";
+import type {
+  McpConfigFile,
+  McpServerConfigEntry,
+} from "./mcp-config-types.js";
 
 function ensureDirectory(filePath: string): void {
   const dir = dirname(filePath);

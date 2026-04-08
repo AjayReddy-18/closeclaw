@@ -28,10 +28,7 @@ import {
   registerHeartbeatCommands,
   createHeartbeatDeps,
 } from "./commands/heartbeat-registry.js";
-import {
-  registerMcpCommands,
-  createMcpDeps,
-} from "./commands/mcp-registry.js";
+import { registerMcpCommands, createMcpDeps } from "./commands/mcp-registry.js";
 
 export async function runCli(argv: string[]): Promise<number> {
   const program = new Command();

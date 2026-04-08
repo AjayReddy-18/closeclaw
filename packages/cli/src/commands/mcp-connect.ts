@@ -26,7 +26,8 @@ export async function connectMcpServers(
   mcpConfigPath: string,
 ): Promise<McpConnectResult> {
   const configs = loadMcpConfig(mcpConfigPath);
-  if (configs.length === 0) return { manager: createConnectionManager(), tools: {} };
+  if (configs.length === 0)
+    return { manager: createConnectionManager(), tools: {} };
   console.log(`[mcp] Connecting to ${String(configs.length)} server(s)...`);
   const manager = createConnectionManager();
   const results = await manager.connectAll(configs);

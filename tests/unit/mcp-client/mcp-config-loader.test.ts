@@ -95,9 +95,9 @@ describe("loadMcpConfig", () => {
       }),
     );
     const result = loadMcpConfig(configPath);
-    expect(
-      result[0]?.type === "stdio" ? result[0].env["API_KEY"] : "",
-    ).toBe("key456");
+    expect(result[0]?.type === "stdio" ? result[0].env["API_KEY"] : "").toBe(
+      "key456",
+    );
     delete process.env["MY_API_KEY"];
   });
 

@@ -31,7 +31,11 @@ Optional fields: `args`, `env`, `enabled`
     "filesystem": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/Desktop"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/me/Desktop"
+      ],
       "enabled": true
     }
   }

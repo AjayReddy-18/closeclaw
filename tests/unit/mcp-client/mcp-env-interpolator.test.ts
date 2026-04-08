@@ -22,9 +22,7 @@ describe("interpolateEnvVars", () => {
   });
 
   it("replaces multiple env vars in one string", () => {
-    const result = interpolateEnvVars(
-      "${env:TEST_TOKEN}:${env:ANOTHER_VAR}",
-    );
+    const result = interpolateEnvVars("${env:TEST_TOKEN}:${env:ANOTHER_VAR}");
     expect(result).toBe("my-secret-token:another-value");
   });
 

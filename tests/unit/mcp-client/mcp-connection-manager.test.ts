@@ -41,9 +41,9 @@ function createMockDeps(
     mockClient({ default_tool: {} }),
 ): ConnectionManagerDeps {
   return {
-    createMCPClient: vi.fn().mockImplementation(() =>
-      Promise.resolve(clientFactory()),
-    ) as never,
+    createMCPClient: vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(clientFactory())) as never,
     createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
   };
 }
@@ -75,9 +75,9 @@ describe("createConnectionManager", () => {
   });
 
   it("handles connection failure gracefully", async () => {
-    deps.createMCPClient = vi.fn().mockRejectedValue(
-      new Error("Connection refused"),
-    ) as never;
+    deps.createMCPClient = vi
+      .fn()
+      .mockRejectedValue(new Error("Connection refused")) as never;
     const manager = createConnectionManager(deps);
     const results = await manager.connectAll([httpConfig("broken")]);
     expect(results[0]?.status).toBe("failed");

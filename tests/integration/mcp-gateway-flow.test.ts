@@ -15,13 +15,11 @@ function mockClient(tools: Record<string, unknown>) {
   };
 }
 
-function createMockDeps(
-  clientFactory: () => unknown,
-): ConnectionManagerDeps {
+function createMockDeps(clientFactory: () => unknown): ConnectionManagerDeps {
   return {
-    createMCPClient: vi.fn().mockImplementation(() =>
-      Promise.resolve(clientFactory()),
-    ) as never,
+    createMCPClient: vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(clientFactory())) as never,
     createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
   };
 }
@@ -53,7 +51,8 @@ describe("MCP gateway flow integration", () => {
     let callCount = 0;
     const deps = createMockDeps(() => {
       callCount++;
-      if (callCount === 1) return mockClient({ search_issues: {}, create_issue: {} });
+      if (callCount === 1)
+        return mockClient({ search_issues: {}, create_issue: {} });
       return mockClient({ list_alerts: {} });
     });
 
@@ -88,7 +87,8 @@ describe("MCP gateway flow integration", () => {
     const deps: ConnectionManagerDeps = {
       createMCPClient: vi.fn().mockImplementation(() => {
         callCount++;
-        if (callCount === 1) return Promise.resolve(mockClient({ good_tool: {} }));
+        if (callCount === 1)
+          return Promise.resolve(mockClient({ good_tool: {} }));
         return Promise.reject(new Error("ECONNREFUSED"));
       }) as never,
       createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
@@ -123,7 +123,11 @@ describe("MCP gateway flow integration", () => {
       JSON.stringify({
         mcpServers: {
           active: { type: "http", url: "http://localhost/mcp" },
-          disabled: { type: "http", url: "http://localhost/mcp2", enabled: false },
+          disabled: {
+            type: "http",
+            url: "http://localhost/mcp2",
+            enabled: false,
+          },
         },
       }),
     );
