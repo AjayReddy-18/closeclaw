@@ -7,10 +7,13 @@ import {
   removeServer,
   listServers,
   serverExists,
+  loadMcpConfig,
+  createConnectionManager,
 } from "@closeclaw/mcp-client";
 import { runMcpAdd } from "./mcp-add.js";
 import { runMcpRemove } from "./mcp-remove.js";
 import { runMcpList } from "./mcp-list.js";
+import { runMcpStatus } from "./mcp-status.js";
 
 export interface McpDeps {
   configPath: string;
@@ -51,5 +54,22 @@ export function registerMcpCommands(program: Command, deps: McpDeps): void {
     .description("List all configured MCP servers")
     .action(() => {
       runMcpList({ configPath: deps.configPath, listServers });
+    });
+
+  mcp
+    .command("status")
+    .description("Check MCP server connection health")
+    .action(async () => {
+      await runMcpStatus({
+        loadConfigs: () => listServers(deps.configPath),
+        connectAndGetStatus: async () => {
+          const configs = loadMcpConfig(deps.configPath);
+          if (configs.length === 0) return [];
+          const manager = createConnectionManager();
+          const results = await manager.connectAll(configs);
+          await manager.closeAll();
+          return results;
+        },
+      });
     });
 }
