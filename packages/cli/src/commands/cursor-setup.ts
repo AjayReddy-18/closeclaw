@@ -4,14 +4,14 @@ import {
   checkCursorAvailability,
   createSessionStore,
   createCursorSessionManager,
-  createTmuxController,
+  createPtySpawner,
   runTrustMode,
-  runSafeMode,
-  detectPermissionPrompt,
+  runInteractiveMode,
+  stripAnsi,
+  detectPtyPermission,
   CURSOR_AGENT_BINARY,
   type SessionStore,
   type CursorSessionManager,
-  type ShellExec,
   type SpawnAgentHandle,
 } from "@closeclaw/cursor-agent";
 import {
@@ -81,79 +81,57 @@ function buildSpawnAgent(absolutePath: string) {
   };
 }
 
+function tryLoadNodePty(): boolean {
+  try {
+    require("node-pty");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function buildPtySpawner(absolutePath: string) {
+  const pty = require("node-pty") as typeof import("node-pty");
+  return createPtySpawner((binary, args, opts) =>
+    pty.spawn(binary, args, opts),
+  );
+}
+
 export interface CursorSetupResult {
   tools: Record<string, unknown>;
   sessionManager: CursorSessionManager;
   sessionStore: SessionStore;
 }
 
-function buildTmuxExec(): ShellExec {
-  return async (...args: string[]) => {
-    const { stdout } = await execFileAsync(args[0], args.slice(1));
-    return stdout;
-  };
-}
-
-function isSessionDone(output: string): boolean {
-  const lines = output.split("\n").filter((l) => l.trim().length > 0);
-  if (lines.length < 4) return false;
-  const hasAgentOutput = lines.some((l) => l.includes(CURSOR_AGENT_BINARY));
-  if (!hasAgentOutput) return false;
-  const last = lines[lines.length - 1].trim();
-  const isShellPrompt = /[$%#]\s*$/.test(last);
-  const cmdIdx = lines.findIndex((l) => l.includes(CURSOR_AGENT_BINARY));
-  return isShellPrompt && cmdIdx < lines.length - 2;
-}
-
-function logAvailability(
-  agentInstalled: boolean,
-  tmuxInstalled: boolean,
-): void {
+function logAvailability(agentInstalled: boolean, ptyAvail: boolean): void {
   if (!agentInstalled) {
     console.log("[cursor] Skipped: cursor-agent binary not found");
     return;
   }
-  if (!tmuxInstalled) {
-    console.log(
-      "[cursor] tmux not found — safe mode disabled, trust mode only",
-    );
+  if (ptyAvail) {
+    console.log("[cursor] Interactive PTY mode available");
+  } else {
+    console.log("[cursor] node-pty not available — trust mode only");
   }
-}
-
-function buildSafeRunner(tmuxAvailable: boolean) {
-  if (!tmuxAvailable) {
-    return async () => ({
-      sessionId: "",
-      status: "failed" as const,
-      summary: "Safe mode unavailable: tmux is not installed.",
-      outputLog: [] as string[],
-    });
-  }
-  const tmux = createTmuxController(buildTmuxExec());
-  const safeDeps = {
-    tmux,
-    detectPrompt: detectPermissionPrompt,
-    isSessionDone,
-  };
-  return (
-    params: { prompt: string; projectDir: string; timeoutMs: number },
-    onProgress: (text: string) => void,
-    onPermission: (prompt: string) => Promise<"accept" | "deny">,
-  ) => runSafeMode(params, safeDeps, onProgress, onPermission);
 }
 
 export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
-  const availability = await checkCursorAvailability(whichExists);
-  logAvailability(availability.agentInstalled, availability.tmuxInstalled);
+  const ptyAvail = tryLoadNodePty();
+  const availability = await checkCursorAvailability(whichExists, () => ptyAvail);
+  logAvailability(availability.agentInstalled, availability.ptyAvailable);
   if (!availability.available) return null;
   const agentPath = await resolveAbsolutePath(CURSOR_AGENT_BINARY);
   const sessionStore = createSessionStore();
   const trustDeps = { spawnAgent: buildSpawnAgent(agentPath) };
+  const interactiveDeps = ptyAvail
+    ? { spawnPty: buildPtySpawner(agentPath), stripAnsi, detectPermission: detectPtyPermission }
+    : null;
   const manager = createCursorSessionManager({
-    checkAvailability: () => checkCursorAvailability(whichExists),
-    runTrust: (params, onProgress) =>
-      runTrustMode(params, trustDeps, onProgress),
-    runSafe: buildSafeRunner(availability.safeModeAvailable),
+    checkAvailability: () => checkCursorAvailability(whichExists, () => ptyAvail),
+    runTrust: (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
+    runInteractive: interactiveDeps
+      ? (params, onProgress, onPermission) => runInteractiveMode(params, interactiveDeps, onProgress, onPermission)
+      : (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
     sessionStore,
   });
   return { tools: {}, sessionManager: manager, sessionStore };

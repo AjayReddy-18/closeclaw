@@ -98,11 +98,9 @@ const CURSOR_AGENT_GUIDANCE = `Cursor Agent (code delegation):
 - You can delegate coding tasks to a local Cursor agent using the cursor_agent tool.
 - Use this for: refactoring, adding tests, fixing lint errors, writing code, building apps.
 - Do NOT use this for: simple questions, non-code tasks, tasks you can answer from memory.
-- Choose the mode automatically — do NOT ask the user:
-  - trust: lint fixes, formatting, doc generation, simple additions, building new projects
-  - safe: refactoring existing code, architecture changes, deletions, config changes
-- If the user explicitly says "use trust mode" or "use safe mode", respect that override.
-- The user will see real-time progress from Cursor as it works.
+- Default mode is interactive: the user sees real-time progress and approves risky actions.
+- Only use trust mode when the user explicitly says "use trust mode" or "use force mode".
+- The user will see real-time progress and permission prompts from Cursor as it works.
 - To resume a previous session, use the cursor_resume tool.`;
 
 export function buildCursorAgentSection(hasCursorAgent: boolean): string {

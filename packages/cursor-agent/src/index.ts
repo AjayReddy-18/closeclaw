@@ -38,6 +38,12 @@ export { stripAnsi, createLineBuffer, type LineBuffer } from "./pty-output-parse
 export { detectPtyPermission } from "./pty-permission-detector.js";
 
 export {
+  runInteractiveMode,
+  type InteractiveRunnerDeps,
+  type InteractiveResult,
+} from "./interactive-runner.js";
+
+export {
   runTrustMode,
   type TrustModeRunnerDeps,
   type SpawnAgentFn,

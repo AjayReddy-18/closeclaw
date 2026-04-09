@@ -33,11 +33,11 @@ export interface CursorAgentToolDeps {
 const inputSchema = z.object({
   prompt: z.string().describe("The coding task to delegate"),
   projectDir: z.string().describe("Absolute path to the project"),
-  mode: z
-    .enum(["safe", "trust"])
+    mode: z
+    .enum(["interactive", "trust"])
     .optional()
-    .default("safe")
-    .describe("Execution mode: safe (interactive) or trust (--force)"),
+    .default("interactive")
+    .describe("Execution mode: interactive (PTY with prompts) or trust (--force)"),
 });
 
 function throttledProgress(
@@ -64,7 +64,7 @@ export function createCursorAgentTool(deps: CursorAgentToolDeps) {
       const result = await deps.sessionManager.start({
         prompt: params.prompt,
         projectDir: params.projectDir,
-        mode: params.mode ?? "safe",
+        mode: params.mode ?? "interactive",
         platform: deps.platform,
         senderId: deps.senderId,
         onProgress,
