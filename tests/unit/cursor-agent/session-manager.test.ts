@@ -165,4 +165,51 @@ describe("createCursorSessionManager", () => {
       expect(deps.sessionStore.list).toHaveBeenCalled();
     });
   });
+
+  describe("resume", () => {
+    it("uses runInteractive for resume with chatId", async () => {
+      const deps = createMockDeps({
+        sessionStore: {
+          save: vi.fn(),
+          list: vi.fn().mockReturnValue([]),
+          getMostRecent: vi.fn().mockReturnValue({
+            id: "r1",
+            cursorChatId: "chat-abc",
+            projectDir: "/tmp/proj",
+            prompt: "fix stuff",
+            status: "completed",
+            createdAt: new Date().toISOString(),
+          }),
+          findByCursorChatId: vi.fn().mockReturnValue({
+            id: "r1",
+            cursorChatId: "chat-abc",
+            projectDir: "/tmp/proj",
+            prompt: "fix stuff",
+            status: "completed",
+            createdAt: new Date().toISOString(),
+          }),
+          prune: vi.fn(),
+          toJSON: vi.fn().mockReturnValue("[]"),
+          loadFromJSON: vi.fn(),
+        },
+      });
+      const manager = createCursorSessionManager(deps);
+      await manager.resume("chat-abc", vi.fn(), vi.fn().mockResolvedValue("accept"));
+      expect(deps.runInteractive).toHaveBeenCalledOnce();
+      const call = (deps.runInteractive as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(call[0].prompt).toContain("--resume=chat-abc");
+    });
+
+    it("returns error when no sessions to resume", async () => {
+      const deps = createMockDeps();
+      const manager = createCursorSessionManager(deps);
+      const result = await manager.resume(
+        undefined,
+        vi.fn(),
+        vi.fn().mockResolvedValue("accept"),
+      );
+      expect(result.status).toBe("failed");
+      expect(result.summary).toContain("No sessions");
+    });
+  });
 });
