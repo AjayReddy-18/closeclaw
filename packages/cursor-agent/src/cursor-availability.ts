@@ -4,7 +4,7 @@ export type ExecWhich = (binary: string) => Promise<boolean>;
 
 export interface AvailabilityResult {
   agentInstalled: boolean;
-  tmuxInstalled: boolean;
+  ptyAvailable: boolean;
   available: boolean;
 }
 
@@ -16,20 +16,32 @@ async function checkBinary(exec: ExecWhich, binary: string): Promise<boolean> {
   }
 }
 
+function checkPtyLoadable(): boolean {
+  try {
+    require.resolve("node-pty");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function checkCursorAvailability(
   exec: ExecWhich,
+  isPtyAvailable: () => boolean = checkPtyLoadable,
 ): Promise<AvailabilityResult> {
   try {
-    const [agentInstalled, tmuxInstalled] = await Promise.all([
-      checkBinary(exec, CURSOR_AGENT_BINARY),
-      checkBinary(exec, "tmux"),
-    ]);
+    const agentInstalled = await checkBinary(exec, CURSOR_AGENT_BINARY);
+    const ptyAvailable = isPtyAvailable();
     return {
       agentInstalled,
-      tmuxInstalled,
-      available: agentInstalled && tmuxInstalled,
+      ptyAvailable,
+      available: agentInstalled,
     };
   } catch {
-    return { agentInstalled: false, tmuxInstalled: false, available: false };
+    return {
+      agentInstalled: false,
+      ptyAvailable: false,
+      available: false,
+    };
   }
 }

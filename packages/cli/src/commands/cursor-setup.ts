@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import {
   checkCursorAvailability,
@@ -12,6 +12,7 @@ import {
   type SessionStore,
   type CursorSessionManager,
   type ShellExec,
+  type SpawnAgentHandle,
 } from "@closeclaw/cursor-agent";
 import {
   createCursorAgentTool,
@@ -29,39 +30,54 @@ async function whichExists(binary: string): Promise<boolean> {
   }
 }
 
-function buildSpawnAgent() {
-  return async (prompt: string, cwd: string, timeoutMs: number) => {
-    const { spawn } = await import("node:child_process");
-    return new Promise<{ stdout: string[]; exitCode: number }>((resolve) => {
-      const args = [
-        "-p",
-        "--force",
-        "--output-format",
-        "stream-json",
-        "--stream-partial-output",
-        prompt,
-      ];
-      const child = spawn(CURSOR_AGENT_BINARY, args, {
-        cwd,
-        stdio: ["ignore", "pipe", "ignore"],
-      });
-      const lines: string[] = [];
-      let buffer = "";
-      child.stdout.on("data", (chunk: Buffer) => {
-        buffer += chunk.toString();
-        const parts = buffer.split("\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          if (part.trim()) lines.push(part);
-        }
-      });
+async function resolveAbsolutePath(binary: string): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync("which", [binary]);
+    return stdout.trim();
+  } catch {
+    return binary;
+  }
+}
+
+function buildSpawnAgent(absolutePath: string) {
+  return (prompt: string, cwd: string, timeoutMs: number): SpawnAgentHandle => {
+    const args = [
+      "-p",
+      "--force",
+      "--output-format",
+      "stream-json",
+      "--stream-partial-output",
+      prompt,
+    ];
+    const child = spawn(absolutePath, args, {
+      cwd,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    let lineCallback: ((line: string) => void) | undefined;
+    let buffer = "";
+    child.stdout.on("data", (chunk: Buffer) => {
+      buffer += chunk.toString();
+      const parts = buffer.split("\n");
+      buffer = parts.pop() ?? "";
+      for (const part of parts) {
+        if (part.trim() && lineCallback) lineCallback(part);
+      }
+    });
+    const exitPromise = new Promise<number>((resolve) => {
+      child.on("error", () => resolve(1));
       const timer = setTimeout(() => child.kill("SIGTERM"), timeoutMs);
-      child.on("close", (code) => {
+      child.on("close", (code: number | null) => {
         clearTimeout(timer);
-        if (buffer.trim()) lines.push(buffer.trim());
-        resolve({ stdout: lines, exitCode: code ?? 1 });
+        if (buffer.trim() && lineCallback) lineCallback(buffer.trim());
+        resolve(code ?? 1);
       });
     });
+    return {
+      onLine: (cb) => {
+        lineCallback = cb;
+      },
+      wait: () => exitPromise,
+    };
   };
 }
 
@@ -79,27 +95,65 @@ function buildTmuxExec(): ShellExec {
 }
 
 function isSessionDone(output: string): boolean {
-  const donePatterns = [/completed/i, /finished/i, /done/i, /exited/i];
-  return donePatterns.some((p) => p.test(output));
+  const lines = output.split("\n").filter((l) => l.trim().length > 0);
+  if (lines.length < 4) return false;
+  const hasAgentOutput = lines.some((l) => l.includes(CURSOR_AGENT_BINARY));
+  if (!hasAgentOutput) return false;
+  const last = lines[lines.length - 1].trim();
+  const isShellPrompt = /[$%#]\s*$/.test(last);
+  const cmdIdx = lines.findIndex((l) => l.includes(CURSOR_AGENT_BINARY));
+  return isShellPrompt && cmdIdx < lines.length - 2;
 }
 
-export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
-  const availability = await checkCursorAvailability(whichExists);
-  if (!availability.available) return null;
-  const sessionStore = createSessionStore();
-  const trustDeps = { spawnAgent: buildSpawnAgent() };
+function logAvailability(
+  agentInstalled: boolean,
+  tmuxInstalled: boolean,
+): void {
+  if (!agentInstalled) {
+    console.log("[cursor] Skipped: cursor-agent binary not found");
+    return;
+  }
+  if (!tmuxInstalled) {
+    console.log(
+      "[cursor] tmux not found — safe mode disabled, trust mode only",
+    );
+  }
+}
+
+function buildSafeRunner(tmuxAvailable: boolean) {
+  if (!tmuxAvailable) {
+    return async () => ({
+      sessionId: "",
+      status: "failed" as const,
+      summary: "Safe mode unavailable: tmux is not installed.",
+      outputLog: [] as string[],
+    });
+  }
   const tmux = createTmuxController(buildTmuxExec());
   const safeDeps = {
     tmux,
     detectPrompt: detectPermissionPrompt,
     isSessionDone,
   };
+  return (
+    params: { prompt: string; projectDir: string; timeoutMs: number },
+    onProgress: (text: string) => void,
+    onPermission: (prompt: string) => Promise<"accept" | "deny">,
+  ) => runSafeMode(params, safeDeps, onProgress, onPermission);
+}
+
+export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
+  const availability = await checkCursorAvailability(whichExists);
+  logAvailability(availability.agentInstalled, availability.tmuxInstalled);
+  if (!availability.available) return null;
+  const agentPath = await resolveAbsolutePath(CURSOR_AGENT_BINARY);
+  const sessionStore = createSessionStore();
+  const trustDeps = { spawnAgent: buildSpawnAgent(agentPath) };
   const manager = createCursorSessionManager({
     checkAvailability: () => checkCursorAvailability(whichExists),
     runTrust: (params, onProgress) =>
       runTrustMode(params, trustDeps, onProgress),
-    runSafe: (params, onProgress, onPermission) =>
-      runSafeMode(params, safeDeps, onProgress, onPermission),
+    runSafe: buildSafeRunner(availability.safeModeAvailable),
     sessionStore,
   });
   return { tools: {}, sessionManager: manager, sessionStore };

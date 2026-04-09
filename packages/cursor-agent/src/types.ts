@@ -1,4 +1,4 @@
-export type ExecutionMode = "safe" | "trust";
+export type ExecutionMode = "interactive" | "trust";
 
 export type SessionStatus =
   | "spawning"
@@ -12,7 +12,6 @@ export type SessionStatus =
 export interface CursorSession {
   id: string;
   cursorChatId: string | undefined;
-  tmuxSessionName: string;
   projectDir: string;
   prompt: string;
   mode: ExecutionMode;
@@ -43,10 +42,23 @@ export interface SessionRecord {
 }
 
 export interface StreamJsonEvent {
-  type: "system" | "assistant" | "tool_call" | "result" | "error";
+  type: string;
+  subtype?: string;
   content?: string;
-  toolName?: string;
-  status?: string;
+  result?: string;
+  message?: {
+    role?: string;
+    content?: Array<{ type: string; text?: string }>;
+  };
+  tool_call?: {
+    shellToolCall?: { description?: string };
+    fileEditToolCall?: { description?: string; path?: string };
+    readFileToolCall?: { path?: string };
+    writeFileToolCall?: { path?: string };
+    description?: string;
+    [key: string]: unknown;
+  };
+  session_id?: string;
 }
 
 export interface TaskResult {
@@ -56,11 +68,49 @@ export interface TaskResult {
   outputLog: string[];
 }
 
+export interface PtySpawnOptions {
+  binary: string;
+  args: string[];
+  cwd: string;
+  cols?: number;
+  rows?: number;
+  env?: Record<string, string>;
+}
+
+export interface PtyHandle {
+  onData(cb: (data: string) => void): void;
+  onExit(cb: (info: { exitCode: number }) => void): void;
+  write(data: string): void;
+  kill(): void;
+}
+
+export type PtySpawnFn = (options: PtySpawnOptions) => PtyHandle;
+
+export interface ProgressEvent {
+  type: "text" | "tool" | "status";
+  content: string;
+  timestamp: number;
+}
+
+export interface DetectedPermission {
+  promptText: string;
+  displayText: string;
+}
+
+export interface InteractiveTaskResult {
+  sessionId: string;
+  status: SessionStatus;
+  summary: string;
+  outputLog: string[];
+  permissionsRequested: number;
+  permissionsAccepted: number;
+  permissionsDenied: number;
+}
+
 export const CURSOR_AGENT_BINARY = "cursor-agent";
 export const DEFAULT_TIMEOUT_MS = 600_000;
-export const POLL_INTERVAL_MS = 2_000;
 export const PROGRESS_THROTTLE_MS = 10_000;
-export const HEARTBEAT_SILENCE_MS = 60_000;
 export const APPROVAL_TIMEOUT_MS = 120_000;
 export const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-export const TMUX_CAPTURE_LINES = 50;
+export const PTY_DEFAULT_COLS = 120;
+export const PTY_DEFAULT_ROWS = 40;

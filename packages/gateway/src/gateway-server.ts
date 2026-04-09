@@ -9,6 +9,7 @@ import {
   logAcceptedMessage,
   maybeSendPairingReply,
   runAgentResponse,
+  type ToolProgressRef,
 } from "./gateway-agent-handler.js";
 import { routeRequest } from "./gateway-routes.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
@@ -43,6 +44,7 @@ export type GatewayServerConfig = {
       lastActivityAt: Date;
     }>;
   };
+  toolProgressRef?: ToolProgressRef;
 };
 
 export type GatewayServer = {
@@ -127,6 +129,7 @@ function wireMessageHandlers(
         msg,
         resolver,
         cfg.messageProcessor,
+        cfg.toolProgressRef,
       );
     });
   }
@@ -138,6 +141,7 @@ async function handleAdapterMessage(
   msg: BotIncomingMessage,
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
   messageProcessor: GatewayServerConfig["messageProcessor"],
+  progressRef?: ToolProgressRef,
 ): Promise<void> {
   const enforcer = makeEnforcer(resolver, pairingManager, msg.platform);
   const { allowed, pairingCode } = await enforcer.shouldAllow(
@@ -152,7 +156,7 @@ async function handleAdapterMessage(
     logAcceptedMessage(msg);
     const key = `${msg.platform}:${msg.senderId}`;
     enqueueForSender(key, () =>
-      runAgentResponse(adapter, messageProcessor, msg),
+      runAgentResponse(adapter, messageProcessor, msg, progressRef),
     );
     return;
   }

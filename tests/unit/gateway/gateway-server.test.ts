@@ -346,7 +346,7 @@ describe("createGatewayServer", () => {
       expect(sendMessage).toHaveBeenCalledWith("22", "quick");
     });
 
-    it("sends interim processing message when processMessage is slow", async () => {
+    it("sends only final response without boilerplate messages", async () => {
       dir = join(tmpdir(), `closeclaw-gw-slow-${randomUUID()}`);
       mkdirSync(dir, { recursive: true });
       storePath = join(dir, "pairing.json");
@@ -377,27 +377,21 @@ describe("createGatewayServer", () => {
       });
       servers.push(srv);
       await srv.start();
-      vi.useFakeTimers();
-      try {
-        const onMsg = vi.mocked(adapter.onMessage).mock.calls[0]![0];
-        onMsg({
-          platform: BotPlatform.TELEGRAM,
-          senderId: "33",
-          text: "slow",
-          timestamp: new Date(),
-        });
-        await vi.advanceTimersByTimeAsync(5000);
-        expect(sendMessage).toHaveBeenCalledWith(
-          "33",
-          "Processing your message...",
-        );
-        resolveProc!("final");
-        await vi.waitFor(() =>
-          expect(sendMessage).toHaveBeenCalledWith("33", "final"),
-        );
-      } finally {
-        vi.useRealTimers();
-      }
+      const onMsg = vi.mocked(adapter.onMessage).mock.calls[0]![0];
+      onMsg({
+        platform: BotPlatform.TELEGRAM,
+        senderId: "33",
+        text: "slow",
+        timestamp: new Date(),
+      });
+      await vi.waitFor(() => expect(processMessage).toHaveBeenCalled());
+      resolveProc!("final");
+      await vi.waitFor(() =>
+        expect(sendMessage).toHaveBeenCalledWith("33", "final"),
+      );
+      const calls = sendMessage.mock.calls.map((c: unknown[]) => c[1]);
+      expect(calls).not.toContain("Processing your message...");
+      expect(calls).not.toContain("Still working on it...");
     });
   });
 

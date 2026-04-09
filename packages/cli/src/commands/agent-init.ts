@@ -27,6 +27,10 @@ interface AgentInitDeps {
   mcpConfigPath: string;
 }
 
+export interface CursorProgressRef {
+  send: (text: string) => void;
+}
+
 export async function initAgent(
   config: Configuration,
   deps: AgentInitDeps,
@@ -34,6 +38,7 @@ export async function initAgent(
   schedulerRef: { current?: SchedulerAssembly },
   senderRef: { platform: string; senderId: string },
   adapters: BotAdapter[],
+  progressRef: CursorProgressRef,
 ): Promise<AgentInit | null> {
   if (!config.agent || !isValidAgentConfig(config.agent)) return null;
   const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
@@ -44,7 +49,7 @@ export async function initAgent(
         cursorSetup.sessionManager,
         senderRef.platform,
         senderRef.senderId,
-        () => {},
+        (text) => progressRef.send(text),
         async () => "deny" as const,
       )
     : {};

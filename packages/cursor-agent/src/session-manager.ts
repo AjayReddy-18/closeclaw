@@ -9,7 +9,7 @@ export interface CursorSessionManagerDeps {
     params: { prompt: string; projectDir: string; timeoutMs: number },
     onProgress: (text: string) => void,
   ) => Promise<TaskResult>;
-  runSafe: (
+  runInteractive: (
     params: { prompt: string; projectDir: string; timeoutMs: number },
     onProgress: (text: string) => void,
     onPermission: (prompt: string) => Promise<"accept" | "deny">,
@@ -74,7 +74,7 @@ export function createCursorSessionManager(
         const result =
           params.mode === "trust"
             ? await deps.runTrust(runParams, params.onProgress)
-            : await deps.runSafe(
+            : await deps.runInteractive(
                 runParams,
                 params.onProgress,
                 params.onPermission,
@@ -105,7 +105,7 @@ export function createCursorSessionManager(
       return deps.sessionStore.list();
     },
 
-    async resume(chatId, onProgress, _onPermission) {
+    async resume(chatId, onProgress, onPermission) {
       const target = chatId
         ? deps.sessionStore.findByCursorChatId(chatId)
         : deps.sessionStore.getMostRecent();
@@ -117,7 +117,7 @@ export function createCursorSessionManager(
         projectDir: target.projectDir,
         timeoutMs: DEFAULT_TIMEOUT_MS,
       };
-      return deps.runTrust(runParams, onProgress);
+      return deps.runInteractive(runParams, onProgress, onPermission);
     },
   };
 }

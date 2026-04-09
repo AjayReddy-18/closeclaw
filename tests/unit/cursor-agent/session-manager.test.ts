@@ -10,7 +10,7 @@ function createMockDeps(
   return {
     checkAvailability: vi.fn().mockResolvedValue({
       agentInstalled: true,
-      tmuxInstalled: true,
+      ptyAvailable: true,
       available: true,
     }),
     runTrust: vi.fn().mockResolvedValue({
@@ -19,7 +19,7 @@ function createMockDeps(
       summary: "Done",
       outputLog: [],
     }),
-    runSafe: vi.fn().mockResolvedValue({
+    runInteractive: vi.fn().mockResolvedValue({
       sessionId: "s1",
       status: "completed",
       summary: "Done",
@@ -53,22 +53,22 @@ describe("createCursorSessionManager", () => {
         onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(deps.runTrust).toHaveBeenCalledOnce();
-      expect(deps.runSafe).not.toHaveBeenCalled();
+      expect(deps.runInteractive).not.toHaveBeenCalled();
     });
 
-    it("delegates to safe runner in safe mode", async () => {
+    it("delegates to interactive runner in interactive mode", async () => {
       const deps = createMockDeps();
       const manager = createCursorSessionManager(deps);
       await manager.start({
         prompt: "refactor auth",
         projectDir: "/tmp",
-        mode: "safe",
+        mode: "interactive",
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
         onPermission: vi.fn().mockResolvedValue("accept"),
       });
-      expect(deps.runSafe).toHaveBeenCalledOnce();
+      expect(deps.runInteractive).toHaveBeenCalledOnce();
       expect(deps.runTrust).not.toHaveBeenCalled();
     });
 
@@ -76,7 +76,7 @@ describe("createCursorSessionManager", () => {
       const deps = createMockDeps({
         checkAvailability: vi.fn().mockResolvedValue({
           agentInstalled: false,
-          tmuxInstalled: true,
+          ptyAvailable: false,
           available: false,
         }),
       });
