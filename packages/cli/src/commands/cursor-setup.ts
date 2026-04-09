@@ -8,6 +8,7 @@ import {
   runTrustMode,
   runSafeMode,
   detectPermissionPrompt,
+  CURSOR_AGENT_BINARY,
   type SessionStore,
   type CursorSessionManager,
   type ShellExec,
@@ -40,7 +41,7 @@ function buildSpawnAgent() {
         "--stream-partial-output",
         prompt,
       ];
-      const child = spawn("agent", args, {
+      const child = spawn(CURSOR_AGENT_BINARY, args, {
         cwd,
         stdio: ["ignore", "pipe", "ignore"],
       });

@@ -8,6 +8,7 @@ export type {
   TaskResult,
 } from "./types.js";
 export {
+  CURSOR_AGENT_BINARY,
   DEFAULT_TIMEOUT_MS,
   POLL_INTERVAL_MS,
   PROGRESS_THROTTLE_MS,

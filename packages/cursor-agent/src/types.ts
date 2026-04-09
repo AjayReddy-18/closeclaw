@@ -56,6 +56,7 @@ export interface TaskResult {
   outputLog: string[];
 }
 
+export const CURSOR_AGENT_BINARY = "cursor-agent";
 export const DEFAULT_TIMEOUT_MS = 600_000;
 export const POLL_INTERVAL_MS = 2_000;
 export const PROGRESS_THROTTLE_MS = 10_000;

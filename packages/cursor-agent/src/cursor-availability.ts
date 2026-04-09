@@ -1,3 +1,5 @@
+import { CURSOR_AGENT_BINARY } from "./types.js";
+
 export type ExecWhich = (binary: string) => Promise<boolean>;
 
 export interface AvailabilityResult {
@@ -19,7 +21,7 @@ export async function checkCursorAvailability(
 ): Promise<AvailabilityResult> {
   try {
     const [agentInstalled, tmuxInstalled] = await Promise.all([
-      checkBinary(exec, "agent"),
+      checkBinary(exec, CURSOR_AGENT_BINARY),
       checkBinary(exec, "tmux"),
     ]);
     return {

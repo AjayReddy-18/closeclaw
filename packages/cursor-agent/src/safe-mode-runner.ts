@@ -1,7 +1,11 @@
 import type { TmuxController } from "./tmux-controller.js";
 import type { DetectedPrompt } from "./permission-detector.js";
 import type { TaskResult } from "./types.js";
-import { POLL_INTERVAL_MS, TMUX_CAPTURE_LINES } from "./types.js";
+import {
+  CURSOR_AGENT_BINARY,
+  POLL_INTERVAL_MS,
+  TMUX_CAPTURE_LINES,
+} from "./types.js";
 
 export interface SafeModeRunnerDeps {
   tmux: TmuxController;
@@ -22,7 +26,7 @@ function sleep(ms: number): Promise<void> {
 
 function buildAgentCommand(prompt: string): string {
   const escaped = prompt.replace(/"/g, '\\"');
-  return `agent -p "${escaped}"`;
+  return `${CURSOR_AGENT_BINARY} -p "${escaped}"`;
 }
 
 function sessionName(): string {
