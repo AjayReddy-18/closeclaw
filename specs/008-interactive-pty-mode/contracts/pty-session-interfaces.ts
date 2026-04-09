@@ -71,9 +71,7 @@ export interface InteractiveTaskResult {
 }
 
 export type OnProgressFn = (text: string) => void;
-export type OnPermissionFn = (
-  prompt: string,
-) => Promise<"accept" | "deny">;
+export type OnPermissionFn = (prompt: string) => Promise<"accept" | "deny">;
 
 export type InteractiveRunFn = (
   params: InteractiveRunParams,

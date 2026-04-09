@@ -1,6 +1,6 @@
-const SGR_PATTERN = /\x1b\[[0-9;]*[a-zA-Z]/g;
-const OSC_PATTERN = /\x1b\][^\x07]*\x07/g;
-const CARRIAGE_RETURN = /\r/g;
+const SGR_PATTERN = new RegExp("\x1b\\[[0-9;]*[a-zA-Z]", "g");
+const OSC_PATTERN = new RegExp("\x1b\\][^\x07]*\x07", "g");
+const CARRIAGE_RETURN = new RegExp("\r", "g");
 
 export function stripAnsi(text: string): string {
   return text

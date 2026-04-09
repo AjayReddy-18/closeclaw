@@ -111,7 +111,11 @@ function makeEnforcer(
   platform: BotPlatform,
 ) {
   const s = resolver(platform);
-  return createDmPolicyEnforcer({ dmPolicy: s.dmPolicy, allowedSenders: s.allowedSenders, pairingManager: pm });
+  return createDmPolicyEnforcer({
+    dmPolicy: s.dmPolicy,
+    allowedSenders: s.allowedSenders,
+    pairingManager: pm,
+  });
 }
 
 function wireMessageHandlers(
@@ -149,13 +153,20 @@ async function handleAdapterMessage(
     msg.senderId,
     msg.platform,
   );
-  if (!allowed) return maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
+  if (!allowed)
+    return maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
   if (resolvePermission(msg.senderId, msg.text)) return;
   logAcceptedMessage(msg);
   if (!messageProcessor) return;
   const key = `${msg.platform}:${msg.senderId}`;
   enqueueForSender(key, () =>
-    runAgentResponse(adapter, messageProcessor, msg, progressRef, permissionRef),
+    runAgentResponse(
+      adapter,
+      messageProcessor,
+      msg,
+      progressRef,
+      permissionRef,
+    ),
   );
 }
 

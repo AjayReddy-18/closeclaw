@@ -26,10 +26,7 @@ const pendingPermissions = new Map<
   (decision: "accept" | "deny") => void
 >();
 
-export function resolvePermission(
-  senderId: string,
-  text: string,
-): boolean {
+export function resolvePermission(senderId: string, text: string): boolean {
   const resolver = pendingPermissions.get(senderId);
   if (!resolver) return false;
   const lower = text.trim().toLowerCase();
@@ -51,8 +48,7 @@ export function createPermissionAsker(
   senderId: string,
 ): (prompt: string) => Promise<"accept" | "deny"> {
   return async (prompt) => {
-    const message =
-      `🔐 Cursor is asking:\n${prompt}\n\nReply Accept or Deny`;
+    const message = `🔐 Cursor is asking:\n${prompt}\n\nReply Accept or Deny`;
     await adapter.sendMessage(senderId, message);
     return new Promise<"accept" | "deny">((resolve) => {
       const timer = setTimeout(() => {

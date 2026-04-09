@@ -3,10 +3,7 @@ import { detectPtyPermission } from "@closeclaw/cursor-agent";
 
 describe("detectPtyPermission", () => {
   it("detects Accept Deny prompt", () => {
-    const lines = [
-      "Cursor wants to edit 3 files",
-      "  Accept  Deny",
-    ];
+    const lines = ["Cursor wants to edit 3 files", "  Accept  Deny"];
     const result = detectPtyPermission(lines);
     expect(result).not.toBeNull();
     expect(result!.displayText).toContain("edit 3 files");
@@ -31,10 +28,7 @@ describe("detectPtyPermission", () => {
   });
 
   it("detects workspace trust prompt", () => {
-    const lines = [
-      "Do you trust the contents of this directory?",
-      "Yes  No",
-    ];
+    const lines = ["Do you trust the contents of this directory?", "Yes  No"];
     const result = detectPtyPermission(lines);
     expect(result).not.toBeNull();
     expect(result!.displayText).toContain("trust");
@@ -47,11 +41,7 @@ describe("detectPtyPermission", () => {
   });
 
   it("returns null for normal output", () => {
-    const lines = [
-      "Analyzing code...",
-      "Found 5 issues",
-      "Fixing lint errors",
-    ];
+    const lines = ["Analyzing code...", "Found 5 issues", "Fixing lint errors"];
     expect(detectPtyPermission(lines)).toBeNull();
   });
 

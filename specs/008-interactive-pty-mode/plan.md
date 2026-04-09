@@ -23,16 +23,16 @@ Replace the current dual-mode Cursor agent execution (broken tmux safe mode + fo
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-| --- | --- | --- |
-| I. TDD | PASS | All new modules get tests first |
-| II. Clean Code | PASS | No comments, ≤ 20 line functions, ≤ 200 line files |
-| III. Design Principles | PASS | DI for node-pty, composition for runners |
-| IV. Atomic Commits | PASS | Each phase delivers testable, committable work |
-| V. Automation-First | PASS | PTY automates interactive terminal handling |
-| VI. Modular Architecture | PASS | New code in existing `packages/cursor-agent` |
-| VII. Living Documentation | PASS | docs/cursor-agent.md updated |
-| Code Quality | PASS | Strict TS, oxlint, Prettier |
+| Principle                 | Status | Notes                                              |
+| ------------------------- | ------ | -------------------------------------------------- |
+| I. TDD                    | PASS   | All new modules get tests first                    |
+| II. Clean Code            | PASS   | No comments, ≤ 20 line functions, ≤ 200 line files |
+| III. Design Principles    | PASS   | DI for node-pty, composition for runners           |
+| IV. Atomic Commits        | PASS   | Each phase delivers testable, committable work     |
+| V. Automation-First       | PASS   | PTY automates interactive terminal handling        |
+| VI. Modular Architecture  | PASS   | New code in existing `packages/cursor-agent`       |
+| VII. Living Documentation | PASS   | docs/cursor-agent.md updated                       |
+| Code Quality              | PASS   | Strict TS, oxlint, Prettier                        |
 
 ## Project Structure
 

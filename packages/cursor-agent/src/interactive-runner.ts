@@ -61,7 +61,21 @@ export async function runInteractiveMode(
   }, params.timeoutMs);
 
   const dedup = { lastPromptText: "" };
-  setupDataHandler(handle, lineBuffer, deps, recentLines, outputLog, stats, onProgress, onPermission, () => lastProgressAt, (t) => { lastProgressAt = t; }, dedup);
+  setupDataHandler(
+    handle,
+    lineBuffer,
+    deps,
+    recentLines,
+    outputLog,
+    stats,
+    onProgress,
+    onPermission,
+    () => lastProgressAt,
+    (t) => {
+      lastProgressAt = t;
+    },
+    dedup,
+  );
 
   const exitCode = await waitForExit(handle);
   clearTimeout(timeout);
@@ -185,4 +199,3 @@ function resolveStatus(
   if (timedOut) return "timed_out";
   return exitCode === 0 ? "completed" : "failed";
 }
-

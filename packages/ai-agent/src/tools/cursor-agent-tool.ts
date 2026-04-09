@@ -33,11 +33,13 @@ export interface CursorAgentToolDeps {
 const inputSchema = z.object({
   prompt: z.string().describe("The coding task to delegate"),
   projectDir: z.string().describe("Absolute path to the project"),
-    mode: z
+  mode: z
     .enum(["interactive", "trust"])
     .optional()
     .default("interactive")
-    .describe("Execution mode: interactive (PTY with prompts) or trust (--force)"),
+    .describe(
+      "Execution mode: interactive (PTY with prompts) or trust (--force)",
+    ),
 });
 
 function throttledProgress(

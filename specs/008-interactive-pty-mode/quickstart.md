@@ -21,6 +21,7 @@ pnpm add node-pty
 ```
 
 If native compilation fails, check:
+
 - macOS: `xcode-select --install`
 - Linux: `sudo apt-get install -y build-essential`
 
@@ -31,6 +32,7 @@ pnpm closeclaw gateway start
 ```
 
 You should see:
+
 ```
 [cursor] Interactive PTY mode available
 AI agent active: anthropic/claude-sonnet-4-6
@@ -39,15 +41,16 @@ AI agent active: anthropic/claude-sonnet-4-6
 ## Test interactive mode
 
 1. Open Telegram and send your bot a coding task:
+
    > "In my closeclaw project, add a hello-world.ts file that prints 'Hello World'"
 
 2. You should see real-time progress messages:
+
    > "Creating file hello-world.ts..."
    > "Writing content..."
 
 3. If Cursor needs permission (e.g., file write), you'll see:
    > "Cursor is asking: Allow write to hello-world.ts? [Accept / Deny]"
-   
 4. Reply "Accept" or "Deny" in Telegram.
 
 5. After completion, you'll get a summary of changes made.
@@ -55,6 +58,7 @@ AI agent active: anthropic/claude-sonnet-4-6
 ## Switch to trust mode
 
 If you want to skip all permission prompts for a task, tell the bot:
+
 > "Use trust mode — create a new React app in ~/projects/demo"
 
 ## Verify tests pass

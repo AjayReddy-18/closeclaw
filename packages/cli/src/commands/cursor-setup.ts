@@ -90,7 +90,7 @@ function tryLoadNodePty(): boolean {
   }
 }
 
-function buildPtySpawner(absolutePath: string) {
+function buildPtySpawner(_absolutePath: string) {
   const pty = require("node-pty") as typeof import("node-pty");
   return createPtySpawner((binary, args, opts) =>
     pty.spawn(binary, args, opts),
@@ -117,20 +117,30 @@ function logAvailability(agentInstalled: boolean, ptyAvail: boolean): void {
 
 export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
   const ptyAvail = tryLoadNodePty();
-  const availability = await checkCursorAvailability(whichExists, () => ptyAvail);
+  const availability = await checkCursorAvailability(
+    whichExists,
+    () => ptyAvail,
+  );
   logAvailability(availability.agentInstalled, availability.ptyAvailable);
   if (!availability.available) return null;
   const agentPath = await resolveAbsolutePath(CURSOR_AGENT_BINARY);
   const sessionStore = createSessionStore();
   const trustDeps = { spawnAgent: buildSpawnAgent(agentPath) };
   const interactiveDeps = ptyAvail
-    ? { spawnPty: buildPtySpawner(agentPath), stripAnsi, detectPermission: detectPtyPermission }
+    ? {
+        spawnPty: buildPtySpawner(agentPath),
+        stripAnsi,
+        detectPermission: detectPtyPermission,
+      }
     : null;
   const manager = createCursorSessionManager({
-    checkAvailability: () => checkCursorAvailability(whichExists, () => ptyAvail),
-    runTrust: (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
+    checkAvailability: () =>
+      checkCursorAvailability(whichExists, () => ptyAvail),
+    runTrust: (params, onProgress) =>
+      runTrustMode(params, trustDeps, onProgress),
     runInteractive: interactiveDeps
-      ? (params, onProgress, onPermission) => runInteractiveMode(params, interactiveDeps, onProgress, onPermission)
+      ? (params, onProgress, onPermission) =>
+          runInteractiveMode(params, interactiveDeps, onProgress, onPermission)
       : (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
     sessionStore,
   });

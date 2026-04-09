@@ -26,7 +26,6 @@ import {
   type CursorProgressRef,
   type CursorPermissionRef,
 } from "./agent-init.js";
-import { createPermissionAsker } from "@closeclaw/gateway";
 
 const require = createRequire(import.meta.url);
 

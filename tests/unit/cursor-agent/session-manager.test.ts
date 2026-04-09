@@ -194,9 +194,14 @@ describe("createCursorSessionManager", () => {
         },
       });
       const manager = createCursorSessionManager(deps);
-      await manager.resume("chat-abc", vi.fn(), vi.fn().mockResolvedValue("accept"));
+      await manager.resume(
+        "chat-abc",
+        vi.fn(),
+        vi.fn().mockResolvedValue("accept"),
+      );
       expect(deps.runInteractive).toHaveBeenCalledOnce();
-      const call = (deps.runInteractive as ReturnType<typeof vi.fn>).mock.calls[0];
+      const call = (deps.runInteractive as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(call[0].prompt).toContain("--resume=chat-abc");
     });
 

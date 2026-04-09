@@ -1,10 +1,21 @@
 const FILE_OP_PATTERNS = [
-  { pattern: /(?:creat(?:ed?|ing)|writ(?:ing|ten)|wrote)\s+(.+\.\w+)/i, op: "created" },
-  { pattern: /(?:modif(?:ied|ying)|edit(?:ed|ing)|updat(?:ed|ing))\s+(.+\.\w+)/i, op: "modified" },
-  { pattern: /(?:delet(?:ed|ing)|remov(?:ed|ing))\s+(.+\.\w+)/i, op: "deleted" },
+  {
+    pattern: /(?:creat(?:ed?|ing)|writ(?:ing|ten)|wrote)\s+(.+\.\w+)/i,
+    op: "created",
+  },
+  {
+    pattern:
+      /(?:modif(?:ied|ying)|edit(?:ed|ing)|updat(?:ed|ing))\s+(.+\.\w+)/i,
+    op: "modified",
+  },
+  {
+    pattern: /(?:delet(?:ed|ing)|remov(?:ed|ing))\s+(.+\.\w+)/i,
+    op: "deleted",
+  },
 ];
 
-const COMMAND_PATTERN = /(?:running|ran|executing|executed)\s+[`"]?(.+?)[`"]?\s*$/i;
+const COMMAND_PATTERN =
+  /(?:running|ran|executing|executed)\s+[`"]?(.+?)[`"]?\s*$/i;
 
 interface SummaryData {
   fileOps: { file: string; operation: string }[];
@@ -12,7 +23,9 @@ interface SummaryData {
   errors: string[];
 }
 
-function extractFileOps(line: string): { file: string; operation: string } | null {
+function extractFileOps(
+  line: string,
+): { file: string; operation: string } | null {
   for (const { pattern, op } of FILE_OP_PATTERNS) {
     const match = pattern.exec(line);
     if (match) return { file: match[1].trim(), operation: op };
@@ -26,7 +39,9 @@ function extractCommand(line: string): string | null {
 }
 
 function isErrorLine(line: string): boolean {
-  return /\berror\b/i.test(line) && !/\berrors?\s*(fixed|resolved)\b/i.test(line);
+  return (
+    /\berror\b/i.test(line) && !/\berrors?\s*(fixed|resolved)\b/i.test(line)
+  );
 }
 
 function collectSummaryData(outputLog: string[]): SummaryData {
@@ -48,7 +63,8 @@ function collectSummaryData(outputLog: string[]): SummaryData {
 function formatFileOps(ops: { file: string; operation: string }[]): string {
   if (ops.length === 0) return "";
   const lines = ops.slice(0, 15).map((o) => `  ${o.operation}: ${o.file}`);
-  const suffix = ops.length > 15 ? `\n  ...and ${String(ops.length - 15)} more` : "";
+  const suffix =
+    ops.length > 15 ? `\n  ...and ${String(ops.length - 15)} more` : "";
   return `Files:\n${lines.join("\n")}${suffix}`;
 }
 
