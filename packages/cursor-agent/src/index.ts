@@ -47,6 +47,11 @@ export {
 } from "./trust-mode-runner.js";
 
 export {
+  runSafeMode,
+  type SafeModeRunnerDeps,
+} from "./safe-mode-runner.js";
+
+export {
   createCursorSessionManager,
   type CursorSessionManagerDeps,
   type CursorSessionManager,

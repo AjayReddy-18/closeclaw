@@ -4,9 +4,13 @@ import {
   checkCursorAvailability,
   createSessionStore,
   createCursorSessionManager,
+  createTmuxController,
   runTrustMode,
+  runSafeMode,
+  detectPermissionPrompt,
   type SessionStore,
   type CursorSessionManager,
+  type ShellExec,
 } from "@closeclaw/cursor-agent";
 import { createCursorAgentTool } from "@closeclaw/ai-agent";
 
@@ -60,20 +64,30 @@ export interface CursorSetupResult {
   sessionStore: SessionStore;
 }
 
+function buildTmuxExec(): ShellExec {
+  return async (...args: string[]) => {
+    const { stdout } = await execFileAsync(args[0], args.slice(1));
+    return stdout;
+  };
+}
+
+function isSessionDone(output: string): boolean {
+  const donePatterns = [/completed/i, /finished/i, /done/i, /exited/i];
+  return donePatterns.some((p) => p.test(output));
+}
+
 export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
   const availability = await checkCursorAvailability(whichExists);
   if (!availability.available) return null;
   const sessionStore = createSessionStore();
   const trustDeps = { spawnAgent: buildSpawnAgent() };
+  const tmux = createTmuxController(buildTmuxExec());
+  const safeDeps = { tmux, detectPrompt: detectPermissionPrompt, isSessionDone };
   const manager = createCursorSessionManager({
     checkAvailability: () => checkCursorAvailability(whichExists),
     runTrust: (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
-    runSafe: async () => ({
-      sessionId: "",
-      status: "failed" as const,
-      summary: "Safe mode not yet implemented.",
-      outputLog: [],
-    }),
+    runSafe: (params, onProgress, onPermission) =>
+      runSafeMode(params, safeDeps, onProgress, onPermission),
     sessionStore,
   });
   return { tools: {}, sessionManager: manager, sessionStore };
