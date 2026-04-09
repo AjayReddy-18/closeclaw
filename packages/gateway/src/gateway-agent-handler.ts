@@ -15,6 +15,61 @@ export interface ToolProgressRef {
   send: (text: string) => void;
 }
 
+export interface PermissionRef {
+  ask: (prompt: string) => Promise<"accept" | "deny">;
+}
+
+const PERMISSION_TIMEOUT_MS = 120_000;
+
+const pendingPermissions = new Map<
+  string,
+  (decision: "accept" | "deny") => void
+>();
+
+export function resolvePermission(
+  senderId: string,
+  text: string,
+): boolean {
+  const resolver = pendingPermissions.get(senderId);
+  if (!resolver) return false;
+  const lower = text.trim().toLowerCase();
+  if (lower === "accept" || lower === "yes" || lower === "y") {
+    resolver("accept");
+    pendingPermissions.delete(senderId);
+    return true;
+  }
+  if (lower === "deny" || lower === "no" || lower === "n") {
+    resolver("deny");
+    pendingPermissions.delete(senderId);
+    return true;
+  }
+  return false;
+}
+
+export function createPermissionAsker(
+  adapter: BotAdapter,
+  senderId: string,
+): (prompt: string) => Promise<"accept" | "deny"> {
+  return async (prompt) => {
+    const message =
+      `🔐 Cursor is asking:\n${prompt}\n\nReply Accept or Deny`;
+    await adapter.sendMessage(senderId, message);
+    return new Promise<"accept" | "deny">((resolve) => {
+      const timer = setTimeout(() => {
+        pendingPermissions.delete(senderId);
+        adapter
+          .sendMessage(senderId, "⏰ Permission timed out — auto-denied.")
+          .catch(() => {});
+        resolve("deny");
+      }, PERMISSION_TIMEOUT_MS);
+      pendingPermissions.set(senderId, (decision) => {
+        clearTimeout(timer);
+        resolve(decision);
+      });
+    });
+  };
+}
+
 function safeTask(task: () => Promise<void>): () => Promise<void> {
   return () =>
     task().catch((err) => console.error("[gateway] Queued task failed:", err));
@@ -40,6 +95,7 @@ export async function runAgentResponse(
   processor: NonNullable<GatewayServerConfig["messageProcessor"]>,
   msg: BotIncomingMessage,
   progressRef?: ToolProgressRef,
+  permissionRef?: PermissionRef,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
 
@@ -54,6 +110,9 @@ export async function runAgentResponse(
 
   if (progressRef) {
     progressRef.send = (text) => void sendToUser(text);
+  }
+  if (permissionRef) {
+    permissionRef.ask = createPermissionAsker(adapter, msg.senderId);
   }
 
   try {
@@ -76,6 +135,7 @@ export async function runAgentResponse(
       );
   } finally {
     if (progressRef) progressRef.send = () => {};
+    if (permissionRef) permissionRef.ask = async () => "deny";
   }
 }
 

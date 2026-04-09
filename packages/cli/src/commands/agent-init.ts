@@ -31,6 +31,10 @@ export interface CursorProgressRef {
   send: (text: string) => void;
 }
 
+export interface CursorPermissionRef {
+  ask: (prompt: string) => Promise<"accept" | "deny">;
+}
+
 export async function initAgent(
   config: Configuration,
   deps: AgentInitDeps,
@@ -39,6 +43,7 @@ export async function initAgent(
   senderRef: { platform: string; senderId: string },
   adapters: BotAdapter[],
   progressRef: CursorProgressRef,
+  permissionRef: CursorPermissionRef = { ask: async () => "deny" },
 ): Promise<AgentInit | null> {
   if (!config.agent || !isValidAgentConfig(config.agent)) return null;
   const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
@@ -50,7 +55,7 @@ export async function initAgent(
         senderRef.platform,
         senderRef.senderId,
         (text) => progressRef.send(text),
-        async () => "deny" as const,
+        (prompt) => permissionRef.ask(prompt),
       )
     : {};
   if (cursorSetup) console.log("[cursor] Cursor CLI agent available");

@@ -9,7 +9,9 @@ import {
   logAcceptedMessage,
   maybeSendPairingReply,
   runAgentResponse,
+  resolvePermission,
   type ToolProgressRef,
+  type PermissionRef,
 } from "./gateway-agent-handler.js";
 import { routeRequest } from "./gateway-routes.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
@@ -45,6 +47,7 @@ export type GatewayServerConfig = {
     }>;
   };
   toolProgressRef?: ToolProgressRef;
+  permissionRef?: PermissionRef;
 };
 
 export type GatewayServer = {
@@ -104,15 +107,11 @@ async function listenWithPortFallback(
 
 function makeEnforcer(
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
-  pairingManager: PairingManager,
+  pm: PairingManager,
   platform: BotPlatform,
 ) {
-  const settings = resolver(platform);
-  return createDmPolicyEnforcer({
-    dmPolicy: settings.dmPolicy,
-    allowedSenders: settings.allowedSenders,
-    pairingManager,
-  });
+  const s = resolver(platform);
+  return createDmPolicyEnforcer({ dmPolicy: s.dmPolicy, allowedSenders: s.allowedSenders, pairingManager: pm });
 }
 
 function wireMessageHandlers(
@@ -130,6 +129,7 @@ function wireMessageHandlers(
         resolver,
         cfg.messageProcessor,
         cfg.toolProgressRef,
+        cfg.permissionRef,
       );
     });
   }
@@ -142,25 +142,21 @@ async function handleAdapterMessage(
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
   messageProcessor: GatewayServerConfig["messageProcessor"],
   progressRef?: ToolProgressRef,
+  permissionRef?: PermissionRef,
 ): Promise<void> {
   const enforcer = makeEnforcer(resolver, pairingManager, msg.platform);
   const { allowed, pairingCode } = await enforcer.shouldAllow(
     msg.senderId,
     msg.platform,
   );
-  if (!allowed) {
-    await maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
-    return;
-  }
-  if (messageProcessor) {
-    logAcceptedMessage(msg);
-    const key = `${msg.platform}:${msg.senderId}`;
-    enqueueForSender(key, () =>
-      runAgentResponse(adapter, messageProcessor, msg, progressRef),
-    );
-    return;
-  }
+  if (!allowed) return maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
+  if (resolvePermission(msg.senderId, msg.text)) return;
   logAcceptedMessage(msg);
+  if (!messageProcessor) return;
+  const key = `${msg.platform}:${msg.senderId}`;
+  enqueueForSender(key, () =>
+    runAgentResponse(adapter, messageProcessor, msg, progressRef, permissionRef),
+  );
 }
 
 export function createGatewayServer(

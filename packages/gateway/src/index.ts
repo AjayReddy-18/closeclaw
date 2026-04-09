@@ -5,7 +5,12 @@ export {
   type GatewayServer,
   type GatewayServerConfig,
 } from "./gateway-server.js";
-export { type ToolProgressRef } from "./gateway-agent-handler.js";
+export {
+  type ToolProgressRef,
+  type PermissionRef,
+  resolvePermission,
+  createPermissionAsker,
+} from "./gateway-agent-handler.js";
 export {
   createPairingManager,
   type PairingManager,
