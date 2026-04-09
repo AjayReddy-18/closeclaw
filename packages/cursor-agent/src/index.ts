@@ -43,6 +43,8 @@ export {
   type InteractiveResult,
 } from "./interactive-runner.js";
 
+export { buildStructuredSummary } from "./summary-builder.js";
+
 export {
   runTrustMode,
   type TrustModeRunnerDeps,

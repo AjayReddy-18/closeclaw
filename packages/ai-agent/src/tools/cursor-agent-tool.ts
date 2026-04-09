@@ -8,7 +8,7 @@ export interface CursorAgentToolDeps {
     start: (params: {
       prompt: string;
       projectDir: string;
-      mode: "safe" | "trust";
+      mode: "interactive" | "trust";
       platform: string;
       senderId: string;
       onProgress: (text: string) => void;

@@ -11,6 +11,7 @@ import {
 } from "./types.js";
 import type { LineBuffer } from "./pty-output-parser.js";
 import { createLineBuffer } from "./pty-output-parser.js";
+import { buildStructuredSummary } from "./summary-builder.js";
 
 export interface InteractiveRunnerDeps {
   spawnPty: PtySpawnFn;
@@ -66,7 +67,7 @@ export async function runInteractiveMode(
   clearTimeout(timeout);
   flushRemainingBuffer(lineBuffer, deps, outputLog);
   const status = resolveStatus(timedOut, exitCode);
-  const summary = buildOutputSummary(outputLog);
+  const summary = buildStructuredSummary(outputLog, status, stats);
 
   return {
     sessionId: "",
@@ -185,9 +186,3 @@ function resolveStatus(
   return exitCode === 0 ? "completed" : "failed";
 }
 
-function buildOutputSummary(outputLog: string[]): string {
-  const meaningful = outputLog.filter((l) => l.trim().length > 0);
-  if (meaningful.length === 0) return "Task completed with no output.";
-  const last = meaningful[meaningful.length - 1];
-  return last.length > 500 ? last.slice(0, 500) + "..." : last;
-}
