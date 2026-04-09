@@ -31,6 +31,12 @@ export {
 
 export { parseStreamJsonEvents } from "./stream-json-parser.js";
 
+export { createPtySpawner } from "./pty-spawner.js";
+
+export { stripAnsi, createLineBuffer, type LineBuffer } from "./pty-output-parser.js";
+
+export { detectPtyPermission } from "./pty-permission-detector.js";
+
 export {
   runTrustMode,
   type TrustModeRunnerDeps,
