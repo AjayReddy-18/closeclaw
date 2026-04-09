@@ -52,6 +52,11 @@ export {
 } from "./safe-mode-runner.js";
 
 export {
+  createProgressThrottle,
+  type ProgressThrottle,
+} from "./progress-throttle.js";
+
+export {
   createCursorSessionManager,
   type CursorSessionManagerDeps,
   type CursorSessionManager,
