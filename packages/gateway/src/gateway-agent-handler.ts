@@ -9,6 +9,8 @@ const GATEWAY_PROCESSING_FAILED =
 
 const PROCESSING_ACK_DELAY_MS = 5000;
 
+const STILL_WORKING_DELAY_MS = 30_000;
+
 const TYPING_INTERVAL_MS = 4000;
 
 const senderQueues = new Map<string, Promise<void>>();
@@ -44,39 +46,15 @@ function scheduleProcessingAck(
   }, PROCESSING_ACK_DELAY_MS);
 }
 
-function stopProcessingUi(
-  processingTimer: NodeJS.Timeout,
-  stopTyping: () => void,
-): void {
-  clearTimeout(processingTimer);
-  stopTyping();
-}
-
-async function sendSuccessReply(
+function scheduleStillWorkingReminder(
   adapter: BotAdapter,
   senderId: string,
-  response: string,
-  processingTimer: NodeJS.Timeout,
-  stopTyping: () => void,
-): Promise<void> {
-  stopProcessingUi(processingTimer, stopTyping);
-  await adapter.sendMessage(senderId, response);
-}
-
-async function sendFailureReply(
-  adapter: BotAdapter,
-  senderId: string,
-  error: unknown,
-  processingTimer: NodeJS.Timeout,
-  stopTyping: () => void,
-): Promise<void> {
-  console.error("[gateway] Message processing failed:", error);
-  stopProcessingUi(processingTimer, stopTyping);
-  await adapter
-    .sendMessage(senderId, GATEWAY_PROCESSING_FAILED)
-    .catch((sendErr) =>
-      console.error("[gateway] Failed to send error reply:", sendErr),
-    );
+): NodeJS.Timeout {
+  return setTimeout(() => {
+    void adapter
+      .sendMessage(senderId, "Still working on it...")
+      .catch(() => {});
+  }, STILL_WORKING_DELAY_MS);
 }
 
 export async function runAgentResponse(
@@ -86,28 +64,42 @@ export async function runAgentResponse(
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
   const processingTimer = scheduleProcessingAck(adapter, msg.senderId);
+  const stillWorkingTimer = scheduleStillWorkingReminder(adapter, msg.senderId);
+
+  let ackCleared = false;
+  function clearAckOnce(): void {
+    if (ackCleared) return;
+    ackCleared = true;
+    clearTimeout(processingTimer);
+    if (stillWorkingTimer) clearTimeout(stillWorkingTimer);
+  }
+
+  const onIntermediate = async (text: string): Promise<void> => {
+    clearAckOnce();
+    await adapter.sendMessage(msg.senderId, text);
+    adapter.sendTypingIndicator(msg.senderId).catch(() => {});
+  };
+
   try {
     const response = await processor.processMessage(
       msg.platform,
       msg.senderId,
       msg.text,
       msg.senderDisplayName,
+      onIntermediate,
     );
-    await sendSuccessReply(
-      adapter,
-      msg.senderId,
-      response,
-      processingTimer,
-      stopTyping,
-    );
+    clearAckOnce();
+    stopTyping();
+    await adapter.sendMessage(msg.senderId, response);
   } catch (error) {
-    await sendFailureReply(
-      adapter,
-      msg.senderId,
-      error,
-      processingTimer,
-      stopTyping,
-    );
+    console.error("[gateway] Message processing failed:", error);
+    clearAckOnce();
+    stopTyping();
+    await adapter
+      .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
+      .catch((sendErr) =>
+        console.error("[gateway] Failed to send error reply:", sendErr),
+      );
   }
 }
 

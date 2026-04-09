@@ -28,7 +28,8 @@ const TOOL_USAGE = `Tool Usage:
 - Use the datetime tool instead of guessing the current date/time.
 - Use HTTP requests instead of speculating about API responses.
 - When a tool fails, explain what happened and suggest alternatives.
-- Do not describe what you are about to do; just do it.`;
+- For multi-step tasks: if you need more information after a tool call, say what you're doing next and keep going. You will be prompted to continue automatically — do not wait for the user.
+- Always finish the full task. If you said "let me check X", follow through and deliver the result.`;
 
 const SCHEDULING = `Scheduling Behavior:
 - When running a scheduled/monitoring task, prefix your response:

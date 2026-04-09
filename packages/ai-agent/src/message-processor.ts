@@ -2,7 +2,10 @@ import type { BotPlatform, AgentConfig } from "@closeclaw/shared-types";
 import { generateText, stepCountIs } from "ai";
 import type { ConversationMessage } from "./conversation-types.js";
 import type { ConversationStore } from "./conversation-types.js";
-import type { MessageProcessor } from "./message-processor-types.js";
+import type {
+  MessageProcessor,
+  IntermediateResponseFn,
+} from "./message-processor-types.js";
 import {
   CLEAR_COMMAND,
   CLEAR_CONFIRMATION,
@@ -70,6 +73,7 @@ export function createMessageProcessor(
     senderId: string,
     text: string,
     senderDisplayName?: string,
+    onIntermediate?: IntermediateResponseFn,
   ): Promise<string> {
     const toolOpts = toolOptionsForGenerate(
       agentConfig,
@@ -90,6 +94,7 @@ export function createMessageProcessor(
       senderDisplayName,
       preferenceStore,
       mcpToolNames,
+      onIntermediate,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -120,6 +125,7 @@ async function handleIncomingText(
   senderDisplayName?: string,
   prefStore?: PreferenceStore,
   mcpToolNames?: string[],
+  onIntermediate?: IntermediateResponseFn,
 ): Promise<string> {
   if (text.trim() === CLEAR_COMMAND) {
     conversationStore.clear(platform, senderId);
@@ -146,6 +152,7 @@ async function handleIncomingText(
     prefCtx,
     identity,
     mcpToolNames,
+    onIntermediate,
   );
 }
 

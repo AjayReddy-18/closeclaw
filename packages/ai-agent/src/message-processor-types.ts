@@ -2,12 +2,15 @@ import type { BotPlatform } from "@closeclaw/shared-types";
 import type { AgentConfig } from "@closeclaw/shared-types";
 import type { ConversationStore } from "./conversation-types.js";
 
+export type IntermediateResponseFn = (text: string) => Promise<void>;
+
 export interface MessageProcessor {
   processMessage(
     platform: BotPlatform,
     senderId: string,
     text: string,
     senderDisplayName?: string,
+    onIntermediateResponse?: IntermediateResponseFn,
   ): Promise<string>;
 }
 
