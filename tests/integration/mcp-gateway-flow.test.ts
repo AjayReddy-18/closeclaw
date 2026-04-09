@@ -20,7 +20,7 @@ function createMockDeps(clientFactory: () => unknown): ConnectionManagerDeps {
     createMCPClient: vi
       .fn()
       .mockImplementation(() => Promise.resolve(clientFactory())) as never,
-    createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
+    createTransport: vi.fn().mockReturnValue({ type: "http", url: "mock" }),
   };
 }
 
@@ -91,7 +91,7 @@ describe("MCP gateway flow integration", () => {
           return Promise.resolve(mockClient({ good_tool: {} }));
         return Promise.reject(new Error("ECONNREFUSED"));
       }) as never,
-      createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
+      createTransport: vi.fn().mockReturnValue({ type: "http", url: "mock" }),
     };
 
     const configs = loadMcpConfig(configPath);

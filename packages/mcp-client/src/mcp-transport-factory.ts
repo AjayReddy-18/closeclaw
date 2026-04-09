@@ -3,13 +3,13 @@ import type { McpServerConfig } from "./mcp-config-types.js";
 
 export type StdioTransport = InstanceType<typeof StdioMCPTransport>;
 
-export interface SseTransportConfig {
-  type: "sse";
+export interface HttpTransportConfig {
+  type: "http";
   url: string;
   headers?: Record<string, string>;
 }
 
-export type McpTransport = StdioTransport | SseTransportConfig;
+export type McpTransport = StdioTransport | HttpTransportConfig;
 
 function createStdioTransport(
   config: McpServerConfig & { type: "stdio" },
@@ -21,15 +21,19 @@ function createStdioTransport(
   });
 }
 
-function createSseTransport(
+function ensureTrailingSlash(url: string): string {
+  return url.endsWith("/") ? url : url + "/";
+}
+
+function createHttpTransport(
   config: McpServerConfig & { type: "http" },
-): SseTransportConfig {
+): HttpTransportConfig {
   const headers =
     Object.keys(config.headers).length > 0 ? config.headers : undefined;
-  return { type: "sse", url: config.url, headers };
+  return { type: "http", url: ensureTrailingSlash(config.url), headers };
 }
 
 export function createTransport(config: McpServerConfig): McpTransport {
   if (config.type === "stdio") return createStdioTransport(config);
-  return createSseTransport(config);
+  return createHttpTransport(config);
 }

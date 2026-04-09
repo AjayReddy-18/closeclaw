@@ -44,7 +44,7 @@ function createMockDeps(
     createMCPClient: vi
       .fn()
       .mockImplementation(() => Promise.resolve(clientFactory())) as never,
-    createTransport: vi.fn().mockReturnValue({ type: "sse", url: "mock" }),
+    createTransport: vi.fn().mockReturnValue({ type: "http", url: "mock" }),
   };
 }
 

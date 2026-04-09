@@ -30,7 +30,7 @@ export {
 export {
   createTransport,
   type McpTransport,
-  type SseTransportConfig,
+  type HttpTransportConfig,
 } from "./mcp-transport-factory.js";
 export {
   createConnectionManager,

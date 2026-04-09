@@ -6,7 +6,7 @@ import type {
 } from "../../../packages/mcp-client/src/mcp-config-types.js";
 
 describe("createTransport", () => {
-  it("creates SSE transport for http config", () => {
+  it("creates Streamable HTTP transport for http config", () => {
     const config: HttpServerConfig = {
       name: "jira",
       type: "http",
@@ -16,8 +16,8 @@ describe("createTransport", () => {
     };
     const transport = createTransport(config);
     expect(transport).toEqual({
-      type: "sse",
-      url: "http://localhost:8000/mcp",
+      type: "http",
+      url: "http://localhost:8000/mcp/",
       headers: { Authorization: "Bearer token" },
     });
   });
@@ -26,16 +26,44 @@ describe("createTransport", () => {
     const config: HttpServerConfig = {
       name: "plain",
       type: "http",
-      url: "http://localhost/mcp",
+      url: "http://localhost/mcp/",
       headers: {},
       enabled: true,
     };
     const transport = createTransport(config);
     expect(transport).toEqual({
-      type: "sse",
-      url: "http://localhost/mcp",
+      type: "http",
+      url: "http://localhost/mcp/",
       headers: undefined,
     });
+  });
+
+  it("ensures trailing slash on URL", () => {
+    const config: HttpServerConfig = {
+      name: "test",
+      type: "http",
+      url: "http://localhost:8000/mcp",
+      headers: {},
+      enabled: true,
+    };
+    const transport = createTransport(config);
+    expect("url" in transport && transport.url).toBe(
+      "http://localhost:8000/mcp/",
+    );
+  });
+
+  it("preserves existing trailing slash", () => {
+    const config: HttpServerConfig = {
+      name: "test",
+      type: "http",
+      url: "http://localhost:8000/mcp/",
+      headers: {},
+      enabled: true,
+    };
+    const transport = createTransport(config);
+    expect("url" in transport && transport.url).toBe(
+      "http://localhost:8000/mcp/",
+    );
   });
 
   it("creates StdioMCPTransport for stdio config", () => {
@@ -50,6 +78,6 @@ describe("createTransport", () => {
     const transport = createTransport(config);
     expect(transport).toBeDefined();
     expect(typeof transport).toBe("object");
-    expect("type" in transport && transport.type === "sse").toBe(false);
+    expect("type" in transport && transport.type === "http").toBe(false);
   });
 });
