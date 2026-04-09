@@ -2,7 +2,10 @@ import type { BotPlatform, AgentConfig } from "@closeclaw/shared-types";
 import { generateText, stepCountIs } from "ai";
 import type { ConversationMessage } from "./conversation-types.js";
 import type { ConversationStore } from "./conversation-types.js";
-import type { MessageProcessor } from "./message-processor-types.js";
+import type {
+  MessageProcessor,
+  IntermediateResponseFn,
+} from "./message-processor-types.js";
 import {
   CLEAR_COMMAND,
   CLEAR_CONFIRMATION,
@@ -53,12 +56,14 @@ export interface CreateMessageProcessorDeps {
   onAfterResponse?: (platform: BotPlatform, senderId: string) => void;
   preferenceStore?: PreferenceStore;
   extraTools?: ToolMap;
+  mcpToolNames?: string[];
 }
 
 export function createMessageProcessor(
   deps: CreateMessageProcessorDeps,
 ): MessageProcessor {
   const { agentConfig, conversationStore, preferenceStore, extraTools } = deps;
+  const mcpToolNames = deps.mcpToolNames ?? [];
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
   const afterHook = deps.onAfterResponse;
@@ -68,6 +73,7 @@ export function createMessageProcessor(
     senderId: string,
     text: string,
     senderDisplayName?: string,
+    onIntermediate?: IntermediateResponseFn,
   ): Promise<string> {
     const toolOpts = toolOptionsForGenerate(
       agentConfig,
@@ -87,6 +93,8 @@ export function createMessageProcessor(
       text,
       senderDisplayName,
       preferenceStore,
+      mcpToolNames,
+      onIntermediate,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -116,6 +124,8 @@ async function handleIncomingText(
   text: string,
   senderDisplayName?: string,
   prefStore?: PreferenceStore,
+  mcpToolNames?: string[],
+  onIntermediate?: IntermediateResponseFn,
 ): Promise<string> {
   if (text.trim() === CLEAR_COMMAND) {
     conversationStore.clear(platform, senderId);
@@ -141,6 +151,8 @@ async function handleIncomingText(
     toolOpts,
     prefCtx,
     identity,
+    mcpToolNames,
+    onIntermediate,
   );
 }
 

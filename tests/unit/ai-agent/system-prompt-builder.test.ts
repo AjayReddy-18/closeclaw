@@ -76,4 +76,27 @@ describe("buildFullSystemPrompt", () => {
     const prompt = buildFullSystemPrompt({ platform: "Telegram" });
     expect(prompt).toContain("Telegram");
   });
+
+  it("includes MCP integrations section when mcpToolNames provided", () => {
+    const prompt = buildFullSystemPrompt({
+      mcpToolNames: [
+        "jira__search_issues",
+        "jira__create_issue",
+        "datadog__list_alerts",
+      ],
+    });
+    expect(prompt).toContain("MCP Integrations");
+    expect(prompt).toContain("jira: search_issues, create_issue");
+    expect(prompt).toContain("datadog: list_alerts");
+  });
+
+  it("omits MCP section when mcpToolNames is empty", () => {
+    const prompt = buildFullSystemPrompt({ mcpToolNames: [] });
+    expect(prompt).not.toContain("MCP Integrations");
+  });
+
+  it("omits MCP section when mcpToolNames is undefined", () => {
+    const prompt = buildFullSystemPrompt({});
+    expect(prompt).not.toContain("MCP Integrations");
+  });
 });

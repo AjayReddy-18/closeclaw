@@ -1,6 +1,7 @@
 import type { AgentConfig } from "@closeclaw/shared-types";
 import { generateText } from "ai";
 import type { ConversationMessage } from "./conversation-types.js";
+import type { IntermediateResponseFn } from "./message-processor-types.js";
 import {
   AI_ERROR_MESSAGE,
   MAX_RETRIES,
@@ -10,18 +11,23 @@ import { extractResponseText, retryWithBackoff } from "./ai-retry.js";
 import { trimHistory } from "./context-trimmer.js";
 import type { createModelProvider } from "./provider-factory.js";
 import { buildFullSystemPrompt } from "./system-prompt-builder.js";
+import { shouldContinue } from "./continuation-detector.js";
+
+const CONTINUE_NUDGE = "Continue. Complete the task and give the final answer.";
 
 export function buildSystemPrompt(
   config: AgentConfig,
   senderIdentity?: string,
   preferenceContext?: string,
   summaryText?: string,
+  mcpToolNames?: string[],
 ): string {
   return buildFullSystemPrompt({
     userCustomPrompt: config.systemPrompt,
     senderIdentity,
     preferenceContext,
     conversationSummary: summaryText,
+    mcpToolNames,
   });
 }
 
@@ -33,12 +39,14 @@ export function sdkMessagesForGenerate(
   config: AgentConfig,
   preferenceContext?: string,
   senderIdentity?: string,
+  mcpToolNames?: string[],
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemContent = buildSystemPrompt(
     config,
     senderIdentity,
     preferenceContext,
     conversation.compressedSummary?.text,
+    mcpToolNames,
   );
   const systemMsg: ConversationMessage = {
     role: "system",
@@ -62,15 +70,20 @@ async function generateWithRetry(
   return retryWithBackoff(() => gen(args), MAX_RETRIES, INITIAL_RETRY_DELAY_MS);
 }
 
-function pushAssistantMessage(
+function pushMessage(
   conversation: { messages: ConversationMessage[] },
+  role: "user" | "assistant",
   content: string,
 ): void {
-  conversation.messages.push({
-    role: "assistant",
-    content,
-    timestamp: new Date(),
-  });
+  conversation.messages.push({ role, content, timestamp: new Date() });
+}
+
+function extractSteps(
+  result: Awaited<ReturnType<typeof generateText>>,
+): Array<{ toolCalls?: unknown[]; text?: string }> {
+  const raw = (result as Record<string, unknown>).steps;
+  if (!Array.isArray(raw)) return [];
+  return raw as Array<{ toolCalls?: unknown[]; text?: string }>;
 }
 
 export async function invokeModel(
@@ -84,23 +97,44 @@ export async function invokeModel(
   toolOpts: Record<string, unknown>,
   preferenceContext?: string,
   senderIdentity?: string,
+  mcpToolNames?: string[],
+  onIntermediate?: IntermediateResponseFn,
 ): Promise<string> {
-  const messages = sdkMessagesForGenerate(
-    conversation,
-    config,
-    preferenceContext,
-    senderIdentity,
-  );
-  const args = {
-    model,
-    messages,
-    ...toolOpts,
-  } as Parameters<typeof generateText>[0];
+  let continuationRound = 0;
+
   try {
-    const result = await generateWithRetry(gen, args);
-    const responseText = extractResponseText(result);
-    pushAssistantMessage(conversation, responseText);
-    return responseText;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const messages = sdkMessagesForGenerate(
+        conversation,
+        config,
+        preferenceContext,
+        senderIdentity,
+        mcpToolNames,
+      );
+      const args = {
+        model,
+        messages,
+        ...toolOpts,
+      } as Parameters<typeof generateText>[0];
+
+      const result = await generateWithRetry(gen, args);
+      const responseText = extractResponseText(result);
+      const steps = extractSteps(result);
+
+      if (shouldContinue(responseText, steps, continuationRound)) {
+        if (onIntermediate) {
+          await onIntermediate(responseText).catch(() => {});
+        }
+        pushMessage(conversation, "assistant", responseText);
+        pushMessage(conversation, "user", CONTINUE_NUDGE);
+        continuationRound++;
+        continue;
+      }
+
+      pushMessage(conversation, "assistant", responseText);
+      return responseText;
+    }
   } catch (error) {
     console.error("[ai-agent] generateText failed:", error);
     return AI_ERROR_MESSAGE;

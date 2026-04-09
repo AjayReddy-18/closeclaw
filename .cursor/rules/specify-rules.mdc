@@ -6,7 +6,7 @@ alwaysApply: true
 
 # closeclaw Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-07
+Auto-generated from all feature plans. Last updated: 2026-04-08
 
 ## Constitution (SUPREME AUTHORITY)
 
@@ -72,9 +72,9 @@ pnpm build               # Build all packages
 TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
+- 006-mcp-tool-integration: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 005-agent-response-quality: Added TypeScript 5.x (strict mode) + grammY (Telegram), Discord.js (Discord), Vercel AI SDK (`ai@^6.0.0`), `@closeclaw/ai-agent`, `@closeclaw/bot-adapters`, `@closeclaw/gateway`
 - 004-scheduled-automation: Added TypeScript 5.x (strict mode) + Existing monorepo packages + `cron-parser` (cron expression parsing), `crypto.randomUUID` (task IDs)
-- 003-persistent-memory: Added TypeScript 5.x (strict mode) + Node.js fs/path, existing `@closeclaw/ai-agent`, Vercel AI SDK (`generateText`)
 
 
 <!-- MANUAL ADDITIONS START -->

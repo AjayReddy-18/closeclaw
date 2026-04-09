@@ -4,6 +4,7 @@ export interface SystemPromptParts {
   preferenceContext?: string;
   conversationSummary?: string;
   platform?: string;
+  mcpToolNames?: string[];
 }
 
 const IDENTITY = `You are CloseClaw, a personal automation assistant. You help users by answering questions, executing tasks, monitoring systems, and managing scheduled jobs. You are direct, concise, and action-oriented.`;
@@ -27,7 +28,8 @@ const TOOL_USAGE = `Tool Usage:
 - Use the datetime tool instead of guessing the current date/time.
 - Use HTTP requests instead of speculating about API responses.
 - When a tool fails, explain what happened and suggest alternatives.
-- Do not describe what you are about to do; just do it.`;
+- For multi-step tasks: if you need more information after a tool call, say what you're doing next and keep going. You will be prompted to continue automatically — do not wait for the user.
+- Always finish the full task. If you said "let me check X", follow through and deliver the result.`;
 
 const SCHEDULING = `Scheduling Behavior:
 - When running a scheduled/monitoring task, prefix your response:
@@ -50,6 +52,34 @@ function buildOwnerSection(userPrompt: string): string {
 
 function buildIdentitySection(): string {
   return `${IDENTITY}\n\n`;
+}
+
+function buildMcpSection(toolNames: string[]): string {
+  if (toolNames.length === 0) return "";
+  const grouped = groupToolsByServer(toolNames);
+  const lines = Object.entries(grouped).map(
+    ([server, tools]) => `  ${server}: ${tools.join(", ")}`,
+  );
+  return (
+    `\n\nMCP Integrations (external tools from connected servers):\n` +
+    `- You have access to tools from external MCP servers.\n` +
+    `- Use these tools when the user asks about the related service.\n` +
+    `- Tool names are prefixed with the server name (e.g., jira__search_issues).\n` +
+    `Available:\n${lines.join("\n")}`
+  );
+}
+
+function groupToolsByServer(toolNames: string[]): Record<string, string[]> {
+  const grouped: Record<string, string[]> = {};
+  for (const fullName of toolNames) {
+    const separatorIdx = fullName.indexOf("__");
+    if (separatorIdx === -1) continue;
+    const server = fullName.slice(0, separatorIdx);
+    const tool = fullName.slice(separatorIdx + 2);
+    if (!grouped[server]) grouped[server] = [];
+    grouped[server].push(tool);
+  }
+  return grouped;
 }
 
 function buildBehaviorSections(platform?: string): string {
@@ -79,6 +109,7 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const owner = buildOwnerSection(parts.userCustomPrompt ?? "");
   const identity = buildIdentitySection();
   const behavior = buildBehaviorSections(parts.platform);
+  const mcp = buildMcpSection(parts.mcpToolNames ?? []);
   const context = buildContextSections(parts);
-  return `${owner}${identity}${behavior}${context}`;
+  return `${owner}${identity}${behavior}${mcp}${context}`;
 }

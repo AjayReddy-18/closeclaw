@@ -225,6 +225,7 @@ describe("createGatewayServer", () => {
         "7",
         "hi",
         "Sam",
+        expect.any(Function),
       );
       expect(sendMessage).toHaveBeenCalledWith("7", "ai reply");
     });
