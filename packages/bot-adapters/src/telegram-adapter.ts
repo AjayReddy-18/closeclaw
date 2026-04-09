@@ -1,5 +1,5 @@
 import { Agent as HttpsAgent } from "node:https";
-import { Resolver } from "node:dns";
+import { get as httpsGet } from "node:https";
 import { Bot, type Context } from "grammy";
 import { BotPlatform } from "@closeclaw/shared-types";
 import type {
@@ -16,9 +16,45 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+const dohCache = new Map<string, { ip: string; expiresAt: number }>();
+const DOH_CACHE_TTL_MS = 120_000;
+
+function resolveViaDoh(hostname: string): Promise<string> {
+  const cached = dohCache.get(hostname);
+  if (cached && cached.expiresAt > Date.now())
+    return Promise.resolve(cached.ip);
+
+  return new Promise((resolve, reject) => {
+    const url = `https://dns.google/resolve?name=${encodeURIComponent(hostname)}&type=A`;
+    httpsGet(url, (res) => {
+      let body = "";
+      res.on("data", (chunk: Buffer) => {
+        body += chunk.toString();
+      });
+      res.on("end", () => {
+        try {
+          const json = JSON.parse(body) as {
+            Answer?: Array<{ type: number; data: string }>;
+          };
+          const aRecord = json.Answer?.find((r) => r.type === 1);
+          if (!aRecord) {
+            reject(new Error(`DoH: no A record for ${hostname}`));
+            return;
+          }
+          dohCache.set(hostname, {
+            ip: aRecord.data,
+            expiresAt: Date.now() + DOH_CACHE_TTL_MS,
+          });
+          resolve(aRecord.data);
+        } catch {
+          reject(new Error(`DoH: failed to parse response for ${hostname}`));
+        }
+      });
+    }).on("error", (err) => reject(err));
+  });
+}
+
 function createPublicDnsAgent(): HttpsAgent {
-  const resolver = new Resolver();
-  resolver.setServers(["8.8.8.8", "1.1.1.1"]);
   return new HttpsAgent({
     keepAlive: true,
     lookup: (hostname, options, callback) => {
@@ -26,22 +62,21 @@ function createPublicDnsAgent(): HttpsAgent {
         callback = options;
         options = {};
       }
-      resolver.resolve4(hostname, (err, addresses) => {
-        if (err) return callback(err);
-        const all =
-          typeof options === "object" &&
-          options !== null &&
-          "all" in options &&
-          options.all;
-        if (all) {
-          callback(
-            null,
-            addresses.map((a) => ({ address: a, family: 4 })) as never,
-          );
-        } else {
-          callback(null, addresses[0], 4);
-        }
-      });
+      resolveViaDoh(hostname).then(
+        (ip) => {
+          const all =
+            typeof options === "object" &&
+            options !== null &&
+            "all" in options &&
+            options.all;
+          if (all) {
+            callback(null, [{ address: ip, family: 4 }] as never);
+          } else {
+            callback(null, ip, 4);
+          }
+        },
+        (err) => callback(err),
+      );
     },
   });
 }
