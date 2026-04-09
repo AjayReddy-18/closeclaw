@@ -53,12 +53,14 @@ export interface CreateMessageProcessorDeps {
   onAfterResponse?: (platform: BotPlatform, senderId: string) => void;
   preferenceStore?: PreferenceStore;
   extraTools?: ToolMap;
+  mcpToolNames?: string[];
 }
 
 export function createMessageProcessor(
   deps: CreateMessageProcessorDeps,
 ): MessageProcessor {
   const { agentConfig, conversationStore, preferenceStore, extraTools } = deps;
+  const mcpToolNames = deps.mcpToolNames ?? [];
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
   const afterHook = deps.onAfterResponse;
@@ -87,6 +89,7 @@ export function createMessageProcessor(
       text,
       senderDisplayName,
       preferenceStore,
+      mcpToolNames,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -116,6 +119,7 @@ async function handleIncomingText(
   text: string,
   senderDisplayName?: string,
   prefStore?: PreferenceStore,
+  mcpToolNames?: string[],
 ): Promise<string> {
   if (text.trim() === CLEAR_COMMAND) {
     conversationStore.clear(platform, senderId);
@@ -141,6 +145,7 @@ async function handleIncomingText(
     toolOpts,
     prefCtx,
     identity,
+    mcpToolNames,
   );
 }
 

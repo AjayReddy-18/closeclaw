@@ -123,7 +123,8 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     const mcpTools = await connectMcpServers(deps.mcpConfigPath);
     mcpManager = mcpTools.manager;
     const extraTools = { ...schedTools, ...mcpTools.tools };
-    const assembly = assembleAgent(config.agent, extraTools);
+    const mcpToolNames = Object.keys(mcpTools.tools);
+    const assembly = assembleAgent(config.agent, extraTools, mcpToolNames);
     store = assembly.conversationStore;
     processor = assembly.messageProcessor;
     adapters.forEach((a) =>

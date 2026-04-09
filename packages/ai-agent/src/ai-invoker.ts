@@ -16,12 +16,14 @@ export function buildSystemPrompt(
   senderIdentity?: string,
   preferenceContext?: string,
   summaryText?: string,
+  mcpToolNames?: string[],
 ): string {
   return buildFullSystemPrompt({
     userCustomPrompt: config.systemPrompt,
     senderIdentity,
     preferenceContext,
     conversationSummary: summaryText,
+    mcpToolNames,
   });
 }
 
@@ -33,12 +35,14 @@ export function sdkMessagesForGenerate(
   config: AgentConfig,
   preferenceContext?: string,
   senderIdentity?: string,
+  mcpToolNames?: string[],
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemContent = buildSystemPrompt(
     config,
     senderIdentity,
     preferenceContext,
     conversation.compressedSummary?.text,
+    mcpToolNames,
   );
   const systemMsg: ConversationMessage = {
     role: "system",
@@ -84,12 +88,14 @@ export async function invokeModel(
   toolOpts: Record<string, unknown>,
   preferenceContext?: string,
   senderIdentity?: string,
+  mcpToolNames?: string[],
 ): Promise<string> {
   const messages = sdkMessagesForGenerate(
     conversation,
     config,
     preferenceContext,
     senderIdentity,
+    mcpToolNames,
   );
   const args = {
     model,

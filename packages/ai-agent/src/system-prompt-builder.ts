@@ -4,6 +4,7 @@ export interface SystemPromptParts {
   preferenceContext?: string;
   conversationSummary?: string;
   platform?: string;
+  mcpToolNames?: string[];
 }
 
 const IDENTITY = `You are CloseClaw, a personal automation assistant. You help users by answering questions, executing tasks, monitoring systems, and managing scheduled jobs. You are direct, concise, and action-oriented.`;
@@ -52,6 +53,34 @@ function buildIdentitySection(): string {
   return `${IDENTITY}\n\n`;
 }
 
+function buildMcpSection(toolNames: string[]): string {
+  if (toolNames.length === 0) return "";
+  const grouped = groupToolsByServer(toolNames);
+  const lines = Object.entries(grouped).map(
+    ([server, tools]) => `  ${server}: ${tools.join(", ")}`,
+  );
+  return (
+    `\n\nMCP Integrations (external tools from connected servers):\n` +
+    `- You have access to tools from external MCP servers.\n` +
+    `- Use these tools when the user asks about the related service.\n` +
+    `- Tool names are prefixed with the server name (e.g., jira__search_issues).\n` +
+    `Available:\n${lines.join("\n")}`
+  );
+}
+
+function groupToolsByServer(toolNames: string[]): Record<string, string[]> {
+  const grouped: Record<string, string[]> = {};
+  for (const fullName of toolNames) {
+    const separatorIdx = fullName.indexOf("__");
+    if (separatorIdx === -1) continue;
+    const server = fullName.slice(0, separatorIdx);
+    const tool = fullName.slice(separatorIdx + 2);
+    if (!grouped[server]) grouped[server] = [];
+    grouped[server].push(tool);
+  }
+  return grouped;
+}
+
 function buildBehaviorSections(platform?: string): string {
   const sections = [RESPONSE_STYLE];
   if (platform) {
@@ -79,6 +108,7 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const owner = buildOwnerSection(parts.userCustomPrompt ?? "");
   const identity = buildIdentitySection();
   const behavior = buildBehaviorSections(parts.platform);
+  const mcp = buildMcpSection(parts.mcpToolNames ?? []);
   const context = buildContextSections(parts);
-  return `${owner}${identity}${behavior}${context}`;
+  return `${owner}${identity}${behavior}${mcp}${context}`;
 }
