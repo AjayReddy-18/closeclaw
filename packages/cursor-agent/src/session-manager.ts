@@ -109,8 +109,19 @@ export function createCursorSessionManager(
       return deps.sessionStore.list();
     },
 
-    async resume(_chatId, _onProgress, _onPermission) {
-      return failResult("Resume not implemented yet.");
+    async resume(chatId, onProgress, onPermission) {
+      const target = chatId
+        ? deps.sessionStore.findByCursorChatId(chatId)
+        : deps.sessionStore.getMostRecent();
+      if (!target) {
+        return failResult("No sessions to resume.");
+      }
+      const runParams = {
+        prompt: `--resume=${target.cursorChatId}`,
+        projectDir: target.projectDir,
+        timeoutMs: DEFAULT_TIMEOUT_MS,
+      };
+      return deps.runTrust(runParams, onProgress);
     },
   };
 }

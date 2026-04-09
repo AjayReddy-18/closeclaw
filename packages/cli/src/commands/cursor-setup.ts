@@ -12,7 +12,7 @@ import {
   type CursorSessionManager,
   type ShellExec,
 } from "@closeclaw/cursor-agent";
-import { createCursorAgentTool } from "@closeclaw/ai-agent";
+import { createCursorAgentTool, createCursorResumeTool } from "@closeclaw/ai-agent";
 
 const execFileAsync = promisify(execFile);
 
@@ -107,6 +107,11 @@ export function buildCursorTools(
       onPermission,
       platform,
       senderId,
+    }),
+    cursor_resume: createCursorResumeTool({
+      sessionManager: manager,
+      onProgress,
+      onPermission,
     }),
   };
 }

@@ -138,3 +138,8 @@ export {
   createCursorAgentTool,
   type CursorAgentToolDeps,
 } from "./tools/cursor-agent-tool.js";
+
+export {
+  createCursorResumeTool,
+  type CursorResumeToolDeps,
+} from "./tools/cursor-resume-tool.js";
