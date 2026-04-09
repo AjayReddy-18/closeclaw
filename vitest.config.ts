@@ -25,6 +25,14 @@ export default defineConfig({
         __dirname,
         "packages/ai-agent/src/index.ts",
       ),
+      "@closeclaw/mcp-client": resolve(
+        __dirname,
+        "packages/mcp-client/src/index.ts",
+      ),
+      "@closeclaw/cursor-agent": resolve(
+        __dirname,
+        "packages/cursor-agent/src/index.ts",
+      ),
       ai: resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/openai": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/anthropic": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
