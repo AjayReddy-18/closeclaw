@@ -80,6 +80,9 @@ importers:
       '@closeclaw/bot-adapters':
         specifier: workspace:*
         version: link:../bot-adapters
+      '@closeclaw/cursor-agent':
+        specifier: workspace:*
+        version: link:../cursor-agent
       '@closeclaw/gateway':
         specifier: workspace:*
         version: link:../gateway

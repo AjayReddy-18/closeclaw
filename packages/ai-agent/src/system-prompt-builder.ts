@@ -5,6 +5,7 @@ export interface SystemPromptParts {
   conversationSummary?: string;
   platform?: string;
   mcpToolNames?: string[];
+  hasCursorAgent?: boolean;
 }
 
 const IDENTITY = `You are CloseClaw, a personal automation assistant. You help users by answering questions, executing tasks, monitoring systems, and managing scheduled jobs. You are direct, concise, and action-oriented.`;
@@ -93,6 +94,21 @@ function buildBehaviorSections(platform?: string): string {
   return sections.join("\n\n");
 }
 
+const CURSOR_AGENT_GUIDANCE = `Cursor Agent (code delegation):
+- You can delegate coding tasks to a local Cursor agent using the cursor_agent tool.
+- Use this for: refactoring, adding tests, fixing lint errors, writing code, analyzing codebases.
+- Do NOT use this for: simple questions, non-code tasks, tasks you can answer from memory.
+- Choose the mode automatically based on task risk — do NOT ask the user to pick:
+  - trust: lint fixes, formatting, doc generation, simple additions
+  - safe: refactoring, architecture changes, deletions, config changes
+- If the user explicitly says "use trust/force mode" or "use safe mode", respect that override.
+- To resume a previous session, use the cursor_resume tool.`;
+
+export function buildCursorAgentSection(hasCursorAgent: boolean): string {
+  if (!hasCursorAgent) return "";
+  return `\n\n${CURSOR_AGENT_GUIDANCE}`;
+}
+
 function buildContextSections(parts: SystemPromptParts): string {
   const sections: string[] = [];
   if (parts.senderIdentity) sections.push(parts.senderIdentity);
@@ -110,6 +126,7 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const identity = buildIdentitySection();
   const behavior = buildBehaviorSections(parts.platform);
   const mcp = buildMcpSection(parts.mcpToolNames ?? []);
+  const cursor = buildCursorAgentSection(parts.hasCursorAgent ?? false);
   const context = buildContextSections(parts);
-  return `${owner}${identity}${behavior}${mcp}${context}`;
+  return `${owner}${identity}${behavior}${mcp}${cursor}${context}`;
 }

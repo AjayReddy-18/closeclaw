@@ -40,3 +40,15 @@ export {
   createSessionStore,
   type SessionStore,
 } from "./session-store.js";
+
+export {
+  runTrustMode,
+  type TrustModeRunnerDeps,
+} from "./trust-mode-runner.js";
+
+export {
+  createCursorSessionManager,
+  type CursorSessionManagerDeps,
+  type CursorSessionManager,
+  type SessionStartParams,
+} from "./session-manager.js";
