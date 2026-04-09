@@ -23,16 +23,16 @@ Add a new `packages/cursor-agent` package that lets the CloseClaw AI agent deleg
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. TDD | PASS | All cursor-agent modules will be TDD with mocked child_process/tmux |
-| II. Clean Code | PASS | No comments, functions ≤ 20 lines, files ≤ 200 lines |
-| III. Design Principles | PASS | New package follows SRP; interfaces injected for tmux/spawn |
-| IV. Atomic Commits | PASS | Each layer (types, tmux, spawn, session manager, tools, prompt, CLI) is a commit |
-| V. Automation-First | PASS | Core feature is automating code tasks via Cursor delegation |
-| VI. Modular Architecture | PASS | New `packages/cursor-agent` with clean exports; no circular deps |
-| VII. Living Documentation | PASS | `docs/cursor-agent.md` delivered with the feature |
-| Code Quality | PASS | Strict TS, Zod schemas, explicit error handling |
+| Principle                 | Status | Notes                                                                            |
+| ------------------------- | ------ | -------------------------------------------------------------------------------- |
+| I. TDD                    | PASS   | All cursor-agent modules will be TDD with mocked child_process/tmux              |
+| II. Clean Code            | PASS   | No comments, functions ≤ 20 lines, files ≤ 200 lines                             |
+| III. Design Principles    | PASS   | New package follows SRP; interfaces injected for tmux/spawn                      |
+| IV. Atomic Commits        | PASS   | Each layer (types, tmux, spawn, session manager, tools, prompt, CLI) is a commit |
+| V. Automation-First       | PASS   | Core feature is automating code tasks via Cursor delegation                      |
+| VI. Modular Architecture  | PASS   | New `packages/cursor-agent` with clean exports; no circular deps                 |
+| VII. Living Documentation | PASS   | `docs/cursor-agent.md` delivered with the feature                                |
+| Code Quality              | PASS   | Strict TS, Zod schemas, explicit error handling                                  |
 
 ## Project Structure
 
@@ -126,9 +126,10 @@ User → Telegram → Gateway → AI Agent → cursor_agent tool
 ### Mode Decision
 
 The AI agent decides the execution mode automatically based on task risk:
+
 - **Trust mode**: Low-risk tasks (lint fixes, formatting, doc generation, simple additions)
 - **Safe mode**: High-risk tasks (refactoring, architecture changes, deletions, config changes)
-The user can override explicitly ("use trust mode", "use force mode", "use safe mode"). No confirmation prompt — the agent picks and goes.
+  The user can override explicitly ("use trust mode", "use force mode", "use safe mode"). No confirmation prompt — the agent picks and goes.
 
 ### Trust Mode Flow
 
@@ -163,11 +164,13 @@ The user can override explicitly ("use trust mode", "use force mode", "use safe 
 ### Tool Definitions
 
 **`cursor_agent`** tool parameters:
+
 - `prompt` (string, required): The coding task description
 - `projectDir` (string, required): Absolute path to the project
 - `mode` (enum "safe" | "trust", optional, default "safe"): Execution mode
 
 **`cursor_resume`** tool parameters:
+
 - `chatId` (string, optional): Specific Cursor chat ID to resume. If omitted, resumes the most recent.
 
 ### Permission Forwarding

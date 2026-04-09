@@ -40,9 +40,7 @@ export function createSessionStore(): SessionStore {
 
     prune(maxAgeMs) {
       const cutoff = Date.now() - maxAgeMs;
-      records = records.filter(
-        (r) => new Date(r.createdAt).getTime() > cutoff,
-      );
+      records = records.filter((r) => new Date(r.createdAt).getTime() > cutoff);
     },
 
     toJSON() {

@@ -14,10 +14,7 @@ export interface CursorAgentToolDeps {
       timeoutMs?: number;
     }) => Promise<{ status: string; summary: string }>;
     cancel: (platform: string, senderId: string) => Promise<void>;
-    getActive: (
-      platform: string,
-      senderId: string,
-    ) => boolean;
+    getActive: (platform: string, senderId: string) => boolean;
     listSessions: () => unknown[];
     resume: (
       chatId: string | undefined,

@@ -75,6 +75,7 @@ If a Cursor session is interrupted (timeout, network drop, user cancels and want
 ### User Story 5 - Execution Mode Selection (Priority: P3)
 
 The user can choose the safety level for a task. Options include:
+
 - **Safe mode** (default): Interactive permission forwarding. Cursor asks before modifying files.
 - **Trust mode**: Auto-approve all changes (`--force`). Used for low-risk tasks like formatting, linting, or doc generation.
 

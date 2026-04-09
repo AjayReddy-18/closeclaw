@@ -199,6 +199,16 @@ closeclaw heartbeat status
 
 Shows whether heartbeat is enabled, the interval, target, active hours, and timezone.
 
+## cursor sessions
+
+List recent Cursor CLI agent sessions.
+
+```bash
+closeclaw cursor sessions
+```
+
+Shows a table with ID, Prompt, Status, and Created columns. Sessions are stored in a temporary file and pruned after 24 hours.
+
 ## mcp add
 
 Add a new MCP server configuration.

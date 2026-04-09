@@ -11,15 +11,7 @@ export interface TmuxController {
 export function createTmuxController(exec: ShellExec): TmuxController {
   return {
     async createSession(name, cwd) {
-      await exec(
-        "tmux",
-        "new-session",
-        "-d",
-        "-s",
-        name,
-        "-c",
-        cwd,
-      );
+      await exec("tmux", "new-session", "-d", "-s", name, "-c", cwd);
     },
 
     async sendKeys(name, keys) {

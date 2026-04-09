@@ -58,14 +58,24 @@ async function pollLoop(
 
     if (deps.isSessionDone(output)) {
       await deps.tmux.killSession(name).catch(() => {});
-      return { sessionId: "", status: "completed", summary: lastOutput, outputLog };
+      return {
+        sessionId: "",
+        status: "completed",
+        summary: lastOutput,
+        outputLog,
+      };
     }
 
     await sleep(interval);
   }
 
   await deps.tmux.killSession(name).catch(() => {});
-  return { sessionId: "", status: "timed_out", summary: "Session timed out.", outputLog };
+  return {
+    sessionId: "",
+    status: "timed_out",
+    summary: "Session timed out.",
+    outputLog,
+  };
 }
 
 export async function runSafeMode(

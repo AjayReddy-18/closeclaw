@@ -17,9 +17,9 @@
 
 **Purpose**: Create the `packages/cursor-agent` package and shared types
 
-- [ ] T001 Create `packages/cursor-agent/` directory with `package.json`, `tsconfig.json`, `src/index.ts` (barrel) mirroring `packages/mcp-client` structure
-- [ ] T002 Register `packages/cursor-agent` in `pnpm-workspace.yaml` and run `pnpm install`
-- [ ] T003 [P] Define shared types (ExecutionMode, SessionStatus, CursorSession, PermissionRequest, SessionRecord, StreamJsonEvent, TaskResult) in `packages/cursor-agent/src/types.ts`
+- [x] T001 Create `packages/cursor-agent/` directory with `package.json`, `tsconfig.json`, `src/index.ts` (barrel) mirroring `packages/mcp-client` structure
+- [x] T002 Register `packages/cursor-agent` in `pnpm-workspace.yaml` and run `pnpm install`
+- [x] T003 [P] Define shared types (ExecutionMode, SessionStatus, CursorSession, PermissionRequest, SessionRecord, StreamJsonEvent, TaskResult) in `packages/cursor-agent/src/types.ts`
 
 ---
 
@@ -29,20 +29,20 @@
 
 ### Tests for Foundational
 
-- [ ] T004 [P] Write failing tests for cursor-availability (detect `agent` binary, detect `tmux`, detect auth) in `tests/unit/cursor-agent/cursor-availability.test.ts`
-- [ ] T005 [P] Write failing tests for stream-json-parser (parse system/assistant/tool_call/result/error events, handle malformed lines) in `tests/unit/cursor-agent/stream-json-parser.test.ts`
-- [ ] T006 [P] Write failing tests for tmux-controller (createSession, sendKeys, capturePane, killSession, sessionExists — all mocking `child_process.execFile`) in `tests/unit/cursor-agent/tmux-controller.test.ts`
-- [ ] T007 [P] Write failing tests for permission-detector (detect approval prompts, ignore non-prompt output, extract prompt text) in `tests/unit/cursor-agent/permission-detector.test.ts`
-- [ ] T008 [P] Write failing tests for session-store (save/load/prune from temp file, in-memory lookup, getActive by platform:senderId) in `tests/unit/cursor-agent/session-store.test.ts`
+- [x] T004 [P] Write failing tests for cursor-availability (detect `agent` binary, detect `tmux`, detect auth) in `tests/unit/cursor-agent/cursor-availability.test.ts`
+- [x] T005 [P] Write failing tests for stream-json-parser (parse system/assistant/tool_call/result/error events, handle malformed lines) in `tests/unit/cursor-agent/stream-json-parser.test.ts`
+- [x] T006 [P] Write failing tests for tmux-controller (createSession, sendKeys, capturePane, killSession, sessionExists — all mocking `child_process.execFile`) in `tests/unit/cursor-agent/tmux-controller.test.ts`
+- [x] T007 [P] Write failing tests for permission-detector (detect approval prompts, ignore non-prompt output, extract prompt text) in `tests/unit/cursor-agent/permission-detector.test.ts`
+- [x] T008 [P] Write failing tests for session-store (save/load/prune from temp file, in-memory lookup, getActive by platform:senderId) in `tests/unit/cursor-agent/session-store.test.ts`
 
 ### Implementation for Foundational
 
-- [ ] T009 [P] Implement `cursor-availability.ts` in `packages/cursor-agent/src/cursor-availability.ts` — detect `agent` binary via `which`, detect `tmux`, check `CURSOR_API_KEY` env
-- [ ] T010 [P] Implement `stream-json-parser.ts` in `packages/cursor-agent/src/stream-json-parser.ts` — parse line-delimited JSON events from a Readable stream, emit typed StreamJsonEvent objects
-- [ ] T011 [P] Implement `tmux-controller.ts` in `packages/cursor-agent/src/tmux-controller.ts` — shell out to tmux commands via injected exec function
-- [ ] T012 [P] Implement `permission-detector.ts` in `packages/cursor-agent/src/permission-detector.ts` — regex-based detection of approval prompts in captured pane text
-- [ ] T013 [P] Implement `session-store.ts` in `packages/cursor-agent/src/session-store.ts` — in-memory Map + temp file in `os.tmpdir()`, prune entries older than 24h on load
-- [ ] T014 Update barrel exports in `packages/cursor-agent/src/index.ts`
+- [x] T009 [P] Implement `cursor-availability.ts` in `packages/cursor-agent/src/cursor-availability.ts` — detect `agent` binary via `which`, detect `tmux`, check `CURSOR_API_KEY` env
+- [x] T010 [P] Implement `stream-json-parser.ts` in `packages/cursor-agent/src/stream-json-parser.ts` — parse line-delimited JSON events from a Readable stream, emit typed StreamJsonEvent objects
+- [x] T011 [P] Implement `tmux-controller.ts` in `packages/cursor-agent/src/tmux-controller.ts` — shell out to tmux commands via injected exec function
+- [x] T012 [P] Implement `permission-detector.ts` in `packages/cursor-agent/src/permission-detector.ts` — regex-based detection of approval prompts in captured pane text
+- [x] T013 [P] Implement `session-store.ts` in `packages/cursor-agent/src/session-store.ts` — in-memory Map + temp file in `os.tmpdir()`, prune entries older than 24h on load
+- [x] T014 Update barrel exports in `packages/cursor-agent/src/index.ts`
 
 **Checkpoint**: All foundational utilities pass their tests independently. Build succeeds.
 
@@ -56,18 +56,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Write failing tests for trust-mode-runner (spawn with correct args, parse stream-json output, handle process exit, handle timeout, handle errors) in `tests/unit/cursor-agent/trust-mode-runner.test.ts`
-- [ ] T016 [P] [US1] Write failing tests for session-manager start/cancel/getActive (delegates to trust-mode-runner, tracks session in store, enforces single-session-per-user, handles timeout cleanup) in `tests/unit/cursor-agent/session-manager.test.ts`
-- [ ] T017 [P] [US1] Write failing tests for cursor_agent tool (Zod schema validation, calls session-manager.start, returns TaskResult, handles Cursor CLI not installed) in `tests/unit/ai-agent/cursor-agent-tool.test.ts`
+- [x] T015 [P] [US1] Write failing tests for trust-mode-runner (spawn with correct args, parse stream-json output, handle process exit, handle timeout, handle errors) in `tests/unit/cursor-agent/trust-mode-runner.test.ts`
+- [x] T016 [P] [US1] Write failing tests for session-manager start/cancel/getActive (delegates to trust-mode-runner, tracks session in store, enforces single-session-per-user, handles timeout cleanup) in `tests/unit/cursor-agent/session-manager.test.ts`
+- [x] T017 [P] [US1] Write failing tests for cursor_agent tool (Zod schema validation, calls session-manager.start, returns TaskResult, handles Cursor CLI not installed) in `tests/unit/ai-agent/cursor-agent-tool.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Implement `trust-mode-runner.ts` in `packages/cursor-agent/src/trust-mode-runner.ts` — spawn `agent -p --force --output-format stream-json --stream-partial-output`, pipe stdout through stream-json-parser, call onProgress for assistant/tool_call events, resolve on result/exit, timeout with kill
-- [ ] T019 [US1] Implement `session-manager.ts` in `packages/cursor-agent/src/session-manager.ts` — orchestrate start (availability check, single-session guard, delegate to runner, track in store), cancel (kill process/tmux, update status), getActive, listSessions
-- [ ] T020 [US1] Implement `cursor_agent` tool in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — Vercel AI SDK `tool()` with Zod schema (prompt, projectDir, mode), call session-manager.start, return formatted result
-- [ ] T021 [US1] Add `buildCursorAgentSection` to `packages/ai-agent/src/system-prompt-builder.ts` — append Cursor Agent guidance when cursor tools are available (mode decision, when to use/not use)
-- [ ] T022 [US1] Wire cursor tools into gateway startup in `packages/cli/src/commands/gateway-start.ts` — detect cursor availability, create session manager, build cursor tools, merge into extraTools, pass tool names for system prompt
-- [ ] T023 [US1] Update barrel exports in `packages/cursor-agent/src/index.ts` and `packages/ai-agent/src/index.ts`
+- [x] T018 [US1] Implement `trust-mode-runner.ts` in `packages/cursor-agent/src/trust-mode-runner.ts` — spawn `agent -p --force --output-format stream-json --stream-partial-output`, pipe stdout through stream-json-parser, call onProgress for assistant/tool_call events, resolve on result/exit, timeout with kill
+- [x] T019 [US1] Implement `session-manager.ts` in `packages/cursor-agent/src/session-manager.ts` — orchestrate start (availability check, single-session guard, delegate to runner, track in store), cancel (kill process/tmux, update status), getActive, listSessions
+- [x] T020 [US1] Implement `cursor_agent` tool in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — Vercel AI SDK `tool()` with Zod schema (prompt, projectDir, mode), call session-manager.start, return formatted result
+- [x] T021 [US1] Add `buildCursorAgentSection` to `packages/ai-agent/src/system-prompt-builder.ts` — append Cursor Agent guidance when cursor tools are available (mode decision, when to use/not use)
+- [x] T022 [US1] Wire cursor tools into gateway startup in `packages/cli/src/commands/gateway-start.ts` — detect cursor availability, create session manager, build cursor tools, merge into extraTools, pass tool names for system prompt
+- [x] T023 [US1] Update barrel exports in `packages/cursor-agent/src/index.ts` and `packages/ai-agent/src/index.ts`
 
 **Checkpoint**: User Story 1 complete — trust mode delegation works end-to-end. Run tests, lint, build.
 
@@ -81,15 +81,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T024 [P] [US2] Write failing tests for safe-mode-runner (create tmux session, run agent command, poll capture-pane, detect permission prompt, forward and relay response, handle completion, handle timeout) in `tests/unit/cursor-agent/safe-mode-runner.test.ts`
-- [ ] T025 [P] [US2] Write failing tests for session-manager safe mode path (delegates to safe-mode-runner when mode is "safe", permission callback wired correctly) in `tests/unit/cursor-agent/session-manager.test.ts` (extend existing)
+- [x] T024 [P] [US2] Write failing tests for safe-mode-runner (create tmux session, run agent command, poll capture-pane, detect permission prompt, forward and relay response, handle completion, handle timeout) in `tests/unit/cursor-agent/safe-mode-runner.test.ts`
+- [x] T025 [P] [US2] Write failing tests for session-manager safe mode path (delegates to safe-mode-runner when mode is "safe", permission callback wired correctly) in `tests/unit/cursor-agent/session-manager.test.ts` (extend existing)
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Implement `safe-mode-runner.ts` in `packages/cursor-agent/src/safe-mode-runner.ts` — create tmux session, send `agent -p "{prompt}"`, poll capture-pane every 2s, use permission-detector to scan output, call onPermission callback when detected, send user decision via tmux send-keys, detect completion, timeout with tmux kill
-- [ ] T027 [US2] Extend `session-manager.ts` to route to safe-mode-runner when `mode === "safe"` and handle waiting_approval status transitions
-- [ ] T028 [US2] Add permission prompt interception to gateway message handler in `packages/gateway/src/gateway-agent-handler.ts` — when incoming message targets a user with an active cursor session in waiting_approval status, resolve the pending permission promise instead of routing to AI agent
-- [ ] T029 [US2] Update barrel exports in `packages/cursor-agent/src/index.ts`
+- [x] T026 [US2] Implement `safe-mode-runner.ts` in `packages/cursor-agent/src/safe-mode-runner.ts` — create tmux session, send `agent -p "{prompt}"`, poll capture-pane every 2s, use permission-detector to scan output, call onPermission callback when detected, send user decision via tmux send-keys, detect completion, timeout with tmux kill
+- [x] T027 [US2] Extend `session-manager.ts` to route to safe-mode-runner when `mode === "safe"` and handle waiting_approval status transitions
+- [x] T028 [US2] Add permission prompt interception to gateway message handler in `packages/gateway/src/gateway-agent-handler.ts` — when incoming message targets a user with an active cursor session in waiting_approval status, resolve the pending permission promise instead of routing to AI agent
+- [x] T029 [US2] Update barrel exports in `packages/cursor-agent/src/index.ts`
 
 **Checkpoint**: User Story 2 complete — safe mode with permission forwarding works. Run tests, lint, build.
 
@@ -103,13 +103,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Write failing tests for progress throttling logic (no more than 1 message per 10s, heartbeat after 60s of no output) in `tests/unit/cursor-agent/trust-mode-runner.test.ts` (extend existing)
+- [x] T030 [P] [US3] Write failing tests for progress throttling logic (no more than 1 message per 10s, heartbeat after 60s of no output) in `tests/unit/cursor-agent/trust-mode-runner.test.ts` (extend existing)
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Add progress throttling to `trust-mode-runner.ts` — track last progress send time, skip if < 10s since last, send heartbeat after 60s of silence
-- [ ] T032 [US3] Add progress throttling to `safe-mode-runner.ts` — same throttle logic for tmux captured output changes, heartbeat after 60s
-- [ ] T033 [US3] Extract shared throttle utility if needed (DRY between trust/safe runners)
+- [x] T031 [US3] Add progress throttling to `trust-mode-runner.ts` — track last progress send time, skip if < 10s since last, send heartbeat after 60s of silence
+- [x] T032 [US3] Add progress throttling to `safe-mode-runner.ts` — same throttle logic for tmux captured output changes, heartbeat after 60s
+- [x] T033 [US3] Extract shared throttle utility if needed (DRY between trust/safe runners)
 
 **Checkpoint**: User Story 3 complete — progress messages arrive at reasonable intervals. Run tests, lint, build.
 
@@ -123,14 +123,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Write failing tests for cursor_resume tool (resume most recent, resume by chatId, handle no sessions, handle multiple sessions) in `tests/unit/ai-agent/cursor-resume-tool.test.ts`
-- [ ] T035 [P] [US4] Write failing tests for session-manager resume path (lookup in store, fall back to agent ls, spawn with --resume flag) in `tests/unit/cursor-agent/session-manager.test.ts` (extend existing)
+- [x] T034 [P] [US4] Write failing tests for cursor_resume tool (resume most recent, resume by chatId, handle no sessions, handle multiple sessions) in `tests/unit/ai-agent/cursor-resume-tool.test.ts`
+- [x] T035 [P] [US4] Write failing tests for session-manager resume path (lookup in store, fall back to agent ls, spawn with --resume flag) in `tests/unit/cursor-agent/session-manager.test.ts` (extend existing)
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement `cursor_resume` tool in `packages/ai-agent/src/tools/cursor-resume-tool.ts` — Vercel AI SDK `tool()` with Zod schema (chatId optional), call session-manager.resume, return formatted result
-- [ ] T037 [US4] Implement resume logic in `session-manager.ts` — lookup session in store, if not found parse `agent ls` output, spawn with `--resume=<chat-id>` flag (trust: spawn, safe: tmux)
-- [ ] T038 [US4] Wire `cursor_resume` tool into gateway startup alongside `cursor_agent` in `packages/cli/src/commands/gateway-start.ts`
+- [x] T036 [US4] Implement `cursor_resume` tool in `packages/ai-agent/src/tools/cursor-resume-tool.ts` — Vercel AI SDK `tool()` with Zod schema (chatId optional), call session-manager.resume, return formatted result
+- [x] T037 [US4] Implement resume logic in `session-manager.ts` — lookup session in store, if not found parse `agent ls` output, spawn with `--resume=<chat-id>` flag (trust: spawn, safe: tmux)
+- [x] T038 [US4] Wire `cursor_resume` tool into gateway startup alongside `cursor_agent` in `packages/cli/src/commands/gateway-start.ts`
 
 **Checkpoint**: User Story 4 complete — session resume works. Run tests, lint, build.
 
@@ -144,8 +144,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T039 [US5] Refine the system prompt Cursor Agent section in `packages/ai-agent/src/system-prompt-builder.ts` to include explicit mode selection guidance with task risk examples
-- [ ] T040 [US5] Verify the `cursor_agent` tool's Zod schema defaults `mode` to `"safe"` and the AI fills it based on prompt reasoning — no code change needed if already correct, otherwise adjust
+- [x] T039 [US5] Refine the system prompt Cursor Agent section in `packages/ai-agent/src/system-prompt-builder.ts` to include explicit mode selection guidance with task risk examples
+- [x] T040 [US5] Verify the `cursor_agent` tool's Zod schema defaults `mode` to `"safe"` and the AI fills it based on prompt reasoning — no code change needed if already correct, otherwise adjust
 
 **Checkpoint**: User Story 5 complete — mode selection is intelligent. Run tests, lint, build.
 
@@ -155,13 +155,13 @@
 
 **Purpose**: CLI command, integration tests, documentation, final cleanup
 
-- [ ] T041 [P] Implement `closeclaw cursor sessions` CLI command in `packages/cli/src/commands/cursor-sessions-command.ts` — list sessions from session store + `agent ls` fallback
-- [ ] T042 [P] Register the `cursor sessions` subcommand in `packages/cli/src/index.ts`
-- [ ] T043 [P] Write integration test for end-to-end delegation flow (mocked Cursor CLI + mocked bot adapter) in `tests/integration/cursor-delegation-flow.test.ts`
-- [ ] T044 [P] Write user-facing documentation in `docs/cursor-agent.md` — prerequisites, usage, modes, resume, configuration, examples
-- [ ] T045 [P] Update `docs/cli-reference.md` with the new `cursor sessions` command
-- [ ] T046 Run full test suite, lint, format check, build all packages, verify 90% coverage
-- [ ] T047 Rebuild dist/ artifacts for all changed packages
+- [x] T041 [P] Implement `closeclaw cursor sessions` CLI command in `packages/cli/src/commands/cursor-sessions-command.ts` — list sessions from session store + `agent ls` fallback
+- [x] T042 [P] Register the `cursor sessions` subcommand in `packages/cli/src/index.ts`
+- [x] T043 [P] Write integration test for end-to-end delegation flow (mocked Cursor CLI + mocked bot adapter) in `tests/integration/cursor-delegation-flow.test.ts`
+- [x] T044 [P] Write user-facing documentation in `docs/cursor-agent.md` — prerequisites, usage, modes, resume, configuration, examples
+- [x] T045 [P] Update `docs/cli-reference.md` with the new `cursor sessions` command
+- [x] T046 Run full test suite, lint, format check, build all packages, verify 90% coverage
+- [x] T047 Rebuild dist/ artifacts for all changed packages
 
 ---
 

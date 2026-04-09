@@ -10,6 +10,7 @@
 **Rationale**: `stream-json` is cleaner and avoids tmux overhead for the common case. tmux is reserved for the interactive case where a real TTY is required for Cursor's TUI to show approval prompts.
 
 **Alternatives considered**:
+
 - tmux-only approach: Simpler to implement one path, but tmux overhead is unnecessary for trust mode and output parsing from raw terminal text is fragile.
 - `--output-format text` only: Loses tool call tracking and progress granularity.
 
@@ -20,6 +21,7 @@
 **Rationale**: Cursor's interactive mode uses a TUI that requires a real terminal. There is no structured API for permission events — the only way to detect them is by reading the terminal screen buffer.
 
 **Alternatives considered**:
+
 - `stream-json` in safe mode: Cursor doesn't emit permission events in stream-json when running interactively — it needs a TTY.
 - screen instead of tmux: tmux is more widely installed and better documented for this use case.
 
@@ -30,6 +32,7 @@
 **Rationale**: Cursor stores sessions internally but `agent ls` shows ALL sessions (including manually started ones). The thin mapping lets CloseClaw quickly identify its own sessions for the resume flow. Using temp storage instead of permanent storage avoids accumulating stale data. Falls back to `agent ls` + user selection when no CloseClaw session is found.
 
 **Alternatives considered**:
+
 - Permanent `~/.closeclaw/cursor-sessions.json`: Unnecessary — old session data is useless and Cursor manages its own persistence.
 - No mapping at all (just `agent ls`): Works but requires the user to pick from all sessions including non-CloseClaw ones.
 - Cloud execution (`-c` / `--cloud`): Future enhancement possibility but adds dependency on Cursor cloud subscription tier.
@@ -41,6 +44,7 @@
 **Rationale**: Follows the constitution's Modular Architecture principle. Cursor CLI interaction is a distinct concern from the AI agent, bot adapters, or MCP client.
 
 **Alternatives considered**:
+
 - Add to existing `packages/ai-agent`: Violates single responsibility. Cursor CLI is an external tool integration, not part of the AI reasoning pipeline.
 
 ## R5: Tool Integration
@@ -50,6 +54,7 @@
 **Rationale**: The CloseClaw AI agent decides when to delegate to Cursor based on user intent. Making it a tool lets the AI reason about when to use it vs. handling the request itself.
 
 **Alternatives considered**:
+
 - Direct command detection (regex on user message): Fragile, doesn't leverage AI reasoning.
 - MCP tool: Cursor CLI is a local binary, not an MCP server. Making it a native tool is simpler.
 

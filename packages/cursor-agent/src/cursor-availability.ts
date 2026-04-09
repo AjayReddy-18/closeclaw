@@ -6,10 +6,7 @@ export interface AvailabilityResult {
   available: boolean;
 }
 
-async function checkBinary(
-  exec: ExecWhich,
-  binary: string,
-): Promise<boolean> {
+async function checkBinary(exec: ExecWhich, binary: string): Promise<boolean> {
   try {
     return await exec(binary);
   } catch {

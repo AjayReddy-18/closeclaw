@@ -23,7 +23,8 @@ const inputSchema = z.object({
 
 export function createCursorResumeTool(deps: CursorResumeToolDeps) {
   return tool({
-    description: "Resume a previous Cursor CLI agent session from where it left off.",
+    description:
+      "Resume a previous Cursor CLI agent session from where it left off.",
     inputSchema,
     execute: async (params) => {
       const result = await deps.sessionManager.resume(

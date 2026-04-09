@@ -1,12 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   checkCursorAvailability,
   type ExecWhich,
 } from "@closeclaw/cursor-agent";
 
-function createMockExec(
-  results: Record<string, boolean>,
-): ExecWhich {
+function createMockExec(results: Record<string, boolean>): ExecWhich {
   return async (binary: string) => results[binary] ?? false;
 }
 

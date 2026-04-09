@@ -12,7 +12,10 @@ import {
   type CursorSessionManager,
   type ShellExec,
 } from "@closeclaw/cursor-agent";
-import { createCursorAgentTool, createCursorResumeTool } from "@closeclaw/ai-agent";
+import {
+  createCursorAgentTool,
+  createCursorResumeTool,
+} from "@closeclaw/ai-agent";
 
 const execFileAsync = promisify(execFile);
 
@@ -37,7 +40,10 @@ function buildSpawnAgent() {
         "--stream-partial-output",
         prompt,
       ];
-      const child = spawn("agent", args, { cwd, stdio: ["ignore", "pipe", "ignore"] });
+      const child = spawn("agent", args, {
+        cwd,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
       const lines: string[] = [];
       let buffer = "";
       child.stdout.on("data", (chunk: Buffer) => {
@@ -82,10 +88,15 @@ export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
   const sessionStore = createSessionStore();
   const trustDeps = { spawnAgent: buildSpawnAgent() };
   const tmux = createTmuxController(buildTmuxExec());
-  const safeDeps = { tmux, detectPrompt: detectPermissionPrompt, isSessionDone };
+  const safeDeps = {
+    tmux,
+    detectPrompt: detectPermissionPrompt,
+    isSessionDone,
+  };
   const manager = createCursorSessionManager({
     checkAvailability: () => checkCursorAvailability(whichExists),
-    runTrust: (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
+    runTrust: (params, onProgress) =>
+      runTrustMode(params, trustDeps, onProgress),
     runSafe: (params, onProgress, onPermission) =>
       runSafeMode(params, safeDeps, onProgress, onPermission),
     sessionStore,

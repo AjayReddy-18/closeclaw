@@ -1,13 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   createSessionStore,
   type SessionRecord,
   type SessionStatus,
 } from "@closeclaw/cursor-agent";
 
-function makeRecord(
-  overrides: Partial<SessionRecord> = {},
-): SessionRecord {
+function makeRecord(overrides: Partial<SessionRecord> = {}): SessionRecord {
   return {
     id: "test-id",
     cursorChatId: "cursor-chat-1",

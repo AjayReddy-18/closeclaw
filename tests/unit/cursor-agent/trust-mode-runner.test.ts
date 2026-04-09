@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import {
   runTrustMode,
   type TrustModeRunnerDeps,
-  type TaskResult,
 } from "@closeclaw/cursor-agent";
 
 function createMockDeps(
@@ -20,9 +19,7 @@ function createMockDeps(
 describe("runTrustMode", () => {
   it("spawns agent with correct arguments", async () => {
     const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [
-        JSON.stringify({ type: "result", content: "Task done" }),
-      ],
+      stdout: [JSON.stringify({ type: "result", content: "Task done" })],
       exitCode: 0,
     });
     const deps = createMockDeps({ spawnAgent });
@@ -59,9 +56,7 @@ describe("runTrustMode", () => {
 
   it("returns completed status on success", async () => {
     const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [
-        JSON.stringify({ type: "result", content: "All done" }),
-      ],
+      stdout: [JSON.stringify({ type: "result", content: "All done" })],
       exitCode: 0,
     });
     const deps = createMockDeps({ spawnAgent });
@@ -76,9 +71,7 @@ describe("runTrustMode", () => {
 
   it("returns failed status on non-zero exit", async () => {
     const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [
-        JSON.stringify({ type: "error", content: "Crashed" }),
-      ],
+      stdout: [JSON.stringify({ type: "error", content: "Crashed" })],
       exitCode: 1,
     });
     const deps = createMockDeps({ spawnAgent });
@@ -93,8 +86,16 @@ describe("runTrustMode", () => {
   it("collects tool_call events in output log", async () => {
     const spawnAgent = vi.fn().mockResolvedValue({
       stdout: [
-        JSON.stringify({ type: "tool_call", toolName: "read_file", status: "started" }),
-        JSON.stringify({ type: "tool_call", toolName: "read_file", status: "completed" }),
+        JSON.stringify({
+          type: "tool_call",
+          toolName: "read_file",
+          status: "started",
+        }),
+        JSON.stringify({
+          type: "tool_call",
+          toolName: "read_file",
+          status: "completed",
+        }),
         JSON.stringify({ type: "result", content: "Done" }),
       ],
       exitCode: 0,

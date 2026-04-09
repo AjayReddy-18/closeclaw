@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  runSafeMode,
-  type SafeModeRunnerDeps,
-} from "@closeclaw/cursor-agent";
+import { describe, it, expect, vi } from "vitest";
+import { runSafeMode, type SafeModeRunnerDeps } from "@closeclaw/cursor-agent";
 
 function createMockDeps(
   overrides: Partial<SafeModeRunnerDeps> = {},
@@ -21,9 +18,9 @@ function createMockDeps(
       sessionExists: vi.fn().mockResolvedValue(true),
     },
     detectPrompt: vi.fn().mockReturnValue(null),
-    isSessionDone: vi.fn().mockImplementation((output: string) =>
-      output.includes("completed"),
-    ),
+    isSessionDone: vi
+      .fn()
+      .mockImplementation((output: string) => output.includes("completed")),
     pollIntervalMs: 10,
     ...overrides,
   };
@@ -74,9 +71,9 @@ describe("runSafeMode", () => {
         }
         return null;
       }),
-      isSessionDone: vi.fn().mockImplementation((output: string) =>
-        output.includes("completed"),
-      ),
+      isSessionDone: vi
+        .fn()
+        .mockImplementation((output: string) => output.includes("completed")),
       pollIntervalMs: 10,
     });
     const onPermission = vi.fn().mockResolvedValue("accept");
@@ -110,9 +107,9 @@ describe("runSafeMode", () => {
           return { promptText: "Edit files?", lineIndex: 0 };
         return null;
       }),
-      isSessionDone: vi.fn().mockImplementation((output: string) =>
-        output.includes("completed"),
-      ),
+      isSessionDone: vi
+        .fn()
+        .mockImplementation((output: string) => output.includes("completed")),
       pollIntervalMs: 10,
     });
     await runSafeMode(
@@ -165,9 +162,9 @@ describe("runSafeMode", () => {
         killSession: vi.fn().mockResolvedValue(undefined),
         sessionExists: vi.fn().mockResolvedValue(true),
       },
-      isSessionDone: vi.fn().mockImplementation((output: string) =>
-        output.includes("completed"),
-      ),
+      isSessionDone: vi
+        .fn()
+        .mockImplementation((output: string) => output.includes("completed")),
       pollIntervalMs: 10,
     });
     const onProgress = vi.fn();

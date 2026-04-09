@@ -1,6 +1,4 @@
-import type {
-  AvailabilityResult,
-} from "./cursor-availability.js";
+import type { AvailabilityResult } from "./cursor-availability.js";
 import type { SessionStore } from "./session-store.js";
 import type { TaskResult, ExecutionMode, SessionRecord } from "./types.js";
 import { DEFAULT_TIMEOUT_MS } from "./types.js";
@@ -59,9 +57,7 @@ export function createCursorSessionManager(
     async start(params) {
       const key = userKey(params.platform, params.senderId);
       if (activeSessions.has(key)) {
-        return failResult(
-          "A Cursor task is already running. Cancel it first.",
-        );
+        return failResult("A Cursor task is already running. Cancel it first.");
       }
       const availability = await deps.checkAvailability();
       if (!availability.available) {
@@ -109,7 +105,7 @@ export function createCursorSessionManager(
       return deps.sessionStore.list();
     },
 
-    async resume(chatId, onProgress, onPermission) {
+    async resume(chatId, onProgress, _onPermission) {
       const target = chatId
         ? deps.sessionStore.findByCursorChatId(chatId)
         : deps.sessionStore.getMostRecent();

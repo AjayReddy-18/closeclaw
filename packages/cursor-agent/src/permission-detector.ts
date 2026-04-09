@@ -23,9 +23,7 @@ function extractContext(lines: string[], promptIdx: number): string {
     .join("\n");
 }
 
-export function detectPermissionPrompt(
-  output: string,
-): DetectedPrompt | null {
+export function detectPermissionPrompt(output: string): DetectedPrompt | null {
   if (output.trim().length === 0) return null;
   const lines = output.split("\n");
   for (let i = 0; i < lines.length; i++) {

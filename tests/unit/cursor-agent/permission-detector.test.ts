@@ -15,10 +15,9 @@ describe("detectPermissionPrompt", () => {
   });
 
   it("detects a prompt with (a)ccept/(d)eny pattern", () => {
-    const output = [
-      "Cursor wants to run: npm test",
-      "(a)ccept (d)eny",
-    ].join("\n");
+    const output = ["Cursor wants to run: npm test", "(a)ccept (d)eny"].join(
+      "\n",
+    );
     const result = detectPermissionPrompt(output);
     expect(result).not.toBeNull();
   });

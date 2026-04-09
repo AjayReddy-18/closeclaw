@@ -40,9 +40,7 @@ describe("createProgressThrottle", () => {
     const throttle = createProgressThrottle(send, 10_000, 60_000);
     throttle.startHeartbeat();
     vi.advanceTimersByTime(61_000);
-    expect(send).toHaveBeenCalledWith(
-      expect.stringContaining("Still working"),
-    );
+    expect(send).toHaveBeenCalledWith(expect.stringContaining("Still working"));
     throttle.stopHeartbeat();
   });
 

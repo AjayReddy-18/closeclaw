@@ -24,7 +24,10 @@ describe("parseStreamJsonEvents", () => {
   it("parses an assistant event", async () => {
     const events: StreamJsonEvent[] = [];
     const stream = streamFromLines([
-      JSON.stringify({ type: "assistant", content: "I will fix the lint errors" }),
+      JSON.stringify({
+        type: "assistant",
+        content: "I will fix the lint errors",
+      }),
     ]);
     await parseStreamJsonEvents(stream, (e) => events.push(e));
     expect(events[0].type).toBe("assistant");
@@ -33,7 +36,11 @@ describe("parseStreamJsonEvents", () => {
   it("parses a tool_call event", async () => {
     const events: StreamJsonEvent[] = [];
     const stream = streamFromLines([
-      JSON.stringify({ type: "tool_call", toolName: "read_file", status: "started" }),
+      JSON.stringify({
+        type: "tool_call",
+        toolName: "read_file",
+        status: "started",
+      }),
     ]);
     await parseStreamJsonEvents(stream, (e) => events.push(e));
     expect(events[0].type).toBe("tool_call");

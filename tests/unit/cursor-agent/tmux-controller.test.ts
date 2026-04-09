@@ -1,12 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  createTmuxController,
-  type ShellExec,
-} from "@closeclaw/cursor-agent";
+import { describe, it, expect } from "vitest";
+import { createTmuxController, type ShellExec } from "@closeclaw/cursor-agent";
 
-function createMockShellExec(
-  output = "",
-): { exec: ShellExec; calls: string[][] } {
+function createMockShellExec(output = ""): {
+  exec: ShellExec;
+  calls: string[][];
+} {
   const calls: string[][] = [];
   const exec: ShellExec = async (...args: string[]) => {
     calls.push(args);

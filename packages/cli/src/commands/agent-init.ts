@@ -63,7 +63,9 @@ export async function initAgent(
       senderRef.senderId = msg.senderId;
     }),
   );
-  console.log(`AI agent active: ${config.agent.provider}/${config.agent.model}`);
+  console.log(
+    `AI agent active: ${config.agent.provider}/${config.agent.model}`,
+  );
   const pruneInterval = setInterval(
     () => assembly.conversationStore.pruneStale(24 * 60 * 60 * 1000),
     60 * 60 * 1000,
