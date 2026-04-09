@@ -17,14 +17,14 @@
 
 **Purpose**: Install node-pty, update types, remove deprecated tmux code
 
-- [ ] T001 Add `node-pty` dependency to `packages/cursor-agent/package.json` and run `pnpm install`
-- [ ] T002 [P] Add PTY-related types (`PtySpawnOptions`, `ProgressEvent`, `PermissionPrompt`, `InteractiveTaskResult`) to `packages/cursor-agent/src/types.ts`
-- [ ] T003 [P] Update `ExecutionMode` type from `"safe" | "trust"` to `"interactive" | "trust"` in `packages/cursor-agent/src/types.ts`
-- [ ] T004 Remove `packages/cursor-agent/src/tmux-controller.ts` and its test `tests/unit/cursor-agent/tmux-controller.test.ts`
-- [ ] T005 [P] Remove `packages/cursor-agent/src/safe-mode-runner.ts` and its test `tests/unit/cursor-agent/safe-mode-runner.test.ts`
-- [ ] T006 Remove tmux/safe-mode exports from `packages/cursor-agent/src/index.ts` (remove `createTmuxController`, `TmuxController`, `ShellExec`, `runSafeMode`, `SafeModeRunnerDeps`, `TMUX_CAPTURE_LINES`)
-- [ ] T007 Update `packages/cursor-agent/src/cursor-availability.ts` — remove `tmuxInstalled` and `safeModeAvailable` fields, add `ptyAvailable` field (check if node-pty can be loaded)
-- [ ] T008 Update `tests/unit/cursor-agent/cursor-availability.test.ts` to reflect new availability shape (no tmux, add pty check)
+- [X] T001 Add `node-pty` dependency to `packages/cursor-agent/package.json` and run `pnpm install`
+- [X] T002 [P] Add PTY-related types (`PtySpawnOptions`, `ProgressEvent`, `PermissionPrompt`, `InteractiveTaskResult`) to `packages/cursor-agent/src/types.ts`
+- [X] T003 [P] Update `ExecutionMode` type from `"safe" | "trust"` to `"interactive" | "trust"` in `packages/cursor-agent/src/types.ts`
+- [X] T004 Remove `packages/cursor-agent/src/tmux-controller.ts` and its test `tests/unit/cursor-agent/tmux-controller.test.ts`
+- [X] T005 [P] Remove `packages/cursor-agent/src/safe-mode-runner.ts` and its test `tests/unit/cursor-agent/safe-mode-runner.test.ts`
+- [X] T006 Remove tmux/safe-mode exports from `packages/cursor-agent/src/index.ts` (remove `createTmuxController`, `TmuxController`, `ShellExec`, `runSafeMode`, `SafeModeRunnerDeps`, `TMUX_CAPTURE_LINES`)
+- [X] T007 Update `packages/cursor-agent/src/cursor-availability.ts` — remove `tmuxInstalled` and `safeModeAvailable` fields, add `ptyAvailable` field (check if node-pty can be loaded)
+- [X] T008 Update `tests/unit/cursor-agent/cursor-availability.test.ts` to reflect new availability shape (no tmux, add pty check)
 
 **Checkpoint**: node-pty installed, tmux code removed, types updated, all existing tests still pass
 
@@ -38,16 +38,16 @@
 
 ### Tests (write FIRST, must FAIL before implementation)
 
-- [ ] T009 [P] Write unit tests for PTY spawner in `tests/unit/cursor-agent/pty-spawner.test.ts` — test spawn with options, onData callback, write input, kill, onExit callback (mock node-pty)
-- [ ] T010 [P] Write unit tests for ANSI output parser in `tests/unit/cursor-agent/pty-output-parser.test.ts` — test stripAnsi (color codes, cursor movement, OSC sequences), extractLines from raw chunks with partial line buffering
-- [ ] T011 [P] Write unit tests for PTY permission detector in `tests/unit/cursor-agent/pty-permission-detector.test.ts` — test detection of "Accept Deny", "(Y/n)", workspace trust prompt, no false positives on normal text
+- [X] T009 [P] Write unit tests for PTY spawner in `tests/unit/cursor-agent/pty-spawner.test.ts` — test spawn with options, onData callback, write input, kill, onExit callback (mock node-pty)
+- [X] T010 [P] Write unit tests for ANSI output parser in `tests/unit/cursor-agent/pty-output-parser.test.ts` — test stripAnsi (color codes, cursor movement, OSC sequences), extractLines from raw chunks with partial line buffering
+- [X] T011 [P] Write unit tests for PTY permission detector in `tests/unit/cursor-agent/pty-permission-detector.test.ts` — test detection of "Accept Deny", "(Y/n)", workspace trust prompt, no false positives on normal text
 
 ### Implementation
 
-- [ ] T012 [P] Implement PTY spawner in `packages/cursor-agent/src/pty-spawner.ts` — DI wrapper around node-pty `spawn()`, returns `PtyHandle` interface (onData, onExit, write, kill, resize)
-- [ ] T013 [P] Implement ANSI output parser in `packages/cursor-agent/src/pty-output-parser.ts` — `stripAnsi()` function (regex-based), `extractLines()` with internal buffer for partial lines
-- [ ] T014 [P] Implement PTY permission detector in `packages/cursor-agent/src/pty-permission-detector.ts` — `detectPermission(recentLines)` returns `DetectedPermission | null`, patterns from research.md + existing `permission-detector.ts` patterns
-- [ ] T015 Export new modules from `packages/cursor-agent/src/index.ts` (`createPtySpawner`, `PtyHandle`, `stripAnsi`, `extractLines`, `detectPtyPermission`, `DetectedPermission`)
+- [X] T012 [P] Implement PTY spawner in `packages/cursor-agent/src/pty-spawner.ts` — DI wrapper around node-pty `spawn()`, returns `PtyHandle` interface (onData, onExit, write, kill, resize)
+- [X] T013 [P] Implement ANSI output parser in `packages/cursor-agent/src/pty-output-parser.ts` — `stripAnsi()` function (regex-based), `extractLines()` with internal buffer for partial lines
+- [X] T014 [P] Implement PTY permission detector in `packages/cursor-agent/src/pty-permission-detector.ts` — `detectPermission(recentLines)` returns `DetectedPermission | null`, patterns from research.md + existing `permission-detector.ts` patterns
+- [X] T015 Export new modules from `packages/cursor-agent/src/index.ts` (`createPtySpawner`, `PtyHandle`, `stripAnsi`, `extractLines`, `detectPtyPermission`, `DetectedPermission`)
 
 **Checkpoint**: Three foundational modules implemented with passing tests, exported from package
 
@@ -61,18 +61,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T016 [P] [US1] Write unit tests for interactive runner in `tests/unit/cursor-agent/interactive-runner.test.ts` — test PTY spawn, output parsing to progress events, throttled onProgress calls, exit handling (success/failure/timeout)
-- [ ] T017 [P] [US1] Write integration test for PTY interactive flow in `tests/integration/pty-interactive-flow.test.ts` — test full lifecycle: spawn mock PTY → emit output → verify progress callbacks fired → process exits → verify task result
+- [X] T016 [P] [US1] Write unit tests for interactive runner in `tests/unit/cursor-agent/interactive-runner.test.ts` — test PTY spawn, output parsing to progress events, throttled onProgress calls, exit handling (success/failure/timeout)
+- [X] T017 [P] [US1] Write integration test for PTY interactive flow in `tests/integration/pty-interactive-flow.test.ts` — test full lifecycle: spawn mock PTY → emit output → verify progress callbacks fired → process exits → verify task result
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Implement interactive runner in `packages/cursor-agent/src/interactive-runner.ts` — orchestrates PTY spawn, wires onData → stripAnsi → extractLines → classify as progress vs prompt, throttles progress at PROGRESS_THROTTLE_MS, handles exit/timeout/kill
-- [ ] T019 [US1] Update session manager in `packages/cursor-agent/src/session-manager.ts` — change default mode from `"safe"` to `"interactive"`, add `runInteractive` dep, route interactive mode to new runner and trust mode to existing runner, remove `runSafe` dep and `SAFE_MODE_PREFIX`
-- [ ] T020 [US1] Update `tests/unit/cursor-agent/session-manager.test.ts` — update tests for interactive as default, remove safe mode tests, add interactive runner delegation test
-- [ ] T021 [US1] Update cursor-agent tool schema in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — change `mode` default from `"safe"` to `"interactive"`, update `z.enum` from `["safe", "trust"]` to `["interactive", "trust"]`
-- [ ] T022 [US1] Update `packages/cli/src/commands/cursor-setup.ts` — remove `buildSafeRunner`, `buildTmuxExec`, `isSessionDone`, tmux imports; add `buildPtySpawner` that creates a `PtySpawnFn` using node-pty; wire `runInteractive` to session manager deps
-- [ ] T023 [US1] Update `packages/cursor-agent/src/cursor-availability.ts` exports and `packages/cursor-agent/src/index.ts` — export `runInteractiveMode` and its types
-- [ ] T024 [US1] Update system prompt in `packages/ai-agent/src/system-prompt-builder.ts` — change CURSOR_AGENT_GUIDANCE to replace "safe" with "interactive" as the default mode, update mode descriptions
+- [X] T018 [US1] Implement interactive runner in `packages/cursor-agent/src/interactive-runner.ts` — orchestrates PTY spawn, wires onData → stripAnsi → extractLines → classify as progress vs prompt, throttles progress at PROGRESS_THROTTLE_MS, handles exit/timeout/kill
+- [X] T019 [US1] Update session manager in `packages/cursor-agent/src/session-manager.ts` — change default mode from `"safe"` to `"interactive"`, add `runInteractive` dep, route interactive mode to new runner and trust mode to existing runner, remove `runSafe` dep and `SAFE_MODE_PREFIX`
+- [X] T020 [US1] Update `tests/unit/cursor-agent/session-manager.test.ts` — update tests for interactive as default, remove safe mode tests, add interactive runner delegation test
+- [X] T021 [US1] Update cursor-agent tool schema in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — change `mode` default from `"safe"` to `"interactive"`, update `z.enum` from `["safe", "trust"]` to `["interactive", "trust"]`
+- [X] T022 [US1] Update `packages/cli/src/commands/cursor-setup.ts` — remove `buildSafeRunner`, `buildTmuxExec`, `isSessionDone`, tmux imports; add `buildPtySpawner` that creates a `PtySpawnFn` using node-pty; wire `runInteractive` to session manager deps
+- [X] T023 [US1] Update `packages/cursor-agent/src/cursor-availability.ts` exports and `packages/cursor-agent/src/index.ts` — export `runInteractiveMode` and its types
+- [X] T024 [US1] Update system prompt in `packages/ai-agent/src/system-prompt-builder.ts` — change CURSOR_AGENT_GUIDANCE to replace "safe" with "interactive" as the default mode, update mode descriptions
 
 **Checkpoint**: User Story 1 complete — delegating a task produces real-time progress messages via PTY. Trust mode still works as explicit override.
 
@@ -86,15 +86,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Write unit tests for permission relay in `tests/unit/cursor-agent/interactive-runner.test.ts` — add tests for: prompt detected → onPermission called → accept writes "Y\r" to PTY → deny writes "n\r", auto-deny after APPROVAL_TIMEOUT_MS
-- [ ] T026 [P] [US2] Write integration test for permission flow in `tests/integration/pty-interactive-flow.test.ts` — add tests for: full permission round-trip (detect → callback → write → resume), timeout auto-deny
+- [X] T025 [P] [US2] Write unit tests for permission relay in `tests/unit/cursor-agent/interactive-runner.test.ts` — add tests for: prompt detected → onPermission called → accept writes "Y\r" to PTY → deny writes "n\r", auto-deny after APPROVAL_TIMEOUT_MS
+- [X] T026 [P] [US2] Write integration test for permission flow in `tests/integration/pty-interactive-flow.test.ts` — add tests for: full permission round-trip (detect → callback → write → resume), timeout auto-deny
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Enhance interactive runner permission handling in `packages/cursor-agent/src/interactive-runner.ts` — when `detectPermission` returns a match, pause progress, call `onPermission(displayText)` with 2-minute timeout, write user's decision keystroke (`Y\r` or `n\r`) to PTY, track permission stats (requested/accepted/denied), resume progress streaming
-- [ ] T028 [US2] Wire permission forwarding in `packages/gateway/src/gateway-agent-handler.ts` — implement `onPermission` callback that sends prompt text to user via `adapter.sendMessage`, waits for next user message matching accept/deny pattern, returns decision
-- [ ] T029 [US2] Update `packages/cli/src/commands/agent-init.ts` — wire the gateway-level `onPermission` callback through to cursor tools, ensure it reaches the interactive runner
-- [ ] T030 [US2] Update `tests/unit/cursor-agent/interactive-runner.test.ts` — verify permission stats are included in `InteractiveTaskResult` (permissionsRequested, permissionsAccepted, permissionsDenied)
+- [X] T027 [US2] Enhance interactive runner permission handling in `packages/cursor-agent/src/interactive-runner.ts` — when `detectPermission` returns a match, pause progress, call `onPermission(displayText)` with 2-minute timeout, write user's decision keystroke (`Y\r` or `n\r`) to PTY, track permission stats (requested/accepted/denied), resume progress streaming
+- [X] T028 [US2] Wire permission forwarding in `packages/gateway/src/gateway-agent-handler.ts` — implement `onPermission` callback that sends prompt text to user via `adapter.sendMessage`, waits for next user message matching accept/deny pattern, returns decision
+- [X] T029 [US2] Update `packages/cli/src/commands/agent-init.ts` — wire the gateway-level `onPermission` callback through to cursor tools, ensure it reaches the interactive runner
+- [X] T030 [US2] Update `tests/unit/cursor-agent/interactive-runner.test.ts` — verify permission stats are included in `InteractiveTaskResult` (permissionsRequested, permissionsAccepted, permissionsDenied)
 
 **Checkpoint**: User Story 2 complete — permission prompts relay to Telegram and back, auto-deny on timeout, permission stats tracked.
 
@@ -108,12 +108,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T031 [P] [US3] Write unit tests for summary builder in `tests/unit/cursor-agent/interactive-runner.test.ts` — add tests for: extract file paths from output, build structured summary from outputLog, handle failure/timeout summary
+- [X] T031 [P] [US3] Write unit tests for summary builder in `tests/unit/cursor-agent/interactive-runner.test.ts` — add tests for: extract file paths from output, build structured summary from outputLog, handle failure/timeout summary
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Implement summary extraction in `packages/cursor-agent/src/interactive-runner.ts` — parse accumulated output lines to identify file operations (created/modified/deleted), commands run, and errors; build a structured summary string
-- [ ] T033 [US3] Format summary for Telegram in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — format the `InteractiveTaskResult` into a clean message with file list, permission stats, and outcome before returning to the AI agent
+- [X] T032 [US3] Implement summary extraction in `packages/cursor-agent/src/interactive-runner.ts` — parse accumulated output lines to identify file operations (created/modified/deleted), commands run, and errors; build a structured summary string
+- [X] T033 [US3] Format summary for Telegram in `packages/ai-agent/src/tools/cursor-agent-tool.ts` — format the `InteractiveTaskResult` into a clean message with file list, permission stats, and outcome before returning to the AI agent
 
 **Checkpoint**: User Story 3 complete — task completion produces a structured, readable summary.
 
@@ -127,12 +127,12 @@
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Write unit tests for resume in `tests/unit/cursor-agent/session-manager.test.ts` — add tests for: resume with captured sessionId spawns PTY with `--resume=<chatId>`, resume with no sessions returns error
+- [X] T034 [P] [US4] Write unit tests for resume in `tests/unit/cursor-agent/session-manager.test.ts` — add tests for: resume with captured sessionId spawns PTY with `--resume=<chatId>`, resume with no sessions returns error
 
 ### Implementation for User Story 4
 
-- [ ] T035 [US4] Update resume logic in `packages/cursor-agent/src/session-manager.ts` — use `runInteractive` for resume (spawn PTY with `--resume=<chatId>` flag), pass onProgress and onPermission callbacks so resumed sessions are also interactive
-- [ ] T036 [US4] Update resume tool in `packages/ai-agent/src/tools/cursor-resume-tool.ts` — ensure resume uses interactive runner by default
+- [X] T035 [US4] Update resume logic in `packages/cursor-agent/src/session-manager.ts` — use `runInteractive` for resume (spawn PTY with `--resume=<chatId>` flag), pass onProgress and onPermission callbacks so resumed sessions are also interactive
+- [X] T036 [US4] Update resume tool in `packages/ai-agent/src/tools/cursor-resume-tool.ts` — ensure resume uses interactive runner by default
 
 **Checkpoint**: User Story 4 complete — sessions can be resumed interactively.
 
@@ -142,15 +142,15 @@
 
 **Purpose**: Cleanup, documentation, coverage, and final validation
 
-- [ ] T037 [P] Remove old `packages/cursor-agent/src/permission-detector.ts` (replaced by `pty-permission-detector.ts`) and its test `tests/unit/cursor-agent/permission-detector.test.ts`
-- [ ] T038 [P] Remove `packages/cursor-agent/src/progress-throttle.ts` (throttling now in interactive-runner) and its test `tests/unit/cursor-agent/progress-throttle.test.ts`
-- [ ] T039 [P] Update `tests/integration/cursor-delegation-flow.test.ts` — update mocks and assertions for interactive mode as default, remove safe mode test cases
-- [ ] T040 [P] Update `tests/unit/cli/gateway-start.test.ts` — update cursor setup mocks (no tmux, no safe runner)
-- [ ] T041 Update `packages/cursor-agent/src/index.ts` — remove deprecated exports (`progress-throttle`, `permission-detector`), verify all new exports are present
-- [ ] T042 [P] Update `docs/cursor-agent.md` — document interactive PTY mode as default, trust mode as override, permission prompts, progress streaming, prerequisites (node-pty)
-- [ ] T043 Run `pnpm test` — verify 90%+ coverage across all packages
-- [ ] T044 Run `pnpm lint && pnpm format:check` — verify zero violations
-- [ ] T045 Run quickstart.md validation — manually verify gateway starts with `[cursor] Interactive PTY mode available`
+- [X] T037 [P] Remove old `packages/cursor-agent/src/permission-detector.ts` (replaced by `pty-permission-detector.ts`) and its test `tests/unit/cursor-agent/permission-detector.test.ts`
+- [X] T038 [P] Remove `packages/cursor-agent/src/progress-throttle.ts` (throttling now in interactive-runner) and its test `tests/unit/cursor-agent/progress-throttle.test.ts`
+- [X] T039 [P] Update `tests/integration/cursor-delegation-flow.test.ts` — update mocks and assertions for interactive mode as default, remove safe mode test cases
+- [X] T040 [P] Update `tests/unit/cli/gateway-start.test.ts` — update cursor setup mocks (no tmux, no safe runner)
+- [X] T041 Update `packages/cursor-agent/src/index.ts` — remove deprecated exports (`progress-throttle`, `permission-detector`), verify all new exports are present
+- [X] T042 [P] Update `docs/cursor-agent.md` — document interactive PTY mode as default, trust mode as override, permission prompts, progress streaming, prerequisites (node-pty)
+- [X] T043 Run `pnpm test` — verify 90%+ coverage across all packages
+- [X] T044 Run `pnpm lint && pnpm format:check` — verify zero violations
+- [X] T045 Run quickstart.md validation — manually verify gateway starts with `[cursor] Interactive PTY mode available`
 
 ---
 
