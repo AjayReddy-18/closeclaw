@@ -38,17 +38,35 @@ export interface InteractiveResult extends TaskResult {
   permissionsDenied: number;
 }
 
+function failedResult(summary: string): InteractiveResult {
+  return {
+    sessionId: "",
+    status: "failed",
+    summary,
+    outputLog: [],
+    permissionsRequested: 0,
+    permissionsAccepted: 0,
+    permissionsDenied: 0,
+  };
+}
+
 export async function runInteractiveMode(
   params: InteractiveRunParams,
   deps: InteractiveRunnerDeps,
   onProgress: (text: string) => void,
   onPermission: (prompt: string) => Promise<"accept" | "deny">,
 ): Promise<InteractiveResult> {
-  const handle = deps.spawnPty({
-    binary: params.binary ?? CURSOR_AGENT_BINARY,
-    args: [params.prompt],
-    cwd: params.projectDir,
-  });
+  let handle: ReturnType<typeof deps.spawnPty>;
+  try {
+    handle = deps.spawnPty({
+      binary: params.binary ?? CURSOR_AGENT_BINARY,
+      args: [params.prompt],
+      cwd: params.projectDir,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return failedResult(`PTY spawn failed: ${msg}`);
+  }
   const lineBuffer = createLineBuffer();
   const outputLog: string[] = [];
   const recentLines: string[] = [];
@@ -80,8 +98,13 @@ export async function runInteractiveMode(
 
   const exitCode = await waitForExit(handle);
   clearTimeout(timeout);
-  flushRemainingBuffer(lineBuffer, deps, outputLog);
-  const status = resolveStatus(timedOut, exitCode);
+  const remaining = lineBuffer.flush();
+  if (remaining.trim().length > 0) outputLog.push(deps.stripAnsi(remaining));
+  const status = timedOut
+    ? "timed_out"
+    : exitCode === 0
+      ? "completed"
+      : "failed";
   const summary = buildStructuredSummary(outputLog, status, stats);
 
   return {
@@ -180,23 +203,4 @@ function waitForExit(handle: PtyHandle): Promise<number> {
   return new Promise((resolve) => {
     handle.onExit((info) => resolve(info.exitCode));
   });
-}
-
-function flushRemainingBuffer(
-  lineBuffer: LineBuffer,
-  deps: InteractiveRunnerDeps,
-  outputLog: string[],
-): void {
-  const remaining = lineBuffer.flush();
-  if (remaining.trim().length > 0) {
-    outputLog.push(deps.stripAnsi(remaining));
-  }
-}
-
-function resolveStatus(
-  timedOut: boolean,
-  exitCode: number,
-): "completed" | "failed" | "timed_out" {
-  if (timedOut) return "timed_out";
-  return exitCode === 0 ? "completed" : "failed";
 }
