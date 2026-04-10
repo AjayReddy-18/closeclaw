@@ -95,9 +95,10 @@ function tryLoadNodePty(): boolean {
 
 function buildPtySpawner(absolutePath: string) {
   const pty = require("node-pty") as typeof import("node-pty");
-  return createPtySpawner((_binary, args, opts) =>
-    pty.spawn(absolutePath, args, opts),
-  );
+  return createPtySpawner((_binary, args, opts) => {
+    const shellArgs = [absolutePath, ...args];
+    return pty.spawn("/bin/bash", shellArgs, opts);
+  });
 }
 
 export interface CursorSetupResult {
