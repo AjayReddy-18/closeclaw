@@ -93,10 +93,10 @@ function tryLoadNodePty(): boolean {
   }
 }
 
-function buildPtySpawner(_absolutePath: string) {
+function buildPtySpawner(absolutePath: string) {
   const pty = require("node-pty") as typeof import("node-pty");
-  return createPtySpawner((binary, args, opts) =>
-    pty.spawn(binary, args, opts),
+  return createPtySpawner((_binary, args, opts) =>
+    pty.spawn(absolutePath, args, opts),
   );
 }
 

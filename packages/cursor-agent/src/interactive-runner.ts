@@ -23,6 +23,7 @@ interface InteractiveRunParams {
   prompt: string;
   projectDir: string;
   timeoutMs: number;
+  binary?: string;
 }
 
 interface PermissionStats {
@@ -44,7 +45,7 @@ export async function runInteractiveMode(
   onPermission: (prompt: string) => Promise<"accept" | "deny">,
 ): Promise<InteractiveResult> {
   const handle = deps.spawnPty({
-    binary: CURSOR_AGENT_BINARY,
+    binary: params.binary ?? CURSOR_AGENT_BINARY,
     args: [params.prompt],
     cwd: params.projectDir,
   });
