@@ -1,5 +1,8 @@
 import { execFile, spawn } from "node:child_process";
+import { createRequire } from "node:module";
 import { promisify } from "node:util";
+
+const require = createRequire(import.meta.url);
 import {
   checkCursorAvailability,
   createSessionStore,

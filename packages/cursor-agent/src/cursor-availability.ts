@@ -1,4 +1,7 @@
+import { createRequire } from "node:module";
 import { CURSOR_AGENT_BINARY } from "./types.js";
+
+const require = createRequire(import.meta.url);
 
 export type ExecWhich = (binary: string) => Promise<boolean>;
 
