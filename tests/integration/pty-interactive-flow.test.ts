@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   runInteractiveMode,
-  stripAnsi,
-  detectPtyPermission,
   type PtyHandle,
   type InteractiveRunnerDeps,
 } from "@closeclaw/cursor-agent";
@@ -31,84 +29,115 @@ function createMockHandle(): PtyHandle & {
   };
 }
 
+function jsonLine(obj: Record<string, unknown>): string {
+  return JSON.stringify(obj) + "\n";
+}
+
 describe("PTY interactive flow end-to-end", () => {
-  it("streams progress and completes successfully", async () => {
+  it("streams progress from JSON events and completes", async () => {
     const handle = createMockHandle();
     const deps: InteractiveRunnerDeps = {
       spawnPty: vi.fn().mockReturnValue(handle),
-      stripAnsi,
-      detectPermission: detectPtyPermission,
     };
     const progress: string[] = [];
-    const resultPromise = runInteractiveMode(
+    const p = runInteractiveMode(
       { prompt: "build app", projectDir: "/tmp", timeoutMs: 60_000 },
       deps,
       (text) => progress.push(text),
-      vi.fn(),
     );
 
-    handle.emitData("Reading project structure...\n");
-    handle.emitData("Creating src/index.ts...\n");
-    handle.emitData("Done!\n");
+    handle.emitData(
+      jsonLine({
+        type: "system",
+        subtype: "init",
+        session_id: "sess-1",
+        apiKeySource: "login",
+        cwd: "/tmp",
+        model: "Opus 4.6",
+      }),
+    );
+    handle.emitData(
+      jsonLine({
+        type: "assistant",
+        message: {
+          role: "assistant",
+          content: [{ type: "text", text: "Creating project..." }],
+        },
+      }),
+    );
+    handle.emitData(
+      jsonLine({
+        type: "tool_call",
+        subtype: "started",
+        tool_call: { editToolCall: { args: { path: "/tmp/index.ts" } } },
+      }),
+    );
+    handle.emitData(
+      jsonLine({
+        type: "tool_call",
+        subtype: "completed",
+        tool_call: { editToolCall: { args: { path: "/tmp/index.ts" } } },
+      }),
+    );
+    handle.emitData(
+      jsonLine({
+        type: "result",
+        subtype: "success",
+        result: "Project created successfully",
+        session_id: "sess-1",
+      }),
+    );
     handle.emitExit(0);
 
-    const result = await resultPromise;
+    const result = await p;
     expect(result.status).toBe("completed");
-    expect(result.outputLog.length).toBeGreaterThanOrEqual(3);
+    expect(result.sessionId).toBe("sess-1");
+    expect(result.toolCallCount).toBe(1);
+    expect(result.summary).toBe("Project created successfully");
     expect(progress.length).toBeGreaterThan(0);
   });
 
-  it("detects permission prompt and relays decision", async () => {
+  it("handles multi-chunk JSON lines correctly", async () => {
     const handle = createMockHandle();
     const deps: InteractiveRunnerDeps = {
       spawnPty: vi.fn().mockReturnValue(handle),
-      stripAnsi,
-      detectPermission: detectPtyPermission,
     };
-    const onPermission = vi.fn().mockResolvedValue("accept");
-    const resultPromise = runInteractiveMode(
-      { prompt: "delete files", projectDir: "/tmp", timeoutMs: 60_000 },
+    const p = runInteractiveMode(
+      { prompt: "fix", projectDir: "/tmp", timeoutMs: 60_000 },
       deps,
       vi.fn(),
-      onPermission,
     );
 
-    handle.emitData("About to delete 5 files\n");
-    handle.emitData("  Accept  Deny\n");
-    await new Promise((r) => setTimeout(r, 50));
-    handle.emitData("Files deleted successfully\n");
+    const fullLine = JSON.stringify({
+      type: "result",
+      result: "All good",
+    });
+    handle.emitData(fullLine.slice(0, 10));
+    handle.emitData(fullLine.slice(10) + "\n");
     handle.emitExit(0);
 
-    const result = await resultPromise;
-    expect(result.status).toBe("completed");
-    expect(onPermission).toHaveBeenCalled();
-    expect(handle.write).toHaveBeenCalledWith("Y\r");
-    expect(result.permissionsRequested).toBe(1);
-    expect(result.permissionsAccepted).toBe(1);
+    const result = await p;
+    expect(result.summary).toBe("All good");
   });
 
-  it("handles denied permission", async () => {
+  it("handles non-JSON lines gracefully", async () => {
     const handle = createMockHandle();
     const deps: InteractiveRunnerDeps = {
       spawnPty: vi.fn().mockReturnValue(handle),
-      stripAnsi,
-      detectPermission: detectPtyPermission,
     };
-    const onPermission = vi.fn().mockResolvedValue("deny");
-    const resultPromise = runInteractiveMode(
-      { prompt: "risky op", projectDir: "/tmp", timeoutMs: 60_000 },
+    const p = runInteractiveMode(
+      { prompt: "fix", projectDir: "/tmp", timeoutMs: 60_000 },
       deps,
       vi.fn(),
-      onPermission,
     );
 
-    handle.emitData("Run dangerous command?\n");
-    handle.emitData("  Accept  Deny\n");
-    await new Promise((r) => setTimeout(r, 50));
+    handle.emitData("[?25l\n");
+    handle.emitData(jsonLine({ type: "result", result: "Done" }));
+    handle.emitData("[?25h\n");
     handle.emitExit(0);
 
-    const result = await resultPromise;
-    expect(handle.write).toHaveBeenCalledWith("n\r");
-    expect(result.permissionsDenied).toBe(1);
+    const result = await p;
+    expect(result.status).toBe("completed");
+    expect(result.summary).toBe("Done");
   });
 });

@@ -27,7 +27,6 @@ function createMockDeps(
       ]),
     },
     onProgress: vi.fn(),
-    onPermission: vi.fn().mockResolvedValue("accept"),
     ...overrides,
   };
 }
@@ -45,7 +44,6 @@ describe("createCursorResumeTool", () => {
     expect(deps.sessionManager.resume).toHaveBeenCalledWith(
       undefined,
       expect.any(Function),
-      expect.any(Function),
     );
     expect(result).toContain("Resumed and finished");
   });
@@ -56,7 +54,6 @@ describe("createCursorResumeTool", () => {
     await t.execute({ chatId: "chat-abc" });
     expect(deps.sessionManager.resume).toHaveBeenCalledWith(
       "chat-abc",
-      expect.any(Function),
       expect.any(Function),
     );
   });

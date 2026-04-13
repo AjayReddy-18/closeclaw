@@ -21,7 +21,6 @@ function createMockDeps(
       resume: vi.fn(),
     },
     onProgress: vi.fn(),
-    onPermission: vi.fn().mockResolvedValue("accept"),
     platform: "telegram",
     senderId: "user1",
     ...overrides,

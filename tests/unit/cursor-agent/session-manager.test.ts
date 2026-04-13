@@ -50,7 +50,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(deps.runTrust).toHaveBeenCalledOnce();
       expect(deps.runInteractive).not.toHaveBeenCalled();
@@ -66,7 +65,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(deps.runInteractive).toHaveBeenCalledOnce();
       expect(deps.runTrust).not.toHaveBeenCalled();
@@ -88,7 +86,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(result.status).toBe("failed");
       expect(result.summary).toContain("not available");
@@ -110,7 +107,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       await new Promise((r) => setTimeout(r, 10));
       const second = await manager.start({
@@ -120,7 +116,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(second.status).toBe("failed");
       expect(second.summary).toContain("already running");
@@ -143,7 +138,6 @@ describe("createCursorSessionManager", () => {
         platform: "telegram",
         senderId: "user1",
         onProgress: vi.fn(),
-        onPermission: vi.fn().mockResolvedValue("accept"),
       });
       expect(deps.sessionStore.save).toHaveBeenCalled();
     });
@@ -194,11 +188,7 @@ describe("createCursorSessionManager", () => {
         },
       });
       const manager = createCursorSessionManager(deps);
-      await manager.resume(
-        "chat-abc",
-        vi.fn(),
-        vi.fn().mockResolvedValue("accept"),
-      );
+      await manager.resume("chat-abc", vi.fn());
       expect(deps.runInteractive).toHaveBeenCalledOnce();
       const call = (deps.runInteractive as ReturnType<typeof vi.fn>).mock
         .calls[0];
@@ -208,11 +198,7 @@ describe("createCursorSessionManager", () => {
     it("returns error when no sessions to resume", async () => {
       const deps = createMockDeps();
       const manager = createCursorSessionManager(deps);
-      const result = await manager.resume(
-        undefined,
-        vi.fn(),
-        vi.fn().mockResolvedValue("accept"),
-      );
+      const result = await manager.resume(undefined, vi.fn());
       expect(result.status).toBe("failed");
       expect(result.summary).toContain("No sessions");
     });

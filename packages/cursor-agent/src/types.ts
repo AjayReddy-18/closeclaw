@@ -41,20 +41,32 @@ export interface SessionRecord {
   createdAt: string;
 }
 
+export interface RejectedTool {
+  command: string;
+  description: string;
+}
+
 export interface StreamJsonEvent {
   type: string;
   subtype?: string;
   content?: string;
   result?: string;
+  timestamp_ms?: number;
   message?: {
     role?: string;
     content?: Array<{ type: string; text?: string }>;
   };
   tool_call?: {
-    shellToolCall?: { description?: string };
-    fileEditToolCall?: { description?: string; path?: string };
+    editToolCall?: {
+      args?: { path?: string };
+      result?: Record<string, unknown>;
+    };
+    shellToolCall?: {
+      description?: string;
+      args?: { command?: string };
+      result?: { rejected?: { command?: string; reason?: string } };
+    };
     readFileToolCall?: { path?: string };
-    writeFileToolCall?: { path?: string };
     description?: string;
     [key: string]: unknown;
   };
@@ -66,6 +78,7 @@ export interface TaskResult {
   status: SessionStatus;
   summary: string;
   outputLog: string[];
+  rejectedTools?: RejectedTool[];
 }
 
 export interface PtySpawnOptions {
@@ -102,14 +115,12 @@ export interface InteractiveTaskResult {
   status: SessionStatus;
   summary: string;
   outputLog: string[];
-  permissionsRequested: number;
-  permissionsAccepted: number;
-  permissionsDenied: number;
+  toolCallCount: number;
 }
 
 export const CURSOR_AGENT_BINARY = "cursor-agent";
 export const DEFAULT_TIMEOUT_MS = 600_000;
-export const PROGRESS_THROTTLE_MS = 10_000;
+export const PROGRESS_THROTTLE_MS = 3_000;
 export const APPROVAL_TIMEOUT_MS = 120_000;
 export const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const PTY_DEFAULT_COLS = 120;

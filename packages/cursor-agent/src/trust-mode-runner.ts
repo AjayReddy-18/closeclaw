@@ -43,13 +43,20 @@ function extractText(event: StreamJsonEvent): string | null {
 
 function formatToolEvent(event: StreamJsonEvent): string | null {
   const tc = event.tool_call;
-  if (!tc) return null;
-  const desc = tc.shellToolCall?.description ?? tc.description;
-  if (event.subtype === "started") {
-    const label = desc ?? "Running tool";
-    return `⚙ ${label}`;
+  if (!tc || event.subtype !== "started") return null;
+  if (tc.editToolCall?.args?.path) {
+    const file = tc.editToolCall.args.path.split("/").pop() ?? "file";
+    return `Writing ${file}`;
   }
-  return null;
+  if (tc.shellToolCall?.args?.command)
+    return `Running: ${tc.shellToolCall.args.command}`;
+  if (tc.shellToolCall?.description) return tc.shellToolCall.description;
+  if (tc.shellToolCall) return "Running shell command";
+  if (tc.readFileToolCall?.path) {
+    const file = tc.readFileToolCall.path.split("/").pop() ?? "file";
+    return `Reading ${file}`;
+  }
+  return tc.description ?? "Running tool";
 }
 
 function buildSummary(events: StreamJsonEvent[]): string {
@@ -58,11 +65,11 @@ function buildSummary(events: StreamJsonEvent[]): string {
     const text = extractText(resultEvent);
     if (text) return text;
   }
-  const lastAssistant = [...events]
+  const lastFinal = [...events]
     .reverse()
-    .find((e) => e.type === "assistant");
-  if (lastAssistant) {
-    const text = extractText(lastAssistant);
+    .find((e) => e.type === "assistant" && e.timestamp_ms === undefined);
+  if (lastFinal) {
+    const text = extractText(lastFinal);
     if (text) return text;
   }
   return "Task completed with no output.";
@@ -73,6 +80,7 @@ export async function runTrustMode(
   deps: TrustModeRunnerDeps,
   onProgress: (text: string) => void,
 ): Promise<TaskResult> {
+  console.log(`[cursor] Trust spawn: cwd=${params.projectDir}`);
   const handle = deps.spawnAgent(
     params.prompt,
     params.projectDir,
@@ -88,9 +96,10 @@ export async function runTrustMode(
     events.push(event);
     outputLog.push(line);
     if (event.session_id && !sessionId) sessionId = event.session_id;
-    if (event.type === "assistant") {
+    if (event.type === "assistant" && event.timestamp_ms === undefined) {
       const text = extractText(event);
-      if (text) onProgress(text);
+      if (text && text.length > 5)
+        onProgress(text.length > 300 ? text.slice(0, 300) + "..." : text);
     }
     if (event.type === "tool_call") {
       const msg = formatToolEvent(event);
@@ -100,10 +109,5 @@ export async function runTrustMode(
 
   const exitCode = await handle.wait();
   const status = exitCode === 0 ? "completed" : "failed";
-  return {
-    sessionId,
-    status,
-    summary: buildSummary(events),
-    outputLog,
-  };
+  return { sessionId, status, summary: buildSummary(events), outputLog };
 }

@@ -24,7 +24,7 @@ import {
 import {
   initAgent,
   type CursorProgressRef,
-  type CursorPermissionRef,
+  type CursorApprovalRef,
 } from "./agent-init.js";
 
 const require = createRequire(import.meta.url);
@@ -110,9 +110,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const schedulerRef: { current?: SchedulerAssembly } = {};
   const senderRef = { platform: "telegram", senderId: "" };
   const progressRef: CursorProgressRef = { send: () => {} };
-  const permissionRef: CursorPermissionRef = {
-    ask: async () => "deny" as const,
-  };
+  const approvalRef: CursorApprovalRef = { ask: async () => "deny" };
   let schedulerAssembly: SchedulerAssembly | undefined;
   const agentInit = await initAgent(
     config,
@@ -122,7 +120,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     senderRef,
     adapters,
     progressRef,
-    permissionRef,
+    approvalRef,
   );
   const { store, processor, mcpManager, pruneInterval } = agentInit ?? {};
   let heartbeat: HeartbeatRunner | undefined;
@@ -140,7 +138,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     messageProcessor: processor,
     conversationStore: store,
     toolProgressRef: progressRef,
-    permissionRef,
+    approvalRef,
   });
   await connectAllAdapters(adapters);
   try {

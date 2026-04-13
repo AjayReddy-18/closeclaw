@@ -6,6 +6,7 @@ export type {
   SessionRecord,
   StreamJsonEvent,
   TaskResult,
+  RejectedTool,
   PtySpawnOptions,
   PtyHandle,
   PtySpawnFn,
@@ -63,4 +64,6 @@ export {
   type CursorSessionManagerDeps,
   type CursorSessionManager,
   type SessionStartParams,
+  type OnApprovalNeeded,
+  type ApprovalDecision,
 } from "./session-manager.js";

@@ -12,6 +12,7 @@ import {
   resolvePermission,
   type ToolProgressRef,
   type PermissionRef,
+  type ApprovalRef,
 } from "./gateway-agent-handler.js";
 import { routeRequest } from "./gateway-routes.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
@@ -48,6 +49,7 @@ export type GatewayServerConfig = {
   };
   toolProgressRef?: ToolProgressRef;
   permissionRef?: PermissionRef;
+  approvalRef?: ApprovalRef;
 };
 
 export type GatewayServer = {
@@ -110,10 +112,10 @@ function makeEnforcer(
   pm: PairingManager,
   platform: BotPlatform,
 ) {
-  const s = resolver(platform);
+  const { dmPolicy, allowedSenders } = resolver(platform);
   return createDmPolicyEnforcer({
-    dmPolicy: s.dmPolicy,
-    allowedSenders: s.allowedSenders,
+    dmPolicy,
+    allowedSenders,
     pairingManager: pm,
   });
 }
@@ -134,6 +136,7 @@ function wireMessageHandlers(
         cfg.messageProcessor,
         cfg.toolProgressRef,
         cfg.permissionRef,
+        cfg.approvalRef,
       );
     });
   }
@@ -147,6 +150,7 @@ async function handleAdapterMessage(
   messageProcessor: GatewayServerConfig["messageProcessor"],
   progressRef?: ToolProgressRef,
   permissionRef?: PermissionRef,
+  approvalRef?: ApprovalRef,
 ): Promise<void> {
   const enforcer = makeEnforcer(resolver, pairingManager, msg.platform);
   const { allowed, pairingCode } = await enforcer.shouldAllow(
@@ -166,6 +170,7 @@ async function handleAdapterMessage(
       msg,
       progressRef,
       permissionRef,
+      approvalRef,
     ),
   );
 }
@@ -176,9 +181,7 @@ export function createGatewayServer(
   const pairingManager = config.pairingStorePath
     ? createPairingManager(config.pairingStorePath)
     : undefined;
-  if (pairingManager) {
-    wireMessageHandlers(config, pairingManager);
-  }
+  if (pairingManager) wireMessageHandlers(config, pairingManager);
   const server = createServer((req, res) => {
     void routeRequest(
       req.method,
@@ -196,12 +199,13 @@ export function createGatewayServer(
       }
     });
   });
+  const stop = () =>
+    new Promise<void>((resolve, reject) => {
+      server.close((err) => (err ? reject(err) : resolve()));
+    });
   return {
     start: () => listenWithPortFallback(server, config.port),
-    stop: () =>
-      new Promise<void>((resolve, reject) => {
-        server.close((err) => (err ? reject(err) : resolve()));
-      }),
+    stop,
     address: () => server.address(),
   };
 }

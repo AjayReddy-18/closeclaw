@@ -1,7 +1,14 @@
 import { z } from "zod";
 import { tool } from "ai";
 
-const THROTTLE_MS = 10_000;
+export interface RejectedToolInfo {
+  command: string;
+  description: string;
+}
+
+export type ApprovalCallback = (
+  rejected: RejectedToolInfo[],
+) => Promise<"approve" | "deny">;
 
 export interface CursorAgentToolDeps {
   sessionManager: {
@@ -12,7 +19,7 @@ export interface CursorAgentToolDeps {
       platform: string;
       senderId: string;
       onProgress: (text: string) => void;
-      onPermission: (prompt: string) => Promise<"accept" | "deny">;
+      onApprovalNeeded?: ApprovalCallback;
       timeoutMs?: number;
     }) => Promise<{ status: string; summary: string }>;
     cancel: (platform: string, senderId: string) => Promise<void>;
@@ -21,11 +28,10 @@ export interface CursorAgentToolDeps {
     resume: (
       chatId: string | undefined,
       onProgress: (text: string) => void,
-      onPermission: (prompt: string) => Promise<"accept" | "deny">,
     ) => Promise<{ status: string; summary: string }>;
   };
   onProgress: (text: string) => void;
-  onPermission: (prompt: string) => Promise<"accept" | "deny">;
+  onApprovalNeeded?: ApprovalCallback;
   platform: string;
   senderId: string;
 }
@@ -38,21 +44,9 @@ const inputSchema = z.object({
     .optional()
     .default("interactive")
     .describe(
-      "Execution mode: interactive (PTY with prompts) or trust (--force)",
+      "interactive: asks user approval for risky ops. trust: auto-accept all.",
     ),
 });
-
-function throttledProgress(
-  send: (text: string) => void,
-): (text: string) => void {
-  let lastSentAt = 0;
-  return (text: string) => {
-    const now = Date.now();
-    if (now - lastSentAt < THROTTLE_MS) return;
-    lastSentAt = now;
-    send(text);
-  };
-}
 
 export function createCursorAgentTool(deps: CursorAgentToolDeps) {
   return tool({
@@ -62,15 +56,14 @@ export function createCursorAgentTool(deps: CursorAgentToolDeps) {
     inputSchema,
     execute: async (params) => {
       deps.onProgress("Delegating to Cursor agent...");
-      const onProgress = throttledProgress(deps.onProgress);
       const result = await deps.sessionManager.start({
         prompt: params.prompt,
         projectDir: params.projectDir,
         mode: params.mode ?? "interactive",
         platform: deps.platform,
         senderId: deps.senderId,
-        onProgress,
-        onPermission: deps.onPermission,
+        onProgress: deps.onProgress,
+        onApprovalNeeded: deps.onApprovalNeeded,
       });
       const label = result.status === "completed" ? "completed" : "failed";
       return `Cursor task ${label}: ${result.summary}`;

@@ -8,8 +8,10 @@ export {
 export {
   type ToolProgressRef,
   type PermissionRef,
+  type ApprovalRef,
   resolvePermission,
   createPermissionAsker,
+  createApprovalAsker,
 } from "./gateway-agent-handler.js";
 export {
   createPairingManager,

@@ -10,8 +10,6 @@ import {
   createPtySpawner,
   runTrustMode,
   runInteractiveMode,
-  stripAnsi,
-  detectPtyPermission,
   CURSOR_AGENT_BINARY,
   type SessionStore,
   type CursorSessionManager,
@@ -131,11 +129,7 @@ export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
   const sessionStore = createSessionStore();
   const trustDeps = { spawnAgent: buildSpawnAgent(agentPath) };
   const interactiveDeps = ptyAvail
-    ? {
-        spawnPty: buildPtySpawner(agentPath),
-        stripAnsi,
-        detectPermission: detectPtyPermission,
-      }
+    ? { spawnPty: buildPtySpawner(agentPath) }
     : null;
   const manager = createCursorSessionManager({
     checkAvailability: () =>
@@ -143,8 +137,8 @@ export async function setupCursorAgent(): Promise<CursorSetupResult | null> {
     runTrust: (params, onProgress) =>
       runTrustMode(params, trustDeps, onProgress),
     runInteractive: interactiveDeps
-      ? (params, onProgress, onPermission) =>
-          runInteractiveMode(params, interactiveDeps, onProgress, onPermission)
+      ? (params, onProgress) =>
+          runInteractiveMode(params, interactiveDeps, onProgress)
       : (params, onProgress) => runTrustMode(params, trustDeps, onProgress),
     sessionStore,
   });
@@ -156,20 +150,21 @@ export function buildCursorTools(
   platform: string,
   senderId: string,
   onProgress: (text: string) => void,
-  onPermission: (prompt: string) => Promise<"accept" | "deny">,
+  onApprovalNeeded?: (
+    rejected: Array<{ command: string; description: string }>,
+  ) => Promise<"approve" | "deny">,
 ): Record<string, unknown> {
   return {
     cursor_agent: createCursorAgentTool({
       sessionManager: manager,
       onProgress,
-      onPermission,
+      onApprovalNeeded,
       platform,
       senderId,
     }),
     cursor_resume: createCursorResumeTool({
       sessionManager: manager,
       onProgress,
-      onPermission,
     }),
   };
 }

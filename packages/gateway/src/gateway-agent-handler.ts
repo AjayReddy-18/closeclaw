@@ -19,6 +19,12 @@ export interface PermissionRef {
   ask: (prompt: string) => Promise<"accept" | "deny">;
 }
 
+export interface ApprovalRef {
+  ask: (
+    rejected: Array<{ command: string; description: string }>,
+  ) => Promise<"approve" | "deny">;
+}
+
 const PERMISSION_TIMEOUT_MS = 120_000;
 
 const pendingPermissions = new Map<
@@ -66,6 +72,32 @@ export function createPermissionAsker(
   };
 }
 
+export function createApprovalAsker(
+  adapter: BotAdapter,
+  senderId: string,
+): (
+  rejected: Array<{ command: string; description: string }>,
+) => Promise<"approve" | "deny"> {
+  return async (rejected) => {
+    const cmds = rejected.map((r) => `  • ${r.command}`).join("\n");
+    const message = `Cursor needs approval to run:\n${cmds}\n\nReply Accept or Deny`;
+    await adapter.sendMessage(senderId, message);
+    return new Promise<"approve" | "deny">((resolve) => {
+      const timer = setTimeout(() => {
+        pendingPermissions.delete(senderId);
+        adapter
+          .sendMessage(senderId, "Permission timed out — auto-denied.")
+          .catch(() => {});
+        resolve("deny");
+      }, PERMISSION_TIMEOUT_MS);
+      pendingPermissions.set(senderId, (decision) => {
+        clearTimeout(timer);
+        resolve(decision === "accept" ? "approve" : "deny");
+      });
+    });
+  };
+}
+
 function safeTask(task: () => Promise<void>): () => Promise<void> {
   return () =>
     task().catch((err) => console.error("[gateway] Queued task failed:", err));
@@ -92,6 +124,7 @@ export async function runAgentResponse(
   msg: BotIncomingMessage,
   progressRef?: ToolProgressRef,
   permissionRef?: PermissionRef,
+  approvalRef?: ApprovalRef,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
 
@@ -109,6 +142,9 @@ export async function runAgentResponse(
   }
   if (permissionRef) {
     permissionRef.ask = createPermissionAsker(adapter, msg.senderId);
+  }
+  if (approvalRef) {
+    approvalRef.ask = createApprovalAsker(adapter, msg.senderId);
   }
 
   try {
@@ -132,6 +168,7 @@ export async function runAgentResponse(
   } finally {
     if (progressRef) progressRef.send = () => {};
     if (permissionRef) permissionRef.ask = async () => "deny";
+    if (approvalRef) approvalRef.ask = async () => "deny";
   }
 }
 

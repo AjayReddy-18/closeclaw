@@ -15,6 +15,7 @@ import {
   type SchedulerAssembly,
 } from "./scheduler-setup.js";
 import { setupCursorAgent, buildCursorTools } from "./cursor-setup.js";
+import type { ApprovalCallback } from "@closeclaw/ai-agent";
 
 export interface AgentInit {
   store: ReturnType<typeof createPersistentConversationStore>;
@@ -31,8 +32,8 @@ export interface CursorProgressRef {
   send: (text: string) => void;
 }
 
-export interface CursorPermissionRef {
-  ask: (prompt: string) => Promise<"accept" | "deny">;
+export interface CursorApprovalRef {
+  ask: ApprovalCallback;
 }
 
 export async function initAgent(
@@ -43,7 +44,7 @@ export async function initAgent(
   senderRef: { platform: string; senderId: string },
   adapters: BotAdapter[],
   progressRef: CursorProgressRef,
-  permissionRef: CursorPermissionRef = { ask: async () => "deny" },
+  approvalRef: CursorApprovalRef,
 ): Promise<AgentInit | null> {
   if (!config.agent || !isValidAgentConfig(config.agent)) return null;
   const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
@@ -55,7 +56,7 @@ export async function initAgent(
         senderRef.platform,
         senderRef.senderId,
         (text) => progressRef.send(text),
-        (prompt) => permissionRef.ask(prompt),
+        (rejected) => approvalRef.ask(rejected),
       )
     : {};
   if (cursorSetup) console.log("[cursor] Cursor CLI agent available");
