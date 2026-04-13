@@ -162,4 +162,14 @@ describe("runOrchestration", () => {
       expect(l.dispose).toHaveBeenCalled();
     }
   });
+
+  it("disposes approval queue when deps.approvalAsk is provided", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = {
+      ...makeDeps(),
+      approvalAsk: vi.fn().mockResolvedValue("approve"),
+    };
+    await runOrchestration(makeSession(), deps);
+    expect(deps.sendSummary).toHaveBeenCalledTimes(1);
+  });
 });

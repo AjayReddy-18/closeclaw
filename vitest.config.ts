@@ -33,6 +33,10 @@ export default defineConfig({
         __dirname,
         "packages/cursor-agent/src/index.ts",
       ),
+      "@closeclaw/orchestrator": resolve(
+        __dirname,
+        "packages/orchestrator/src/index.ts",
+      ),
       ai: resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/openai": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
       "@ai-sdk/anthropic": resolve(__dirname, "tests/__mocks__/ai-sdk.ts"),
@@ -56,6 +60,7 @@ export default defineConfig({
         "packages/cli/src/cli.ts",
         "packages/bot-adapters/src/adapter.ts",
         "packages/ai-agent/src/conversation-types.ts",
+        "packages/orchestrator/src/types.ts",
       ],
       thresholds: {
         statements: 90,

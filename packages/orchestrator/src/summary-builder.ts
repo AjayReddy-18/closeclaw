@@ -10,7 +10,10 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatSuccessEntry(result: SubtaskResult): string {
-  const text = truncateText(result.response ?? "No response", MAX_RESULT_LENGTH);
+  const text = truncateText(
+    result.response ?? "No response",
+    MAX_RESULT_LENGTH,
+  );
   return `${SUCCESS_INDICATOR} ${result.label}\n${text}`;
 }
 

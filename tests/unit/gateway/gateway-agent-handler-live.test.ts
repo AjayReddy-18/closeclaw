@@ -121,4 +121,57 @@ describe("runAgentResponse with LiveMessage", () => {
     const lastEditText = editCalls[editCalls.length - 1][2];
     expect(lastEditText).toBe("Answer");
   });
+
+  it("delegates to orchestration runner when plan ref is set during processing", async () => {
+    const tasks = [
+      { label: "A", prompt: "Do A" },
+      { label: "B", prompt: "Do B" },
+    ];
+    const planRef = { plan: null as { tasks: typeof tasks } | null };
+    const processor = {
+      processMessage: vi.fn().mockImplementation(async () => {
+        planRef.plan = { tasks };
+        return "AI response";
+      }),
+    };
+    const orchestrationRunner = vi.fn().mockResolvedValue("Summary");
+    await runAgentResponse(
+      adapter,
+      processor,
+      createMockMsg(),
+      progressRef,
+      undefined,
+      undefined,
+      planRef,
+      orchestrationRunner,
+    );
+    expect(orchestrationRunner).toHaveBeenCalledWith(
+      adapter,
+      expect.objectContaining({ senderId: "42" }),
+      tasks,
+      processor,
+    );
+  });
+
+  it("clears plan ref before processing", async () => {
+    const processor = {
+      processMessage: vi.fn().mockResolvedValue("Normal response"),
+    };
+    const planRef = { plan: null };
+    await runAgentResponse(
+      adapter,
+      processor,
+      createMockMsg(),
+      progressRef,
+      undefined,
+      undefined,
+      planRef,
+      vi.fn(),
+    );
+    expect(adapter.editMessage).toHaveBeenCalledWith(
+      "42",
+      100,
+      "Normal response",
+    );
+  });
 });

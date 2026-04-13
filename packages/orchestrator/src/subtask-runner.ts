@@ -13,10 +13,7 @@ function buildFulfilledResult(
   };
 }
 
-function buildRejectedResult(
-  plan: SubtaskPlan,
-  error: unknown,
-): SubtaskResult {
+function buildRejectedResult(plan: SubtaskPlan, error: unknown): SubtaskResult {
   const message = error instanceof Error ? error.message : String(error);
   return {
     id: plan.id,

@@ -12,6 +12,7 @@ An automation tool that connects AI models to messaging platforms like Telegram 
 - **MCP Tool Integration** — Discover and use tools from external MCP servers (Jira, Confluence, Datadog, etc.)
 - **Cursor CLI Delegation** — Delegate coding tasks to Cursor's headless agent with real-time progress and interactive approval
 - **Live Progress Streaming** — Single live-updating message per response instead of multiple progress notifications
+- **Multi-Agent Orchestration** — Decompose complex requests into parallel subtasks for faster execution with per-subtask live progress
 - **Network Resilience** — DNS-over-HTTPS for reliable connectivity behind VPNs
 
 ## Prerequisites

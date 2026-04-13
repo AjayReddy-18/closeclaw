@@ -16,10 +16,7 @@ import {
 } from "./scheduler-setup.js";
 import { setupCursorAgent, buildCursorTools } from "./cursor-setup.js";
 import type { ApprovalCallback } from "@closeclaw/ai-agent";
-import {
-  createParallelTasksTool,
-  type OrchestrationPlanRef,
-} from "@closeclaw/ai-agent";
+import { createParallelTasksTool } from "@closeclaw/ai-agent";
 
 export interface AgentInit {
   store: ReturnType<typeof createPersistentConversationStore>;

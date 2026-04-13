@@ -19,9 +19,9 @@
 
 **Purpose**: Initialize the `@closeclaw/orchestrator` package and shared types
 
-- [ ] T001 Create packages/orchestrator/ with package.json, tsconfig.json, and pnpm workspace entry
-- [ ] T002 [P] Define orchestration types (SubtaskPlan, SubtaskResult, OrchestrationSession, OrchestrationDeps, SubtaskRunnerDeps) in packages/orchestrator/src/types.ts
-- [ ] T003 [P] Create packages/orchestrator/src/index.ts with public exports
+- [x] T001 Create packages/orchestrator/ with package.json, tsconfig.json, and pnpm workspace entry
+- [x] T002 [P] Define orchestration types (SubtaskPlan, SubtaskResult, OrchestrationSession, OrchestrationDeps, SubtaskRunnerDeps) in packages/orchestrator/src/types.ts
+- [x] T003 [P] Create packages/orchestrator/src/index.ts with public exports
 
 ---
 
@@ -31,12 +31,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Write unit tests for subtask-runner in tests/unit/orchestrator/subtask-runner.test.ts (test: runs processMessage with subtask prompt, updates LiveMessage, returns SubtaskResult with fulfilled/rejected status)
-- [ ] T005 Implement createSubtaskRunner in packages/orchestrator/src/subtask-runner.ts (creates a thunk that runs a single subtask with its own LiveMessage, calls processMessage, catches errors, returns SubtaskResult)
-- [ ] T006 [P] Write unit tests for summary-builder in tests/unit/orchestrator/summary-builder.test.ts (test: formats all-success, mixed, all-failure results into readable summary)
-- [ ] T007 [P] Implement buildOrchestrationSummary in packages/orchestrator/src/summary-builder.ts (aggregates SubtaskResult[] into formatted text with per-subtask status and results)
-- [ ] T008 Write unit tests for parallel_tasks tool in tests/unit/ai-agent/parallel-tasks-tool.test.ts (test: Zod schema validation, min 2 / max 5 tasks, returns structured plan)
-- [ ] T009 Implement createParallelTasksTool in packages/ai-agent/src/tools/parallel-tasks-tool.ts (Zod schema: tasks array with label + prompt, min 2 max 5, execute returns the plan array)
+- [x] T004 Write unit tests for subtask-runner in tests/unit/orchestrator/subtask-runner.test.ts (test: runs processMessage with subtask prompt, updates LiveMessage, returns SubtaskResult with fulfilled/rejected status)
+- [x] T005 Implement createSubtaskRunner in packages/orchestrator/src/subtask-runner.ts (creates a thunk that runs a single subtask with its own LiveMessage, calls processMessage, catches errors, returns SubtaskResult)
+- [x] T006 [P] Write unit tests for summary-builder in tests/unit/orchestrator/summary-builder.test.ts (test: formats all-success, mixed, all-failure results into readable summary)
+- [x] T007 [P] Implement buildOrchestrationSummary in packages/orchestrator/src/summary-builder.ts (aggregates SubtaskResult[] into formatted text with per-subtask status and results)
+- [x] T008 Write unit tests for parallel_tasks tool in tests/unit/ai-agent/parallel-tasks-tool.test.ts (test: Zod schema validation, min 2 / max 5 tasks, returns structured plan)
+- [x] T009 Implement createParallelTasksTool in packages/ai-agent/src/tools/parallel-tasks-tool.ts (Zod schema: tasks array with label + prompt, min 2 max 5, execute returns the plan array)
 
 **Checkpoint**: Subtask runner, summary builder, and AI tool are independently testable
 
@@ -50,15 +50,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 Write unit tests for orchestrator in tests/unit/orchestrator/orchestrator.test.ts (test: creates LiveMessage per subtask, runs subtasks via Promise.allSettled, collects results, calls summary builder, delivers summary via new LiveMessage, disposes all LiveMessages)
-- [ ] T011 [P] [US1] Write integration test in tests/integration/orchestration-flow.test.ts (test: mock processMessage with varying delays, verify wall-clock time is closer to max(delays) than sum(delays), verify summary contains all results)
+- [x] T010 Write unit tests for orchestrator in tests/unit/orchestrator/orchestrator.test.ts (test: creates LiveMessage per subtask, runs subtasks via Promise.allSettled, collects results, calls summary builder, delivers summary via new LiveMessage, disposes all LiveMessages)
+- [x] T011 [P] [US1] Write integration test in tests/integration/orchestration-flow.test.ts (test: mock processMessage with varying delays, verify wall-clock time is closer to max(delays) than sum(delays), verify summary contains all results)
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement runOrchestration in packages/orchestrator/src/orchestrator.ts (create N LiveMessages, fan-out via Promise.allSettled on createSubtaskRunner thunks, collect results, build summary, send summary via new message, dispose all)
-- [ ] T013 [US1] Wire parallel_tasks tool into gateway: detect tool result in packages/gateway/src/gateway-agent-handler.ts, delegate to runOrchestration from @closeclaw/orchestrator
-- [ ] T014 [US1] Register parallel_tasks tool as an extraTool in packages/cli/src/commands/agent-init.ts alongside existing cursor/scheduler/mcp tools
-- [ ] T015 [US1] Add orchestration guidance to system prompt in packages/ai-agent/src/system-prompt-builder.ts (when to use parallel_tasks: 2+ independent tasks; when NOT: single task, dependent tasks, simple questions)
+- [x] T012 [US1] Implement runOrchestration in packages/orchestrator/src/orchestrator.ts (create N LiveMessages, fan-out via Promise.allSettled on createSubtaskRunner thunks, collect results, build summary, send summary via new message, dispose all)
+- [x] T013 [US1] Wire parallel_tasks tool into gateway: detect tool result in packages/gateway/src/gateway-agent-handler.ts, delegate to runOrchestration from @closeclaw/orchestrator
+- [x] T014 [US1] Register parallel_tasks tool as an extraTool in packages/cli/src/commands/agent-init.ts alongside existing cursor/scheduler/mcp tools
+- [x] T015 [US1] Add orchestration guidance to system prompt in packages/ai-agent/src/system-prompt-builder.ts (when to use parallel_tasks: 2+ independent tasks; when NOT: single task, dependent tasks, simple questions)
 
 **Checkpoint**: Multi-part requests execute concurrently, combined summary delivered. Single-task requests unchanged.
 
@@ -72,12 +72,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Write unit test for labeled LiveMessage updates in tests/unit/orchestrator/subtask-runner.test.ts (test: update calls include label prefix like "[Fetch Jira] Thinking...", finalize includes label)
+- [x] T016 [P] [US2] Write unit test for labeled LiveMessage updates in tests/unit/orchestrator/subtask-runner.test.ts (test: update calls include label prefix like "[Fetch Jira] Thinking...", finalize includes label)
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Add label prefixing to subtask-runner: in packages/orchestrator/src/subtask-runner.ts, prepend subtask label to all live.update() and live.finalize() calls (e.g., "[Fetch Jira] Working...")
-- [ ] T018 [US2] Ensure initial message per subtask shows label: in packages/orchestrator/src/orchestrator.ts, first live.update() for each subtask uses "[label] Starting..."
+- [x] T017 [US2] Add label prefixing to subtask-runner: in packages/orchestrator/src/subtask-runner.ts, prepend subtask label to all live.update() and live.finalize() calls (e.g., "[Fetch Jira] Working...")
+- [x] T018 [US2] Ensure initial message per subtask shows label: in packages/orchestrator/src/orchestrator.ts, first live.update() for each subtask uses "[label] Starting..."
 
 **Checkpoint**: Each subtask's progress message is labeled and updates independently.
 
@@ -91,12 +91,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T019 [P] [US3] Add summary delivery tests in tests/unit/orchestrator/orchestrator.test.ts (test: summary sent as new message after all subtasks finalize, summary contains per-subtask status, mixed success/failure shows both)
+- [x] T019 [P] [US3] Add summary delivery tests in tests/unit/orchestrator/orchestrator.test.ts (test: summary sent as new message after all subtasks finalize, summary contains per-subtask status, mixed success/failure shows both)
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Enhance summary-builder in packages/orchestrator/src/summary-builder.ts to produce Telegram-friendly formatted output with status indicators per subtask (checkmark for success, cross for failure, truncated results)
-- [ ] T021 [US3] Deliver summary via adapter.sendMessage (not editMessage) in packages/orchestrator/src/orchestrator.ts after all subtasks settle
+- [x] T020 [US3] Enhance summary-builder in packages/orchestrator/src/summary-builder.ts to produce Telegram-friendly formatted output with status indicators per subtask (checkmark for success, cross for failure, truncated results)
+- [x] T021 [US3] Deliver summary via adapter.sendMessage (not editMessage) in packages/orchestrator/src/orchestrator.ts after all subtasks settle
 
 **Checkpoint**: Summary message with all subtask outcomes appears below individual results.
 
@@ -110,13 +110,13 @@
 
 ### Tests for User Story 4
 
-- [ ] T022 [P] [US4] Write error isolation tests in tests/unit/orchestrator/orchestrator.test.ts (test: one processMessage rejects, others resolve, all results collected, summary shows partial success)
-- [ ] T023 [P] [US4] Write subtask error display test in tests/unit/orchestrator/subtask-runner.test.ts (test: when processMessage throws, live.finalize is called with error text prefixed by label)
+- [x] T022 [P] [US4] Write error isolation tests in tests/unit/orchestrator/orchestrator.test.ts (test: one processMessage rejects, others resolve, all results collected, summary shows partial success)
+- [x] T023 [P] [US4] Write subtask error display test in tests/unit/orchestrator/subtask-runner.test.ts (test: when processMessage throws, live.finalize is called with error text prefixed by label)
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] Ensure subtask-runner catches processMessage errors in packages/orchestrator/src/subtask-runner.ts, calls live.finalize with formatted error message, returns SubtaskResult with status "rejected"
-- [ ] T025 [US4] Verify Promise.allSettled usage in packages/orchestrator/src/orchestrator.ts handles mixed fulfilled/rejected without short-circuiting
+- [x] T024 [US4] Ensure subtask-runner catches processMessage errors in packages/orchestrator/src/subtask-runner.ts, calls live.finalize with formatted error message, returns SubtaskResult with status "rejected"
+- [x] T025 [US4] Verify Promise.allSettled usage in packages/orchestrator/src/orchestrator.ts handles mixed fulfilled/rejected without short-circuiting
 
 **Checkpoint**: Failed subtasks show error, successful subtasks deliver results, summary reflects both.
 
@@ -130,15 +130,15 @@
 
 ### Tests for User Story 5
 
-- [ ] T026 [P] [US5] Write unit tests for approval-queue in tests/unit/orchestrator/approval-queue.test.ts (test: two simultaneous enqueue calls, first prompt sent immediately, second waits until first resolves; dispose rejects remaining)
-- [ ] T027 [P] [US5] Write integration test for approval during orchestration in tests/unit/gateway/orchestrated-handler.test.ts (test: orchestrator wires approval queue, subtask A pauses for approval while B continues)
+- [x] T026 [P] [US5] Write unit tests for approval-queue in tests/unit/orchestrator/approval-queue.test.ts (test: two simultaneous enqueue calls, first prompt sent immediately, second waits until first resolves; dispose rejects remaining)
+- [x] T027 [P] [US5] Write integration test for approval during orchestration in tests/unit/gateway/orchestrated-handler.test.ts (test: orchestrator wires approval queue, subtask A pauses for approval while B continues)
 
 ### Implementation for User Story 5
 
-- [ ] T028 [US5] Implement createApprovalQueue in packages/orchestrator/src/approval-queue.ts (FIFO queue, head entry's prompt sent via askFn, resolve triggers next, dispose rejects all pending)
-- [ ] T029 [US5] Wire approval queue into orchestrator: in packages/orchestrator/src/orchestrator.ts, create approval queue per session, pass queue's enqueue to each subtask runner as its approval mechanism
-- [ ] T030 [US5] Update subtask-runner in packages/orchestrator/src/subtask-runner.ts to use approval queue's enqueue instead of direct approvalRef.ask, prefix approval prompt with subtask label
-- [ ] T031 [US5] Update packages/gateway/src/gateway-agent-handler.ts to pass the adapter's approval asker as the base askFn when creating the orchestration's approval queue
+- [x] T028 [US5] Implement createApprovalQueue in packages/orchestrator/src/approval-queue.ts (FIFO queue, head entry's prompt sent via askFn, resolve triggers next, dispose rejects all pending)
+- [x] T029 [US5] Wire approval queue into orchestrator: in packages/orchestrator/src/orchestrator.ts, create approval queue per session, pass queue's enqueue to each subtask runner as its approval mechanism
+- [x] T030 [US5] Update subtask-runner in packages/orchestrator/src/subtask-runner.ts to use approval queue's enqueue instead of direct approvalRef.ask, prefix approval prompt with subtask label
+- [x] T031 [US5] Update packages/gateway/src/gateway-agent-handler.ts to pass the adapter's approval asker as the base askFn when creating the orchestration's approval queue
 
 **Checkpoint**: Approval prompts shown one at a time, non-approval subtasks unblocked.
 
@@ -148,12 +148,12 @@
 
 **Purpose**: Documentation, cleanup, and final validation
 
-- [ ] T032 [P] Create docs/multi-agent-orchestration.md with feature usage guide, examples, and configuration details
-- [ ] T033 [P] Update README.md with multi-agent orchestration feature description
-- [ ] T034 Update packages/orchestrator/src/index.ts to export all public functions and types
-- [ ] T035 Run full test suite, verify 90%+ coverage for new packages/orchestrator code
-- [ ] T036 Run pnpm build, pnpm lint, pnpm format:check — fix any issues
-- [ ] T037 Verify single-task regression: existing tests pass with no behavior change for non-parallel requests
+- [x] T032 [P] Create docs/multi-agent-orchestration.md with feature usage guide, examples, and configuration details
+- [x] T033 [P] Update README.md with multi-agent orchestration feature description
+- [x] T034 Update packages/orchestrator/src/index.ts to export all public functions and types
+- [x] T035 Run full test suite, verify 90%+ coverage for new packages/orchestrator code
+- [x] T036 Run pnpm build, pnpm lint, pnpm format:check — fix any issues
+- [x] T037 Verify single-task regression: existing tests pass with no behavior change for non-parallel requests
 
 ---
 

@@ -20,11 +20,13 @@ describe("Orchestration flow end-to-end", () => {
     const SLOW_DELAY = 200;
 
     const deps = {
-      processMessage: vi.fn().mockImplementation(async (_p: string, _s: string, text: string) => {
-        const delay = text.includes("fast") ? FAST_DELAY : SLOW_DELAY;
-        await new Promise((r) => setTimeout(r, delay));
-        return `Done: ${text}`;
-      }),
+      processMessage: vi
+        .fn()
+        .mockImplementation(async (_p: string, _s: string, text: string) => {
+          const delay = text.includes("fast") ? FAST_DELAY : SLOW_DELAY;
+          await new Promise((r) => setTimeout(r, delay));
+          return `Done: ${text}`;
+        }),
       createLiveMessage: vi.fn().mockImplementation(() => makeLive()),
       sendSummary: vi.fn().mockResolvedValue(undefined),
     };
@@ -49,7 +51,8 @@ describe("Orchestration flow end-to-end", () => {
   it("summary contains all subtask results", async () => {
     const { runOrchestration } = await loadModule();
     const deps = {
-      processMessage: vi.fn()
+      processMessage: vi
+        .fn()
         .mockResolvedValueOnce("Jira: 5 issues found")
         .mockResolvedValueOnce("Build: passed"),
       createLiveMessage: vi.fn().mockImplementation(() => makeLive()),

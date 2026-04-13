@@ -1,8 +1,6 @@
 import type { ApprovalQueue } from "./types.js";
 
-type AskFn = (
-  prompt: string,
-) => Promise<"approve" | "deny">;
+type AskFn = (prompt: string) => Promise<"approve" | "deny">;
 
 interface QueueEntry {
   taskLabel: string;

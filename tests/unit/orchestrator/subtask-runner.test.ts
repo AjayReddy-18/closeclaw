@@ -5,7 +5,9 @@ describe("createSubtaskRunner", () => {
     return import("../../../packages/orchestrator/src/subtask-runner.js");
   }
 
-  function makePlan(overrides?: Partial<{ id: string; label: string; prompt: string }>) {
+  function makePlan(
+    overrides?: Partial<{ id: string; label: string; prompt: string }>,
+  ) {
     return {
       id: overrides?.id ?? "subtask-1",
       label: overrides?.label ?? "Fetch data",
@@ -70,7 +72,13 @@ describe("createSubtaskRunner", () => {
     const live = makeLive();
     const deps = makeDeps("Final");
     deps.processMessage.mockImplementation(
-      async (_p: string, _s: string, _t: string, _d?: string, onIntermediate?: (text: string) => Promise<void>) => {
+      async (
+        _p: string,
+        _s: string,
+        _t: string,
+        _d?: string,
+        onIntermediate?: (text: string) => Promise<void>,
+      ) => {
         if (onIntermediate) await onIntermediate("Working on it...");
         return "Final";
       },
@@ -87,7 +95,9 @@ describe("createSubtaskRunner", () => {
     const deps = makeDeps("Result here");
     const runner = createSubtaskRunner(plan, live, deps);
     await runner();
-    expect(live.finalize).toHaveBeenCalledWith(expect.stringContaining("Result here"));
+    expect(live.finalize).toHaveBeenCalledWith(
+      expect.stringContaining("Result here"),
+    );
   });
 
   it("returns rejected SubtaskResult when processMessage throws", async () => {
@@ -108,7 +118,9 @@ describe("createSubtaskRunner", () => {
     const deps = makeDeps(new Error("Timeout"));
     const runner = createSubtaskRunner(plan, live, deps);
     await runner();
-    expect(live.finalize).toHaveBeenCalledWith(expect.stringContaining("Timeout"));
+    expect(live.finalize).toHaveBeenCalledWith(
+      expect.stringContaining("Timeout"),
+    );
   });
 
   it("prefixes initial update with subtask label", async () => {
@@ -127,7 +139,13 @@ describe("createSubtaskRunner", () => {
     const live = makeLive();
     const deps = makeDeps("Done");
     deps.processMessage.mockImplementation(
-      async (_p: string, _s: string, _t: string, _d?: string, onIntermediate?: (text: string) => Promise<void>) => {
+      async (
+        _p: string,
+        _s: string,
+        _t: string,
+        _d?: string,
+        onIntermediate?: (text: string) => Promise<void>,
+      ) => {
         if (onIntermediate) await onIntermediate("Querying...");
         return "Done";
       },

@@ -26,12 +26,17 @@ describe("createApprovalQueue", () => {
     const { createApprovalQueue } = await loadModule();
     let resolveFirst!: (v: "approve" | "deny") => void;
     const askFn = vi.fn().mockImplementation(
-      () => new Promise<"approve" | "deny">((r) => { resolveFirst = r; }),
+      () =>
+        new Promise<"approve" | "deny">((r) => {
+          resolveFirst = r;
+        }),
     );
 
     const queue = createApprovalQueue(askFn);
     const first = queue.enqueue("task-1", [{ command: "a", description: "x" }]);
-    const second = queue.enqueue("task-2", [{ command: "b", description: "y" }]);
+    const second = queue.enqueue("task-2", [
+      { command: "b", description: "y" },
+    ]);
 
     expect(askFn).toHaveBeenCalledTimes(1);
 
@@ -59,12 +64,14 @@ describe("createApprovalQueue", () => {
 
   it("dispose rejects queued entries", async () => {
     const { createApprovalQueue } = await loadModule();
-    const askFn = vi.fn().mockImplementation(
-      () => new Promise<"approve" | "deny">(() => {}),
-    );
+    const askFn = vi
+      .fn()
+      .mockImplementation(() => new Promise<"approve" | "deny">(() => {}));
     const queue = createApprovalQueue(askFn);
     queue.enqueue("task-1", [{ command: "a", description: "x" }]);
-    const pending = queue.enqueue("task-2", [{ command: "b", description: "y" }]);
+    const pending = queue.enqueue("task-2", [
+      { command: "b", description: "y" },
+    ]);
     queue.dispose();
     await expect(pending).rejects.toThrow("disposed");
   });
@@ -75,7 +82,9 @@ describe("createApprovalQueue", () => {
     let resolvers: Array<(v: "approve" | "deny") => void> = [];
     const askFn = vi.fn().mockImplementation((prompt: string) => {
       order.push(prompt);
-      return new Promise<"approve" | "deny">((r) => { resolvers.push(r); });
+      return new Promise<"approve" | "deny">((r) => {
+        resolvers.push(r);
+      });
     });
 
     const queue = createApprovalQueue(askFn);

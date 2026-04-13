@@ -29,7 +29,10 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createConversationCompressor: vi.fn(() => ({ shouldCompress: vi.fn() })),
   createMemoryFlusher: vi.fn(() => ({ flush: vi.fn() })),
   createModelProvider: vi.fn(() => ({})),
-  createParallelTasksTool: vi.fn(() => ({ description: "mock", execute: vi.fn() })),
+  createParallelTasksTool: vi.fn(() => ({
+    description: "mock",
+    execute: vi.fn(),
+  })),
   createHeartbeatRunner: vi.fn(() => ({
     start: vi.fn(),
     stop: vi.fn(),

@@ -252,6 +252,31 @@ describe("createMessageProcessor", () => {
     expect(mockGen).not.toHaveBeenCalled();
   });
 
+  it("adds preference tools when preferenceStore is provided", async () => {
+    const mockPrefStore = {
+      load: vi.fn().mockReturnValue({ preferences: [] }),
+      save: vi.fn(),
+      remove: vi.fn(),
+    };
+    const p = createMessageProcessor({
+      agentConfig: baseConfig({
+        tools: {
+          enabled: true,
+          allowedTools: ["datetime"],
+          maxCallDepth: 5,
+          timeoutMs: 30_000,
+        },
+      }),
+      conversationStore: store,
+      preferenceStore: mockPrefStore,
+    });
+    await p.processMessage(BotPlatform.TELEGRAM, "pref-user", "hi");
+    const lastCall = mockGen.mock.calls.at(-1)![0] as Record<string, unknown>;
+    const tools = lastCall.tools as Record<string, unknown>;
+    expect(tools["save_preference"]).toBeDefined();
+    expect(tools["forget_preference"]).toBeDefined();
+  });
+
   it("injects sender display name into system prompt", async () => {
     const p = createMessageProcessor({
       agentConfig: baseConfig(),

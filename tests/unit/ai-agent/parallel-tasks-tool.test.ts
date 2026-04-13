@@ -25,7 +25,11 @@ describe("createParallelTasksTool", () => {
     ];
     const result = await tool.execute(
       { tasks },
-      { toolCallId: "test", messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: "test",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
     expect(result).toEqual(tasks);
   });
@@ -57,5 +61,42 @@ describe("createParallelTasksTool", () => {
     ];
     const result = parallelTasksSchema.safeParse({ tasks });
     expect(result.success).toBe(true);
+  });
+
+  it("tool execute writes to planRef when provided", async () => {
+    const { createParallelTasksTool } = await loadModule();
+    const planRef = { plan: null as unknown };
+    const tool = createParallelTasksTool(planRef);
+    const tasks = [
+      { label: "X", prompt: "Do X" },
+      { label: "Y", prompt: "Do Y" },
+    ];
+    await tool.execute(
+      { tasks },
+      {
+        toolCallId: "t",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
+    );
+    expect(planRef.plan).toEqual({ tasks });
+  });
+
+  it("tool execute works without planRef", async () => {
+    const { createParallelTasksTool } = await loadModule();
+    const tool = createParallelTasksTool();
+    const tasks = [
+      { label: "X", prompt: "Do X" },
+      { label: "Y", prompt: "Do Y" },
+    ];
+    const result = await tool.execute(
+      { tasks },
+      {
+        toolCallId: "t",
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
+    );
+    expect(result).toEqual(tasks);
   });
 });

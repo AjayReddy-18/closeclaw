@@ -10,6 +10,7 @@
 **Rationale**: This leverages the existing tool-calling infrastructure. The AI model already excels at structured output via tool calls. Alternatives like structured output parsing or a separate "planning" model call add complexity without benefit. The tool approach also means single-task requests never hit the orchestration path — the AI simply doesn't call the tool.
 
 **Alternatives considered**:
+
 - **Structured output / JSON mode**: Requires a separate "planning" step before every request, adding latency even for single tasks. Rejected for KISS.
 - **System prompt + response parsing**: Fragile, requires regex parsing of AI responses. Rejected for reliability.
 - **Two-pass approach** (plan call, then execute call): Doubles API calls and latency. Rejected for performance.
@@ -21,6 +22,7 @@
 **Rationale**: `LiveMessage` is already per-instance and stateless. Creating N instances for N subtasks requires no changes to the `LiveMessage` implementation. `Promise.allSettled` (vs `Promise.all`) guarantees that one failure doesn't cancel siblings — exactly the isolation behavior specified in FR-004.
 
 **Alternatives considered**:
+
 - **Worker threads**: Overkill for I/O-bound tasks (API calls, MCP tools). Node.js event loop handles concurrent I/O natively. Rejected for KISS.
 - **Shared LiveMessage with multiplexing**: Would require complex state management to track which subtask owns which section of the message. Rejected for complexity.
 
@@ -33,6 +35,7 @@
 **Implementation**: Add a `taskId` dimension to the approval handler. The queue holds `{ taskId, prompt, resolve }` entries. Only the head of the queue has its prompt sent to the user. When resolved, the next entry's prompt is sent.
 
 **Alternatives considered**:
+
 - **Compound key (`senderId:taskId`)**: Would show multiple approval prompts simultaneously, confusing the user. Rejected per clarification decision.
 - **Auto-deny during parallel**: Too restrictive — Cursor delegation tasks often need approval. Rejected for usability.
 
@@ -45,6 +48,7 @@
 **Key detail**: Subtask prompts are synthetic internal messages (not real user messages). The conversation store should not persist them as part of the user's conversation history. The orchestrator manages this by using a scoped conversation key or by not persisting subtask interactions.
 
 **Alternatives considered**:
+
 - **Direct `generateText` calls**: Would bypass conversation store, preference injection, system prompt building. Rejected for DRY.
 - **Custom lightweight agent**: Would duplicate much of `message-processor.ts`. Rejected for maintainability.
 
@@ -55,6 +59,7 @@
 **Rationale**: 5 subtasks × 1 edit/2s = 2.5 edits/s. Adding sends, typing indicators, and approval messages, peak is ~5-8 req/s. The existing `LiveMessage` throttle is the primary rate-limiting mechanism and requires no changes.
 
 **Alternatives considered**:
+
 - **Global rate limiter across all LiveMessages**: Unnecessary given the math. Would add complexity. Rejected for YAGNI.
 - **Reduce max concurrency to 3**: Overly conservative. 5 is safe and covers most real use cases.
 

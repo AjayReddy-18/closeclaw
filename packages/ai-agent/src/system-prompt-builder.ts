@@ -140,7 +140,9 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const behavior = buildBehaviorSections(parts.platform);
   const mcp = buildMcpSection(parts.mcpToolNames ?? []);
   const cursor = buildCursorAgentSection(parts.hasCursorAgent ?? false);
-  const orchestration = buildOrchestrationSection(parts.hasOrchestration ?? false);
+  const orchestration = buildOrchestrationSection(
+    parts.hasOrchestration ?? false,
+  );
   const context = buildContextSections(parts);
   return `${owner}${identity}${behavior}${mcp}${cursor}${orchestration}${context}`;
 }

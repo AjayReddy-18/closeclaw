@@ -5,7 +5,9 @@ const MIN_TASKS = 2;
 const MAX_TASKS = 5;
 
 const taskSchema = z.object({
-  label: z.string().describe("Short human-readable description of this subtask"),
+  label: z
+    .string()
+    .describe("Short human-readable description of this subtask"),
   prompt: z.string().describe("Full self-contained prompt for this subtask"),
 });
 
