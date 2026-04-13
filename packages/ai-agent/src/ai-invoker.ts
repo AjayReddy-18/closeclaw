@@ -21,6 +21,7 @@ export function buildSystemPrompt(
   preferenceContext?: string,
   summaryText?: string,
   mcpToolNames?: string[],
+  hasCursorAgent?: boolean,
 ): string {
   return buildFullSystemPrompt({
     userCustomPrompt: config.systemPrompt,
@@ -28,6 +29,7 @@ export function buildSystemPrompt(
     preferenceContext,
     conversationSummary: summaryText,
     mcpToolNames,
+    hasCursorAgent,
   });
 }
 
@@ -40,6 +42,7 @@ export function sdkMessagesForGenerate(
   preferenceContext?: string,
   senderIdentity?: string,
   mcpToolNames?: string[],
+  hasCursorAgent?: boolean,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemContent = buildSystemPrompt(
     config,
@@ -47,6 +50,7 @@ export function sdkMessagesForGenerate(
     preferenceContext,
     conversation.compressedSummary?.text,
     mcpToolNames,
+    hasCursorAgent,
   );
   const systemMsg: ConversationMessage = {
     role: "system",
@@ -99,6 +103,7 @@ export async function invokeModel(
   senderIdentity?: string,
   mcpToolNames?: string[],
   onIntermediate?: IntermediateResponseFn,
+  hasCursorAgent?: boolean,
 ): Promise<string> {
   let continuationRound = 0;
 
@@ -111,6 +116,7 @@ export async function invokeModel(
         preferenceContext,
         senderIdentity,
         mcpToolNames,
+        hasCursorAgent,
       );
       const args = {
         model,

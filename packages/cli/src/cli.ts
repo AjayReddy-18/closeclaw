@@ -29,6 +29,7 @@ import {
   createHeartbeatDeps,
 } from "./commands/heartbeat-registry.js";
 import { registerMcpCommands, createMcpDeps } from "./commands/mcp-registry.js";
+import { runCursorSessions } from "./commands/cursor-sessions-command.js";
 
 export async function runCli(argv: string[]): Promise<number> {
   const program = new Command();
@@ -79,6 +80,11 @@ export async function runCli(argv: string[]): Promise<number> {
   registerCronCommands(program, createCronStoreDeps());
   registerHeartbeatCommands(program, createHeartbeatDeps());
   registerMcpCommands(program, createMcpDeps());
+  const cursor = program.command("cursor");
+  cursor
+    .command("sessions")
+    .description("List recent Cursor CLI agent sessions")
+    .action(() => runCursorSessions());
   try {
     await program.parseAsync(argv);
     return 0;

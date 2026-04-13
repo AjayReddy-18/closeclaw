@@ -2,34 +2,26 @@ import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { BotAdapter } from "@closeclaw/bot-adapters";
-import type {
-  createPersistentConversationStore,
-  createMessageProcessor,
-  HeartbeatRunner,
-} from "@closeclaw/ai-agent";
+import type { HeartbeatRunner } from "@closeclaw/ai-agent";
 import { createGatewayServer as createGatewayServerImpl } from "@closeclaw/gateway";
 import {
   BotPlatform,
   DmPolicy,
   type Configuration,
-  isValidAgentConfig,
 } from "@closeclaw/shared-types";
-import type { McpConnectionManager } from "@closeclaw/mcp-client";
-import { connectMcpServers } from "./mcp-connect.js";
 import {
   connectAllAdapters,
   disconnectAllAdapters,
   waitForSigint,
 } from "./gateway-lifecycle.js";
 import { ConfigReadError, readConfig } from "../config/config-reader.js";
-import { assembleAgent } from "./agent-assembly.js";
 import { setupHeartbeat } from "./heartbeat-setup.js";
 import {
   createSchedulerTaskStore,
-  createSchedulerTools,
   setupScheduler,
   type SchedulerAssembly,
 } from "./scheduler-setup.js";
+import { initAgent } from "./agent-init.js";
 
 const require = createRequire(import.meta.url);
 
@@ -110,37 +102,19 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const config = readGatewayConfig(deps);
   if (!config) return;
   const adapters = buildAdapters(config, deps.createAdapter);
-  let pruneInterval: ReturnType<typeof setInterval> | undefined;
-  let store: ReturnType<typeof createPersistentConversationStore> | undefined;
-  let processor: ReturnType<typeof createMessageProcessor> | undefined;
   const taskStore = createSchedulerTaskStore();
   const schedulerRef: { current?: SchedulerAssembly } = {};
   const senderRef = { platform: "telegram", senderId: "" };
   let schedulerAssembly: SchedulerAssembly | undefined;
-  let mcpManager: McpConnectionManager | undefined;
-  if (config.agent !== undefined && isValidAgentConfig(config.agent)) {
-    const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
-    const mcpTools = await connectMcpServers(deps.mcpConfigPath);
-    mcpManager = mcpTools.manager;
-    const extraTools = { ...schedTools, ...mcpTools.tools };
-    const mcpToolNames = Object.keys(mcpTools.tools);
-    const assembly = assembleAgent(config.agent, extraTools, mcpToolNames);
-    store = assembly.conversationStore;
-    processor = assembly.messageProcessor;
-    adapters.forEach((a) =>
-      a.onMessage((msg) => {
-        senderRef.platform = a.platform;
-        senderRef.senderId = msg.senderId;
-      }),
-    );
-    console.log(
-      `AI agent active: ${config.agent.provider}/${config.agent.model}`,
-    );
-    pruneInterval = setInterval(
-      () => store?.pruneStale(24 * 60 * 60 * 1000),
-      60 * 60 * 1000,
-    );
-  }
+  const agentInit = await initAgent(
+    config,
+    deps,
+    taskStore,
+    schedulerRef,
+    senderRef,
+    adapters,
+  );
+  const { store, processor, mcpManager, pruneInterval } = agentInit ?? {};
   let heartbeat: HeartbeatRunner | undefined;
   if (processor) {
     heartbeat = setupHeartbeat(config, processor, adapters);

@@ -130,5 +130,16 @@ export {
 } from "./scheduler/suppression-filter.js";
 export {
   buildFullSystemPrompt,
+  buildCursorAgentSection,
   type SystemPromptParts,
 } from "./system-prompt-builder.js";
+
+export {
+  createCursorAgentTool,
+  type CursorAgentToolDeps,
+} from "./tools/cursor-agent-tool.js";
+
+export {
+  createCursorResumeTool,
+  type CursorResumeToolDeps,
+} from "./tools/cursor-resume-tool.js";
