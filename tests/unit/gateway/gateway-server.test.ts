@@ -273,7 +273,8 @@ describe("createGatewayServer", () => {
       dir = join(tmpdir(), `closeclaw-gw-err-${randomUUID()}`);
       mkdirSync(dir, { recursive: true });
       storePath = join(dir, "pairing.json");
-      const sendMessage = vi.fn().mockResolvedValue(undefined);
+      const sendMessage = vi.fn().mockResolvedValue({ messageId: 1 });
+      const editMessage = vi.fn().mockResolvedValue(true);
       const adapter: BotAdapter = {
         platform: BotPlatform.TELEGRAM,
         connect: vi.fn(),
@@ -281,7 +282,8 @@ describe("createGatewayServer", () => {
         healthCheck: vi.fn().mockResolvedValue({ connected: true }),
         onMessage: vi.fn(),
         sendMessage,
-        sendTypingIndicator: vi.fn(),
+        editMessage,
+        sendTypingIndicator: vi.fn().mockResolvedValue(undefined),
       };
       const srv = createGatewayServer({
         port: 0,
@@ -302,9 +304,10 @@ describe("createGatewayServer", () => {
         text: "x",
         timestamp: new Date(),
       });
-      await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
-      expect(sendMessage).toHaveBeenCalledWith(
+      await vi.waitFor(() => expect(editMessage).toHaveBeenCalled());
+      expect(editMessage).toHaveBeenCalledWith(
         "9",
+        1,
         "I'm having trouble thinking right now. Please try again in a moment.",
       );
     });
@@ -313,7 +316,8 @@ describe("createGatewayServer", () => {
       dir = join(tmpdir(), `closeclaw-gw-fast-${randomUUID()}`);
       mkdirSync(dir, { recursive: true });
       storePath = join(dir, "pairing.json");
-      const sendMessage = vi.fn().mockResolvedValue(undefined);
+      const sendMessage = vi.fn().mockResolvedValue({ messageId: 2 });
+      const editMessage = vi.fn().mockResolvedValue(true);
       const processMessage = vi.fn().mockResolvedValue("quick");
       const adapter: BotAdapter = {
         platform: BotPlatform.TELEGRAM,
@@ -322,7 +326,8 @@ describe("createGatewayServer", () => {
         healthCheck: vi.fn().mockResolvedValue({ connected: true }),
         onMessage: vi.fn(),
         sendMessage,
-        sendTypingIndicator: vi.fn(),
+        editMessage,
+        sendTypingIndicator: vi.fn().mockResolvedValue(undefined),
       };
       const srv = createGatewayServer({
         port: 0,
@@ -341,16 +346,17 @@ describe("createGatewayServer", () => {
         text: "hi",
         timestamp: new Date(),
       });
-      await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
-      expect(sendMessage).toHaveBeenCalledTimes(1);
-      expect(sendMessage).toHaveBeenCalledWith("22", "quick");
+      await vi.waitFor(() => expect(editMessage).toHaveBeenCalled());
+      expect(sendMessage).toHaveBeenCalledWith("22", "Thinking...");
+      expect(editMessage).toHaveBeenCalledWith("22", 2, "quick");
     });
 
     it("sends only final response without boilerplate messages", async () => {
       dir = join(tmpdir(), `closeclaw-gw-slow-${randomUUID()}`);
       mkdirSync(dir, { recursive: true });
       storePath = join(dir, "pairing.json");
-      const sendMessage = vi.fn().mockResolvedValue(undefined);
+      const sendMessage = vi.fn().mockResolvedValue({ messageId: 3 });
+      const editMessage = vi.fn().mockResolvedValue(true);
       let resolveProc!: (v: string) => void;
       const processMessage = vi.fn(
         () =>
@@ -365,7 +371,8 @@ describe("createGatewayServer", () => {
         healthCheck: vi.fn().mockResolvedValue({ connected: true }),
         onMessage: vi.fn(),
         sendMessage,
-        sendTypingIndicator: vi.fn(),
+        editMessage,
+        sendTypingIndicator: vi.fn().mockResolvedValue(undefined),
       };
       const srv = createGatewayServer({
         port: 0,
@@ -387,11 +394,11 @@ describe("createGatewayServer", () => {
       await vi.waitFor(() => expect(processMessage).toHaveBeenCalled());
       resolveProc!("final");
       await vi.waitFor(() =>
-        expect(sendMessage).toHaveBeenCalledWith("33", "final"),
+        expect(editMessage).toHaveBeenCalledWith("33", 3, "final"),
       );
-      const calls = sendMessage.mock.calls.map((c: unknown[]) => c[1]);
-      expect(calls).not.toContain("Processing your message...");
-      expect(calls).not.toContain("Still working on it...");
+      const sendCalls = sendMessage.mock.calls.map((c: unknown[]) => c[1]);
+      expect(sendCalls).not.toContain("Processing your message...");
+      expect(sendCalls).not.toContain("Still working on it...");
     });
   });
 

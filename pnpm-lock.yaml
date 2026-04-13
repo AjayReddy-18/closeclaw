@@ -93,6 +93,9 @@ importers:
       '@closeclaw/mcp-client':
         specifier: workspace:*
         version: link:../mcp-client
+      '@closeclaw/orchestrator':
+        specifier: workspace:*
+        version: link:../orchestrator
       '@closeclaw/shared-types':
         specifier: workspace:*
         version: link:../shared-types
@@ -144,6 +147,15 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+
+  packages/orchestrator:
+    dependencies:
+      '@closeclaw/bot-adapters':
+        specifier: workspace:*
+        version: link:../bot-adapters
+      '@closeclaw/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
 
   packages/shared-types: {}
 

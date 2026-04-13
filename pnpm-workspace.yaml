@@ -6,3 +6,4 @@ packages:
   - "packages/ai-agent"
   - "packages/mcp-client"
   - "packages/cursor-agent"
+  - "packages/orchestrator"

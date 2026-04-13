@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { BotAdapter } from "@closeclaw/bot-adapters";
+import { createLiveMessage, type BotAdapter } from "@closeclaw/bot-adapters";
 import type { createMessageProcessor } from "@closeclaw/ai-agent";
 import {
   createTaskStore,
@@ -74,6 +74,15 @@ function buildDeliveryFn(
   return async (_platform, senderId, text) => {
     const adapter = adapters[0];
     if (!adapter) return;
-    await adapter.sendMessage(senderId, text);
+    if (adapter.editMessage) {
+      const live = createLiveMessage({
+        sendMessage: (t) => adapter.sendMessage(senderId, t),
+        editMessage: (msgId, t) => adapter.editMessage!(senderId, msgId, t),
+      });
+      live.update("Running scheduled task...");
+      await live.finalize(text);
+    } else {
+      await adapter.sendMessage(senderId, text);
+    }
   };
 }

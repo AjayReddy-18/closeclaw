@@ -6,6 +6,7 @@ export interface SystemPromptParts {
   platform?: string;
   mcpToolNames?: string[];
   hasCursorAgent?: boolean;
+  hasOrchestration?: boolean;
 }
 
 const IDENTITY = `You are CloseClaw, a personal automation assistant. You help users by answering questions, executing tasks, monitoring systems, and managing scheduled jobs. You are direct, concise, and action-oriented.`;
@@ -108,6 +109,19 @@ export function buildCursorAgentSection(hasCursorAgent: boolean): string {
   return `\n\n${CURSOR_AGENT_GUIDANCE}`;
 }
 
+const ORCHESTRATION_GUIDANCE = `Parallel Task Orchestration:
+- Use the parallel_tasks tool when the user asks 2+ clearly independent things in one message.
+- Example: "Check my Jira issues and also check the CI build" — two independent tasks.
+- Do NOT use parallel_tasks for: single questions, tasks that depend on each other, simple lookups.
+- Each subtask prompt must be fully self-contained (include all needed context).
+- Limit: 2-5 tasks per orchestration. If more, prioritize the most important.
+- The system executes subtasks concurrently and delivers results faster.`;
+
+export function buildOrchestrationSection(has: boolean): string {
+  if (!has) return "";
+  return `\n\n${ORCHESTRATION_GUIDANCE}`;
+}
+
 function buildContextSections(parts: SystemPromptParts): string {
   const sections: string[] = [];
   if (parts.senderIdentity) sections.push(parts.senderIdentity);
@@ -126,6 +140,7 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const behavior = buildBehaviorSections(parts.platform);
   const mcp = buildMcpSection(parts.mcpToolNames ?? []);
   const cursor = buildCursorAgentSection(parts.hasCursorAgent ?? false);
+  const orchestration = buildOrchestrationSection(parts.hasOrchestration ?? false);
   const context = buildContextSections(parts);
-  return `${owner}${identity}${behavior}${mcp}${cursor}${context}`;
+  return `${owner}${identity}${behavior}${mcp}${cursor}${orchestration}${context}`;
 }

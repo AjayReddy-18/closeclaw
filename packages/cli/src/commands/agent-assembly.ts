@@ -26,6 +26,7 @@ export function assembleAgent(
   extraTools?: Record<string, unknown>,
   mcpToolNames?: string[],
   hasCursorAgent?: boolean,
+  hasOrchestration?: boolean,
 ): AgentAssemblyResult {
   const baseDir = join(homedir(), ".closeclaw");
   const persistence = createConversationPersistence(
@@ -50,6 +51,7 @@ export function assembleAgent(
     extraTools: extraTools as CreateMessageProcessorDeps["extraTools"],
     mcpToolNames,
     hasCursorAgent,
+    hasOrchestration,
   });
   return { conversationStore, messageProcessor };
 }

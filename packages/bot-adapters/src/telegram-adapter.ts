@@ -8,6 +8,7 @@ import type {
   InlineButton,
   MessageHandler,
   SendMessageOptions,
+  SendResult,
 } from "./adapter.js";
 import { formatForTelegram } from "./formatter/markdown-to-telegram.js";
 import { splitMessage } from "./formatter/message-splitter.js";
@@ -15,6 +16,11 @@ import { createPublicDnsAgent } from "./doh-resolver.js";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function isMessageNotModified(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg.includes("message is not modified");
 }
 
 export class TelegramAdapter implements BotAdapter {
@@ -107,25 +113,57 @@ export class TelegramAdapter implements BotAdapter {
     senderId: string,
     text: string,
     _options?: SendMessageOptions,
-  ): Promise<void> {
+  ): Promise<SendResult | void> {
     const formatted = formatForTelegram(text);
     const chunks = splitMessage(formatted);
+    let firstResult: SendResult | undefined;
     for (const chunk of chunks) {
-      await this.sendSingleChunk(senderId, chunk.text, chunk.parseMode);
+      const result = await this.sendSingleChunk(
+        senderId,
+        chunk.text,
+        chunk.parseMode,
+      );
+      if (!firstResult && result) firstResult = result;
     }
+    return firstResult;
   }
 
   private async sendSingleChunk(
     senderId: string,
     text: string,
     parseMode: "HTML" | undefined,
-  ): Promise<void> {
+  ): Promise<SendResult | undefined> {
     try {
-      await this.bot.api.sendMessage(Number(senderId), text, {
+      const msg = await this.bot.api.sendMessage(Number(senderId), text, {
         parse_mode: parseMode,
       });
+      return msg?.message_id ? { messageId: msg.message_id } : undefined;
     } catch {
-      await this.bot.api.sendMessage(Number(senderId), text);
+      const msg = await this.bot.api.sendMessage(Number(senderId), text);
+      return msg?.message_id ? { messageId: msg.message_id } : undefined;
+    }
+  }
+
+  async editMessage(
+    chatId: string,
+    messageId: number | string,
+    text: string,
+    _options?: SendMessageOptions,
+  ): Promise<boolean> {
+    const formatted = formatForTelegram(text);
+    try {
+      const opts: Record<string, string> = {};
+      if (formatted.parseMode) opts.parse_mode = formatted.parseMode;
+      await this.bot.api.editMessageText(
+        Number(chatId),
+        Number(messageId),
+        formatted.text,
+        opts,
+      );
+      return true;
+    } catch (error: unknown) {
+      if (isMessageNotModified(error)) return true;
+      return false;
     }
   }
 

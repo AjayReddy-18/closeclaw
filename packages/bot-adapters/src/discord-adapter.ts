@@ -5,6 +5,8 @@ import type {
   BotHealthResult,
   IncomingMessage,
   MessageHandler,
+  SendMessageOptions,
+  SendResult,
 } from "./adapter.js";
 
 function errorMessage(error: unknown): string {
@@ -111,13 +113,38 @@ export class DiscordAdapter implements BotAdapter {
     this.handlers.push(handler);
   }
 
+  private sentMessages = new Map<
+    string,
+    { edit: (text: string) => Promise<void> }
+  >();
+
   async sendMessage(
     senderId: string,
     text: string,
-    _options?: import("./adapter.js").SendMessageOptions,
-  ): Promise<void> {
+    _options?: SendMessageOptions,
+  ): Promise<SendResult | void> {
     const user = await this.client.users.fetch(senderId);
-    await user.send(text);
+    const sent = await user.send(text);
+    if (sent?.id) {
+      this.sentMessages.set(String(sent.id), sent);
+      return { messageId: sent.id };
+    }
+  }
+
+  async editMessage(
+    _chatId: string,
+    messageId: number | string,
+    text: string,
+    _options?: SendMessageOptions,
+  ): Promise<boolean> {
+    const msg = this.sentMessages.get(String(messageId));
+    if (!msg) return false;
+    try {
+      await msg.edit(text);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async sendTypingIndicator(senderId: string): Promise<void> {

@@ -54,6 +54,8 @@ export default defineConfig({
         "packages/*/src/index.ts",
         "packages/**/*.d.ts",
         "packages/cli/src/cli.ts",
+        "packages/bot-adapters/src/adapter.ts",
+        "packages/ai-agent/src/conversation-types.ts",
       ],
       thresholds: {
         statements: 90,

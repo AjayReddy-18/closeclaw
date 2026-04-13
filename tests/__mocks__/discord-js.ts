@@ -59,7 +59,14 @@ export class Client {
     this.users = {
       fetch: vi.fn(() =>
         Promise.resolve({
-          send: vi.fn().mockResolvedValue(undefined),
+          send: vi.fn().mockResolvedValue({
+            id: "msg-001",
+            edit: vi.fn().mockResolvedValue(undefined),
+          }),
+          dmChannel: { send: vi.fn().mockResolvedValue(undefined) },
+          createDM: vi.fn().mockResolvedValue({
+            sendTyping: vi.fn(),
+          }),
         }),
       ),
     };

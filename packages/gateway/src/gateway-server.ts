@@ -1,4 +1,4 @@
-import { createServer, type Server } from "node:http";
+import { createServer } from "node:http";
 import type {
   BotAdapter,
   IncomingMessage as BotIncomingMessage,
@@ -14,6 +14,8 @@ import {
   type ToolProgressRef,
   type PermissionRef,
   type ApprovalRef,
+  type OrchestrationPlanRef,
+  type OrchestrationRunner,
 } from "./gateway-agent-handler.js";
 import { routeRequest } from "./gateway-routes.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
@@ -21,6 +23,7 @@ import {
   createPairingManager,
   type PairingManager,
 } from "./pairing-manager.js";
+import { listenWithPortFallback } from "./server-listen.js";
 
 export type GatewayServerConfig = {
   port: number;
@@ -51,61 +54,18 @@ export type GatewayServerConfig = {
   toolProgressRef?: ToolProgressRef;
   permissionRef?: PermissionRef;
   approvalRef?: ApprovalRef;
+  orchestrationPlanRef?: OrchestrationPlanRef;
+  orchestrationRunner?: OrchestrationRunner;
 };
 
 export type GatewayServer = {
   start(): Promise<void>;
   stop(): Promise<void>;
-  address(): ReturnType<Server["address"]>;
+  address(): ReturnType<ReturnType<typeof createServer>["address"]>;
 };
 
 function parsePath(url: string | undefined): string {
   return url?.split("?")[0] ?? "";
-}
-
-const LISTEN_PORT_ATTEMPTS = 10;
-
-function isAddrInUse(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as NodeJS.ErrnoException).code === "EADDRINUSE"
-  );
-}
-
-function listenOnce(server: Server, port: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const onErr = (e: Error) => {
-      server.off("error", onErr);
-      reject(e);
-    };
-    server.once("error", onErr);
-    server.listen(port, "127.0.0.1", () => {
-      server.off("error", onErr);
-      resolve();
-    });
-  });
-}
-
-async function listenWithPortFallback(
-  server: Server,
-  basePort: number,
-): Promise<void> {
-  for (let i = 0; i < LISTEN_PORT_ATTEMPTS; i++) {
-    const port = basePort + i;
-    try {
-      await listenOnce(server, port);
-      const a = server.address();
-      if (typeof a === "object" && a !== null && "port" in a) {
-        console.log(`Gateway listening on port ${String(a.port)}`);
-      }
-      return;
-    } catch (e) {
-      const canRetry = i < LISTEN_PORT_ATTEMPTS - 1;
-      if (!isAddrInUse(e) || !canRetry) throw e;
-    }
-  }
 }
 
 function makeEnforcer(
@@ -132,6 +92,8 @@ function wireMessageHandlers(
       progress: cfg.toolProgressRef,
       permission: cfg.permissionRef,
       approval: cfg.approvalRef,
+      orchestrationPlan: cfg.orchestrationPlanRef,
+      orchestrationRunner: cfg.orchestrationRunner,
     };
     adapter.onMessage((msg: BotIncomingMessage) => {
       void handleAdapterMessage(
@@ -158,6 +120,8 @@ interface AdapterMsgRefs {
   progress?: ToolProgressRef;
   permission?: PermissionRef;
   approval?: ApprovalRef;
+  orchestrationPlan?: OrchestrationPlanRef;
+  orchestrationRunner?: OrchestrationRunner;
 }
 
 async function handleAdapterMessage(
@@ -186,6 +150,8 @@ async function handleAdapterMessage(
       refs.progress,
       refs.permission,
       refs.approval,
+      refs.orchestrationPlan,
+      refs.orchestrationRunner,
     ),
   );
 }

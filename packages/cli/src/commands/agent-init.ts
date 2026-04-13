@@ -16,6 +16,10 @@ import {
 } from "./scheduler-setup.js";
 import { setupCursorAgent, buildCursorTools } from "./cursor-setup.js";
 import type { ApprovalCallback } from "@closeclaw/ai-agent";
+import {
+  createParallelTasksTool,
+  type OrchestrationPlanRef,
+} from "@closeclaw/ai-agent";
 
 export interface AgentInit {
   store: ReturnType<typeof createPersistentConversationStore>;
@@ -36,6 +40,10 @@ export interface CursorApprovalRef {
   ask: ApprovalCallback;
 }
 
+export interface OrchestrationRef {
+  plan: { tasks: Array<{ label: string; prompt: string }> } | null;
+}
+
 export async function initAgent(
   config: Configuration,
   deps: AgentInitDeps,
@@ -45,6 +53,7 @@ export async function initAgent(
   adapters: BotAdapter[],
   progressRef: CursorProgressRef,
   approvalRef: CursorApprovalRef,
+  orchestrationRef?: OrchestrationRef,
 ): Promise<AgentInit | null> {
   if (!config.agent || !isValidAgentConfig(config.agent)) return null;
   const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
@@ -60,13 +69,21 @@ export async function initAgent(
       )
     : {};
   if (cursorSetup) console.log("[cursor] Cursor CLI agent available");
-  const extraTools = { ...schedTools, ...mcpTools.tools, ...cursorTools };
+  const planRef = orchestrationRef ?? { plan: null };
+  const parallelTool = { parallel_tasks: createParallelTasksTool(planRef) };
+  const extraTools = {
+    ...schedTools,
+    ...mcpTools.tools,
+    ...cursorTools,
+    ...parallelTool,
+  };
   const mcpToolNames = Object.keys(mcpTools.tools);
   const assembly = assembleAgent(
     config.agent,
     extraTools,
     mcpToolNames,
     cursorSetup !== null,
+    true,
   );
   adapters.forEach((a) =>
     a.onMessage((msg) => {

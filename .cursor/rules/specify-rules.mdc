@@ -6,7 +6,7 @@ alwaysApply: true
 
 # closeclaw Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-10
+Auto-generated from all feature plans. Last updated: 2026-04-13
 
 ## Constitution (SUPREME AUTHORITY)
 
@@ -34,6 +34,10 @@ All git write commands (commit, push, branch, merge, rebase, tag) MUST use `requ
 - `~/.closeclaw/cursor-sessions.json` (session records), `~/.closeclaw/config.json` (cursor agent config) (007-cursor-cli-delegation)
 - TypeScript 5.x (strict mode) + node-pty (v1.1.0+), existing: grammY, Vercel AI SDK, Commander.js (008-interactive-pty-mode)
 - Temporary session file (existing pattern in os.tmpdir) (008-interactive-pty-mode)
+- TypeScript 5.x (strict mode) + grammY (Telegram), Discord.js (Discord), Vercel AI SDK, node-pty (009-live-progress-streaming)
+- N/A (no persistent storage changes) (009-live-progress-streaming)
+- TypeScript 5.x (strict mode) + Vercel AI SDK (`ai@^6.0.0`), grammY, Discord.js, node-pty, Zod (010-multi-agent-orchestration)
+- File-based (JSON) for conversations, preferences, sessions — no changes needed (010-multi-agent-orchestration)
 
 - TypeScript 5.x (strict mode, no `any`)
 - pnpm monorepo: packages/shared-types, packages/bot-adapters, packages/gateway, packages/cli, packages/ai-agent
@@ -76,9 +80,9 @@ pnpm build               # Build all packages
 TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
+- 010-multi-agent-orchestration: Added TypeScript 5.x (strict mode) + Vercel AI SDK (`ai@^6.0.0`), grammY, Discord.js, node-pty, Zod
+- 009-live-progress-streaming: Added TypeScript 5.x (strict mode) + grammY (Telegram), Discord.js (Discord), Vercel AI SDK, node-pty
 - 008-interactive-pty-mode: Added TypeScript 5.x (strict mode) + node-pty (v1.1.0+), existing: grammY, Vercel AI SDK, Commander.js
-- 007-cursor-cli-delegation: Added TypeScript 5.x (strict mode) + Node.js `child_process` (spawn), `readline` (line parsing), `tmux` (safe mode TTY), Vercel AI SDK `tool()` + Zod (tool definitions)
-- 006-mcp-tool-integration: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -131,6 +131,7 @@ export {
 export {
   buildFullSystemPrompt,
   buildCursorAgentSection,
+  buildOrchestrationSection,
   type SystemPromptParts,
 } from "./system-prompt-builder.js";
 
@@ -144,3 +145,10 @@ export {
   createCursorResumeTool,
   type CursorResumeToolDeps,
 } from "./tools/cursor-resume-tool.js";
+
+export {
+  createParallelTasksTool,
+  parallelTasksSchema,
+  type ParallelTasksPlan,
+  type OrchestrationPlanRef,
+} from "./tools/parallel-tasks-tool.js";

@@ -2,14 +2,24 @@ import type {
   BotAdapter,
   IncomingMessage as BotIncomingMessage,
 } from "@closeclaw/bot-adapters";
+import { createLiveMessage, type LiveMessage } from "@closeclaw/bot-adapters";
 import type { GatewayServerConfig } from "./gateway-server.js";
+import {
+  createPermissionAsker,
+  createApprovalAsker,
+} from "./approval-handler.js";
+
+export {
+  resolvePermission,
+  resolveCallbackDecision,
+  createPermissionAsker,
+  createApprovalAsker,
+} from "./approval-handler.js";
 
 const GATEWAY_PROCESSING_FAILED =
   "I'm having trouble thinking right now. Please try again in a moment.";
 
 const TYPING_INTERVAL_MS = 4000;
-const APPROVAL_TIMEOUT_MS = 120_000;
-
 const senderQueues = new Map<string, Promise<void>>();
 
 export interface ToolProgressRef {
@@ -26,130 +36,39 @@ export interface ApprovalRef {
   ) => Promise<"approve" | "deny">;
 }
 
-const pendingDecisions = new Map<
-  string,
-  (decision: "accept" | "deny") => void
->();
-
-export function resolvePermission(senderId: string, text: string): boolean {
-  const resolver = pendingDecisions.get(senderId);
-  if (!resolver) return false;
-  const lower = text.trim().toLowerCase();
-  if (lower === "accept" || lower === "yes" || lower === "y") {
-    resolver("accept");
-    pendingDecisions.delete(senderId);
-    return true;
-  }
-  if (lower === "deny" || lower === "no" || lower === "n") {
-    resolver("deny");
-    pendingDecisions.delete(senderId);
-    return true;
-  }
-  return false;
+export interface OrchestrationPlanRef {
+  plan: { tasks: Array<{ label: string; prompt: string }> } | null;
 }
 
-export function resolveCallbackDecision(
-  senderId: string,
-  data: string,
-): boolean {
-  const resolver = pendingDecisions.get(senderId);
-  if (!resolver) return false;
-  if (data === "approval_accept") {
-    resolver("accept");
-    pendingDecisions.delete(senderId);
-    return true;
-  }
-  if (data === "approval_deny") {
-    resolver("deny");
-    pendingDecisions.delete(senderId);
-    return true;
-  }
-  return false;
-}
-
-function waitForDecision(
+export type OrchestrationRunner = (
   adapter: BotAdapter,
-  senderId: string,
-): Promise<"accept" | "deny"> {
-  return new Promise<"accept" | "deny">((resolve) => {
-    const timer = setTimeout(() => {
-      pendingDecisions.delete(senderId);
-      adapter
-        .sendMessage(senderId, "Permission timed out — auto-denied.")
-        .catch(() => {});
-      resolve("deny");
-    }, APPROVAL_TIMEOUT_MS);
-    pendingDecisions.set(senderId, (decision) => {
-      clearTimeout(timer);
-      resolve(decision);
-    });
-  });
-}
-
-export function createPermissionAsker(
-  adapter: BotAdapter,
-  senderId: string,
-): (prompt: string) => Promise<"accept" | "deny"> {
-  return async (prompt) => {
-    const buttons = [
-      [
-        { text: "Accept", callbackData: "approval_accept" },
-        { text: "Deny", callbackData: "approval_deny" },
-      ],
-    ];
-    if (adapter.sendMessageWithButtons) {
-      await adapter.sendMessageWithButtons(senderId, prompt, buttons);
-    } else {
-      await adapter.sendMessage(senderId, `${prompt}\n\nReply Accept or Deny`);
-    }
-    return waitForDecision(adapter, senderId);
-  };
-}
-
-export function createApprovalAsker(
-  adapter: BotAdapter,
-  senderId: string,
-): (
-  rejected: Array<{ command: string; description: string }>,
-) => Promise<"approve" | "deny"> {
-  return async (rejected) => {
-    const cmds = rejected.map((r) => `  • ${r.command}`).join("\n");
-    const text = `Cursor needs approval to run:\n${cmds}`;
-    const buttons = [
-      [
-        { text: "Accept", callbackData: "approval_accept" },
-        { text: "Deny", callbackData: "approval_deny" },
-      ],
-    ];
-    if (adapter.sendMessageWithButtons) {
-      await adapter.sendMessageWithButtons(senderId, text, buttons);
-    } else {
-      await adapter.sendMessage(senderId, `${text}\n\nReply Accept or Deny`);
-    }
-    return waitForDecision(adapter, senderId).then((d) =>
-      d === "accept" ? "approve" : "deny",
-    );
-  };
-}
-
-function safeTask(task: () => Promise<void>): () => Promise<void> {
-  return () =>
-    task().catch((err) => console.error("[gateway] Queued task failed:", err));
-}
+  msg: BotIncomingMessage,
+  tasks: Array<{ label: string; prompt: string }>,
+  processor: NonNullable<GatewayServerConfig["messageProcessor"]>,
+) => Promise<string>;
 
 export function enqueueForSender(key: string, task: () => Promise<void>): void {
   const prev = senderQueues.get(key) ?? Promise.resolve();
-  const safe = safeTask(task);
-  const next = prev.then(safe, safe);
-  senderQueues.set(key, next);
+  const safe = () =>
+    task().catch((err) => console.error("[gateway] Queued task failed:", err));
+  senderQueues.set(key, prev.then(safe, safe));
 }
 
 function startTypingLoop(adapter: BotAdapter, senderId: string): () => void {
-  const send = () =>
+  const tick = () =>
     void Promise.resolve(adapter.sendTypingIndicator(senderId)).catch(() => {});
-  send();
-  const id = setInterval(send, TYPING_INTERVAL_MS);
+  tick();
+  const id = setInterval(tick, TYPING_INTERVAL_MS);
   return () => clearInterval(id);
+}
+
+function buildLiveMessage(adapter: BotAdapter, senderId: string): LiveMessage {
+  return createLiveMessage({
+    sendMessage: (text) => adapter.sendMessage(senderId, text),
+    editMessage: adapter.editMessage
+      ? (msgId, text) => adapter.editMessage!(senderId, msgId, text)
+      : async () => false,
+  });
 }
 
 export async function runAgentResponse(
@@ -159,17 +78,20 @@ export async function runAgentResponse(
   progressRef?: ToolProgressRef,
   permissionRef?: PermissionRef,
   approvalRef?: ApprovalRef,
+  orchestrationPlanRef?: OrchestrationPlanRef,
+  orchestrationRunner?: OrchestrationRunner,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
-  const sendToUser = async (text: string): Promise<void> => {
-    await adapter.sendMessage(msg.senderId, text);
-    adapter.sendTypingIndicator(msg.senderId).catch(() => {});
-  };
+  const live = buildLiveMessage(adapter, msg.senderId);
+  live.update("Thinking...");
+  if (orchestrationPlanRef) orchestrationPlanRef.plan = null;
 
-  if (progressRef) progressRef.send = (text) => void sendToUser(text);
+  if (progressRef) progressRef.send = (text) => live.update(text);
+  const resetLive = () => live.reset();
   if (permissionRef)
-    permissionRef.ask = createPermissionAsker(adapter, msg.senderId);
-  if (approvalRef) approvalRef.ask = createApprovalAsker(adapter, msg.senderId);
+    permissionRef.ask = createPermissionAsker(adapter, msg.senderId, resetLive);
+  if (approvalRef)
+    approvalRef.ask = createApprovalAsker(adapter, msg.senderId, resetLive);
 
   try {
     const response = await processor.processMessage(
@@ -177,19 +99,31 @@ export async function runAgentResponse(
       msg.senderId,
       msg.text,
       msg.senderDisplayName,
-      async (text: string) => {
-        await sendToUser(text);
-      },
+      async (text: string) => live.update(text),
     );
     stopTyping();
-    await adapter.sendMessage(msg.senderId, response);
+
+    if (orchestrationPlanRef?.plan && orchestrationRunner) {
+      await live.finalize("Running tasks in parallel...");
+      live.dispose();
+      const summary = await orchestrationRunner(
+        adapter,
+        msg,
+        orchestrationPlanRef.plan.tasks,
+        processor,
+      );
+      return void summary;
+    }
+
+    await live.finalize(response || GATEWAY_PROCESSING_FAILED);
   } catch (error) {
     console.error("[gateway] Message processing failed:", error);
     stopTyping();
-    await adapter
-      .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
+    await live
+      .finalize(GATEWAY_PROCESSING_FAILED)
       .catch((e) => console.error("[gateway] Failed to send error reply:", e));
   } finally {
+    live.dispose();
     if (progressRef) progressRef.send = () => {};
     if (permissionRef) permissionRef.ask = async () => "deny";
     if (approvalRef) approvalRef.ask = async () => "deny";

@@ -11,6 +11,7 @@ An automation tool that connects AI models to messaging platforms like Telegram 
 - **Scheduled Automation** — Cron jobs, one-shot tasks, recurring intervals, and smart response suppression
 - **MCP Tool Integration** — Discover and use tools from external MCP servers (Jira, Confluence, Datadog, etc.)
 - **Cursor CLI Delegation** — Delegate coding tasks to Cursor's headless agent with real-time progress and interactive approval
+- **Live Progress Streaming** — Single live-updating message per response instead of multiple progress notifications
 - **Network Resilience** — DNS-over-HTTPS for reliable connectivity behind VPNs
 
 ## Prerequisites
@@ -268,6 +269,7 @@ Detailed docs for each feature are in the `docs/` directory:
 - [Response Formatting](docs/response-formatting.md)
 - [MCP Integration](docs/mcp-integration.md)
 - [Cursor Agent](docs/cursor-agent.md)
+- [Live Progress](docs/live-progress.md)
 
 ## License
 

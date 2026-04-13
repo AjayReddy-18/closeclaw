@@ -20,6 +20,10 @@ export interface SendMessageOptions {
   parseMode?: "HTML";
 }
 
+export interface SendResult {
+  messageId: number | string;
+}
+
 export interface InlineButton {
   text: string;
   callbackData: string;
@@ -36,7 +40,13 @@ export interface BotAdapter {
     senderId: string,
     text: string,
     options?: SendMessageOptions,
-  ): Promise<void>;
+  ): Promise<SendResult | void>;
+  editMessage?(
+    chatId: string,
+    messageId: number | string,
+    text: string,
+    options?: SendMessageOptions,
+  ): Promise<boolean>;
   sendMessageWithButtons?(
     senderId: string,
     text: string,

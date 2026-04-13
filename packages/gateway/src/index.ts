@@ -9,10 +9,13 @@ export {
   type ToolProgressRef,
   type PermissionRef,
   type ApprovalRef,
+  type OrchestrationPlanRef,
+  type OrchestrationRunner,
   resolvePermission,
   resolveCallbackDecision,
   createPermissionAsker,
   createApprovalAsker,
+  runAgentResponse,
 } from "./gateway-agent-handler.js";
 export {
   createPairingManager,
