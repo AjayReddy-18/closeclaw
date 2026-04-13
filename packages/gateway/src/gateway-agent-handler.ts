@@ -8,6 +8,7 @@ const GATEWAY_PROCESSING_FAILED =
   "I'm having trouble thinking right now. Please try again in a moment.";
 
 const TYPING_INTERVAL_MS = 4000;
+const APPROVAL_TIMEOUT_MS = 120_000;
 
 const senderQueues = new Map<string, Promise<void>>();
 
@@ -25,28 +26,64 @@ export interface ApprovalRef {
   ) => Promise<"approve" | "deny">;
 }
 
-const PERMISSION_TIMEOUT_MS = 120_000;
-
-const pendingPermissions = new Map<
+const pendingDecisions = new Map<
   string,
   (decision: "accept" | "deny") => void
 >();
 
 export function resolvePermission(senderId: string, text: string): boolean {
-  const resolver = pendingPermissions.get(senderId);
+  const resolver = pendingDecisions.get(senderId);
   if (!resolver) return false;
   const lower = text.trim().toLowerCase();
   if (lower === "accept" || lower === "yes" || lower === "y") {
     resolver("accept");
-    pendingPermissions.delete(senderId);
+    pendingDecisions.delete(senderId);
     return true;
   }
   if (lower === "deny" || lower === "no" || lower === "n") {
     resolver("deny");
-    pendingPermissions.delete(senderId);
+    pendingDecisions.delete(senderId);
     return true;
   }
   return false;
+}
+
+export function resolveCallbackDecision(
+  senderId: string,
+  data: string,
+): boolean {
+  const resolver = pendingDecisions.get(senderId);
+  if (!resolver) return false;
+  if (data === "approval_accept") {
+    resolver("accept");
+    pendingDecisions.delete(senderId);
+    return true;
+  }
+  if (data === "approval_deny") {
+    resolver("deny");
+    pendingDecisions.delete(senderId);
+    return true;
+  }
+  return false;
+}
+
+function waitForDecision(
+  adapter: BotAdapter,
+  senderId: string,
+): Promise<"accept" | "deny"> {
+  return new Promise<"accept" | "deny">((resolve) => {
+    const timer = setTimeout(() => {
+      pendingDecisions.delete(senderId);
+      adapter
+        .sendMessage(senderId, "Permission timed out — auto-denied.")
+        .catch(() => {});
+      resolve("deny");
+    }, APPROVAL_TIMEOUT_MS);
+    pendingDecisions.set(senderId, (decision) => {
+      clearTimeout(timer);
+      resolve(decision);
+    });
+  });
 }
 
 export function createPermissionAsker(
@@ -54,21 +91,18 @@ export function createPermissionAsker(
   senderId: string,
 ): (prompt: string) => Promise<"accept" | "deny"> {
   return async (prompt) => {
-    const message = `🔐 Cursor is asking:\n${prompt}\n\nReply Accept or Deny`;
-    await adapter.sendMessage(senderId, message);
-    return new Promise<"accept" | "deny">((resolve) => {
-      const timer = setTimeout(() => {
-        pendingPermissions.delete(senderId);
-        adapter
-          .sendMessage(senderId, "⏰ Permission timed out — auto-denied.")
-          .catch(() => {});
-        resolve("deny");
-      }, PERMISSION_TIMEOUT_MS);
-      pendingPermissions.set(senderId, (decision) => {
-        clearTimeout(timer);
-        resolve(decision);
-      });
-    });
+    const buttons = [
+      [
+        { text: "Accept", callbackData: "approval_accept" },
+        { text: "Deny", callbackData: "approval_deny" },
+      ],
+    ];
+    if (adapter.sendMessageWithButtons) {
+      await adapter.sendMessageWithButtons(senderId, prompt, buttons);
+    } else {
+      await adapter.sendMessage(senderId, `${prompt}\n\nReply Accept or Deny`);
+    }
+    return waitForDecision(adapter, senderId);
   };
 }
 
@@ -80,21 +114,21 @@ export function createApprovalAsker(
 ) => Promise<"approve" | "deny"> {
   return async (rejected) => {
     const cmds = rejected.map((r) => `  • ${r.command}`).join("\n");
-    const message = `Cursor needs approval to run:\n${cmds}\n\nReply Accept or Deny`;
-    await adapter.sendMessage(senderId, message);
-    return new Promise<"approve" | "deny">((resolve) => {
-      const timer = setTimeout(() => {
-        pendingPermissions.delete(senderId);
-        adapter
-          .sendMessage(senderId, "Permission timed out — auto-denied.")
-          .catch(() => {});
-        resolve("deny");
-      }, PERMISSION_TIMEOUT_MS);
-      pendingPermissions.set(senderId, (decision) => {
-        clearTimeout(timer);
-        resolve(decision === "accept" ? "approve" : "deny");
-      });
-    });
+    const text = `Cursor needs approval to run:\n${cmds}`;
+    const buttons = [
+      [
+        { text: "Accept", callbackData: "approval_accept" },
+        { text: "Deny", callbackData: "approval_deny" },
+      ],
+    ];
+    if (adapter.sendMessageWithButtons) {
+      await adapter.sendMessageWithButtons(senderId, text, buttons);
+    } else {
+      await adapter.sendMessage(senderId, `${text}\n\nReply Accept or Deny`);
+    }
+    return waitForDecision(adapter, senderId).then((d) =>
+      d === "accept" ? "approve" : "deny",
+    );
   };
 }
 
@@ -127,25 +161,15 @@ export async function runAgentResponse(
   approvalRef?: ApprovalRef,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
-
   const sendToUser = async (text: string): Promise<void> => {
     await adapter.sendMessage(msg.senderId, text);
     adapter.sendTypingIndicator(msg.senderId).catch(() => {});
   };
 
-  const onIntermediate = async (text: string): Promise<void> => {
-    await sendToUser(text);
-  };
-
-  if (progressRef) {
-    progressRef.send = (text) => void sendToUser(text);
-  }
-  if (permissionRef) {
+  if (progressRef) progressRef.send = (text) => void sendToUser(text);
+  if (permissionRef)
     permissionRef.ask = createPermissionAsker(adapter, msg.senderId);
-  }
-  if (approvalRef) {
-    approvalRef.ask = createApprovalAsker(adapter, msg.senderId);
-  }
+  if (approvalRef) approvalRef.ask = createApprovalAsker(adapter, msg.senderId);
 
   try {
     const response = await processor.processMessage(
@@ -153,7 +177,9 @@ export async function runAgentResponse(
       msg.senderId,
       msg.text,
       msg.senderDisplayName,
-      onIntermediate,
+      async (text: string) => {
+        await sendToUser(text);
+      },
     );
     stopTyping();
     await adapter.sendMessage(msg.senderId, response);
@@ -162,9 +188,7 @@ export async function runAgentResponse(
     stopTyping();
     await adapter
       .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
-      .catch((sendErr) =>
-        console.error("[gateway] Failed to send error reply:", sendErr),
-      );
+      .catch((e) => console.error("[gateway] Failed to send error reply:", e));
   } finally {
     if (progressRef) progressRef.send = () => {};
     if (permissionRef) permissionRef.ask = async () => "deny";

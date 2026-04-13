@@ -10,6 +10,7 @@ export {
   type PermissionRef,
   type ApprovalRef,
   resolvePermission,
+  resolveCallbackDecision,
   createPermissionAsker,
   createApprovalAsker,
 } from "./gateway-agent-handler.js";

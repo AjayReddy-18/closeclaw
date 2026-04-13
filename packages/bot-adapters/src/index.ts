@@ -1,7 +1,9 @@
 export type {
   BotAdapter,
   BotHealthResult,
+  CallbackQuery,
   IncomingMessage,
+  InlineButton,
   MessageHandler,
   SendMessageOptions,
 } from "./adapter.js";

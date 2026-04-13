@@ -10,6 +10,7 @@ import {
   maybeSendPairingReply,
   runAgentResponse,
   resolvePermission,
+  resolveCallbackDecision,
   type ToolProgressRef,
   type PermissionRef,
   type ApprovalRef,
@@ -127,6 +128,11 @@ function wireMessageHandlers(
   const resolver = cfg.getDmSettings;
   if (!resolver) return;
   for (const adapter of cfg.adapters) {
+    const refs = {
+      progress: cfg.toolProgressRef,
+      permission: cfg.permissionRef,
+      approval: cfg.approvalRef,
+    };
     adapter.onMessage((msg: BotIncomingMessage) => {
       void handleAdapterMessage(
         adapter,
@@ -134,25 +140,35 @@ function wireMessageHandlers(
         msg,
         resolver,
         cfg.messageProcessor,
-        cfg.toolProgressRef,
-        cfg.permissionRef,
-        cfg.approvalRef,
+        refs,
       );
     });
+    if (adapter.onCallbackQuery) {
+      adapter.onCallbackQuery((query) => {
+        const resolved = resolveCallbackDecision(query.senderId, query.data);
+        if (resolved && adapter.answerCallbackQuery) {
+          adapter.answerCallbackQuery(query.id, "Done").catch(() => {});
+        }
+      });
+    }
   }
+}
+
+interface AdapterMsgRefs {
+  progress?: ToolProgressRef;
+  permission?: PermissionRef;
+  approval?: ApprovalRef;
 }
 
 async function handleAdapterMessage(
   adapter: BotAdapter,
-  pairingManager: PairingManager,
+  pm: PairingManager,
   msg: BotIncomingMessage,
   resolver: NonNullable<GatewayServerConfig["getDmSettings"]>,
-  messageProcessor: GatewayServerConfig["messageProcessor"],
-  progressRef?: ToolProgressRef,
-  permissionRef?: PermissionRef,
-  approvalRef?: ApprovalRef,
+  processor: GatewayServerConfig["messageProcessor"],
+  refs: AdapterMsgRefs,
 ): Promise<void> {
-  const enforcer = makeEnforcer(resolver, pairingManager, msg.platform);
+  const enforcer = makeEnforcer(resolver, pm, msg.platform);
   const { allowed, pairingCode } = await enforcer.shouldAllow(
     msg.senderId,
     msg.platform,
@@ -161,16 +177,15 @@ async function handleAdapterMessage(
     return maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
   if (resolvePermission(msg.senderId, msg.text)) return;
   logAcceptedMessage(msg);
-  if (!messageProcessor) return;
-  const key = `${msg.platform}:${msg.senderId}`;
-  enqueueForSender(key, () =>
+  if (!processor) return;
+  enqueueForSender(`${msg.platform}:${msg.senderId}`, () =>
     runAgentResponse(
       adapter,
-      messageProcessor,
+      processor,
       msg,
-      progressRef,
-      permissionRef,
-      approvalRef,
+      refs.progress,
+      refs.permission,
+      refs.approval,
     ),
   );
 }

@@ -1,90 +1,27 @@
-import { Agent as HttpsAgent } from "node:https";
-import { get as httpsGet } from "node:https";
-import { Bot, type Context } from "grammy";
+import { Bot, InlineKeyboard, type Context } from "grammy";
 import { BotPlatform } from "@closeclaw/shared-types";
 import type {
   BotAdapter,
   BotHealthResult,
+  CallbackQuery,
   IncomingMessage,
+  InlineButton,
   MessageHandler,
   SendMessageOptions,
 } from "./adapter.js";
 import { formatForTelegram } from "./formatter/markdown-to-telegram.js";
 import { splitMessage } from "./formatter/message-splitter.js";
+import { createPublicDnsAgent } from "./doh-resolver.js";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-const dohCache = new Map<string, { ip: string; expiresAt: number }>();
-const DOH_CACHE_TTL_MS = 120_000;
-
-function resolveViaDoh(hostname: string): Promise<string> {
-  const cached = dohCache.get(hostname);
-  if (cached && cached.expiresAt > Date.now())
-    return Promise.resolve(cached.ip);
-
-  return new Promise((resolve, reject) => {
-    const url = `https://dns.google/resolve?name=${encodeURIComponent(hostname)}&type=A`;
-    httpsGet(url, (res) => {
-      let body = "";
-      res.on("data", (chunk: Buffer) => {
-        body += chunk.toString();
-      });
-      res.on("end", () => {
-        try {
-          const json = JSON.parse(body) as {
-            Answer?: Array<{ type: number; data: string }>;
-          };
-          const aRecord = json.Answer?.find((r) => r.type === 1);
-          if (!aRecord) {
-            reject(new Error(`DoH: no A record for ${hostname}`));
-            return;
-          }
-          dohCache.set(hostname, {
-            ip: aRecord.data,
-            expiresAt: Date.now() + DOH_CACHE_TTL_MS,
-          });
-          resolve(aRecord.data);
-        } catch {
-          reject(new Error(`DoH: failed to parse response for ${hostname}`));
-        }
-      });
-    }).on("error", (err) => reject(err));
-  });
-}
-
-function createPublicDnsAgent(): HttpsAgent {
-  return new HttpsAgent({
-    keepAlive: true,
-    lookup: (hostname, options, callback) => {
-      if (typeof options === "function") {
-        callback = options;
-        options = {};
-      }
-      resolveViaDoh(hostname).then(
-        (ip) => {
-          const all =
-            typeof options === "object" &&
-            options !== null &&
-            "all" in options &&
-            options.all;
-          if (all) {
-            callback(null, [{ address: ip, family: 4 }] as never);
-          } else {
-            callback(null, ip, 4);
-          }
-        },
-        (err) => callback(err),
-      );
-    },
-  });
 }
 
 export class TelegramAdapter implements BotAdapter {
   readonly platform = BotPlatform.TELEGRAM;
   private readonly bot: Bot;
   private handlers: MessageHandler[] = [];
+  private callbackHandlers: Array<(q: CallbackQuery) => void> = [];
 
   constructor(options: { token: string }) {
     const agent = createPublicDnsAgent();
@@ -96,6 +33,14 @@ export class TelegramAdapter implements BotAdapter {
     });
     this.bot.on("message:text", (ctx) => {
       this.emitText(ctx);
+    });
+    this.bot.on("callback_query:data", (ctx) => {
+      const q: CallbackQuery = {
+        id: ctx.callbackQuery.id,
+        senderId: String(ctx.callbackQuery.from.id),
+        data: ctx.callbackQuery.data,
+      };
+      for (const h of this.callbackHandlers) h(q);
     });
   }
 
@@ -127,8 +72,7 @@ export class TelegramAdapter implements BotAdapter {
   private formatSender(from: Context["from"]): string | undefined {
     if (!from) return undefined;
     const name = [from.first_name, from.last_name].filter(Boolean).join(" ");
-    if (name.length > 0) return name;
-    return from.username;
+    return name.length > 0 ? name : from.username;
   }
 
   async healthCheck(): Promise<BotHealthResult> {
@@ -143,7 +87,6 @@ export class TelegramAdapter implements BotAdapter {
   async connect(): Promise<void> {
     await this.bot.start();
   }
-
   async disconnect(): Promise<void> {
     try {
       await this.bot.stop();
@@ -154,6 +97,10 @@ export class TelegramAdapter implements BotAdapter {
 
   onMessage(handler: MessageHandler): void {
     this.handlers.push(handler);
+  }
+
+  onCallbackQuery(handler: (query: CallbackQuery) => void): void {
+    this.callbackHandlers.push(handler);
   }
 
   async sendMessage(
@@ -180,6 +127,25 @@ export class TelegramAdapter implements BotAdapter {
     } catch {
       await this.bot.api.sendMessage(Number(senderId), text);
     }
+  }
+
+  async sendMessageWithButtons(
+    senderId: string,
+    text: string,
+    buttons: InlineButton[][],
+  ): Promise<void> {
+    const kb = new InlineKeyboard();
+    for (const row of buttons) {
+      for (const btn of row) kb.text(btn.text, btn.callbackData);
+      kb.row();
+    }
+    await this.bot.api.sendMessage(Number(senderId), text, {
+      reply_markup: kb,
+    });
+  }
+
+  async answerCallbackQuery(queryId: string, text?: string): Promise<void> {
+    await this.bot.api.answerCallbackQuery(queryId, { text });
   }
 
   async sendTypingIndicator(senderId: string): Promise<void> {
