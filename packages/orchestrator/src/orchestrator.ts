@@ -1,6 +1,11 @@
-import type { OrchestrationSession, OrchestrationDeps, SubtaskResult } from "./types.js";
+import type {
+  OrchestrationSession,
+  OrchestrationDeps,
+  SubtaskResult,
+} from "./types.js";
 import { createSubtaskRunner } from "./subtask-runner.js";
 import { buildOrchestrationSummary } from "./summary-builder.js";
+import { createApprovalQueue } from "./approval-queue.js";
 
 function collectResults(
   settled: PromiseSettledResult<SubtaskResult>[],
@@ -17,11 +22,21 @@ function collectResults(
   );
 }
 
+function buildApprovalAskFn(deps: OrchestrationDeps) {
+  if (!deps.approvalAsk) return undefined;
+  const queue = createApprovalQueue(async (prompt) => {
+    const items = [{ command: prompt, description: prompt }];
+    return deps.approvalAsk!("orchestration", items);
+  });
+  return queue;
+}
+
 export async function runOrchestration(
   session: OrchestrationSession,
   deps: OrchestrationDeps,
 ): Promise<string> {
   const liveMessages = session.subtasks.map(() => deps.createLiveMessage());
+  const approvalQueue = buildApprovalAskFn(deps);
 
   const runners = session.subtasks.map((plan, index) =>
     createSubtaskRunner(plan, liveMessages[index], {
@@ -37,6 +52,7 @@ export async function runOrchestration(
   const summary = buildOrchestrationSummary(results);
 
   await deps.sendSummary(summary);
+  approvalQueue?.dispose();
   for (const live of liveMessages) live.dispose();
 
   return summary;
