@@ -110,4 +110,50 @@ describe("createSubtaskRunner", () => {
     await runner();
     expect(live.finalize).toHaveBeenCalledWith(expect.stringContaining("Timeout"));
   });
+
+  it("prefixes initial update with subtask label", async () => {
+    const { createSubtaskRunner } = await loadModule();
+    const plan = makePlan({ label: "Fetch Jira" });
+    const live = makeLive();
+    const deps = makeDeps("Done");
+    const runner = createSubtaskRunner(plan, live, deps);
+    await runner();
+    expect(live.update).toHaveBeenCalledWith("[Fetch Jira] Starting...");
+  });
+
+  it("prefixes intermediate updates with subtask label", async () => {
+    const { createSubtaskRunner } = await loadModule();
+    const plan = makePlan({ label: "Check CI" });
+    const live = makeLive();
+    const deps = makeDeps("Done");
+    deps.processMessage.mockImplementation(
+      async (_p: string, _s: string, _t: string, _d?: string, onIntermediate?: (text: string) => Promise<void>) => {
+        if (onIntermediate) await onIntermediate("Querying...");
+        return "Done";
+      },
+    );
+    const runner = createSubtaskRunner(plan, live, deps);
+    await runner();
+    expect(live.update).toHaveBeenCalledWith("[Check CI] Querying...");
+  });
+
+  it("prefixes finalize with subtask label on success", async () => {
+    const { createSubtaskRunner } = await loadModule();
+    const plan = makePlan({ label: "Run tests" });
+    const live = makeLive();
+    const deps = makeDeps("All passed");
+    const runner = createSubtaskRunner(plan, live, deps);
+    await runner();
+    expect(live.finalize).toHaveBeenCalledWith("[Run tests] All passed");
+  });
+
+  it("prefixes finalize with subtask label on error", async () => {
+    const { createSubtaskRunner } = await loadModule();
+    const plan = makePlan({ label: "Deploy" });
+    const live = makeLive();
+    const deps = makeDeps(new Error("Auth failed"));
+    const runner = createSubtaskRunner(plan, live, deps);
+    await runner();
+    expect(live.finalize).toHaveBeenCalledWith("[Deploy] Error: Auth failed");
+  });
 });

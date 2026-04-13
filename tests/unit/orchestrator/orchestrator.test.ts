@@ -96,4 +96,70 @@ describe("runOrchestration", () => {
     expect(deps.processMessage).toHaveBeenCalledTimes(3);
     expect(deps.sendSummary).toHaveBeenCalledTimes(1);
   });
+
+  it("summary sent as new message after all subtasks finalize", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = makeDeps();
+    await runOrchestration(makeSession(), deps);
+    expect(deps.sendSummary).toHaveBeenCalledTimes(1);
+    expect(deps.sendSummary).toHaveBeenCalledAfter(deps.processMessage);
+  });
+
+  it("summary contains per-subtask status indicators", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = makeDeps(["Success result", "Another success"]);
+    await runOrchestration(makeSession(), deps);
+    const summary = deps.sendSummary.mock.calls[0][0] as string;
+    expect(summary).toContain("\u2705");
+    expect(summary).toContain("Task 1");
+    expect(summary).toContain("Task 2");
+  });
+
+  it("summary shows mixed success/failure when one subtask fails", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = makeDeps(["Good result", new Error("Bad result")]);
+    await runOrchestration(makeSession(), deps);
+    const summary = deps.sendSummary.mock.calls[0][0] as string;
+    expect(summary).toContain("\u2705");
+    expect(summary).toContain("\u274C");
+    expect(summary).toContain("Good result");
+    expect(summary).toContain("Bad result");
+  });
+
+  it("one failure does not prevent other subtasks from completing", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = makeDeps([new Error("First fails"), "Second succeeds"]);
+    await runOrchestration(makeSession(), deps);
+    expect(deps.processMessage).toHaveBeenCalledTimes(2);
+    const summary = deps.sendSummary.mock.calls[0][0] as string;
+    expect(summary).toContain("Second succeeds");
+    expect(summary).toContain("1 of 2 tasks succeeded");
+  });
+
+  it("all failures still produce a summary", async () => {
+    const { runOrchestration } = await loadModule();
+    const deps = makeDeps([new Error("Err A"), new Error("Err B")]);
+    await runOrchestration(makeSession(), deps);
+    const summary = deps.sendSummary.mock.calls[0][0] as string;
+    expect(summary).toContain("All 2 tasks failed");
+    expect(summary).toContain("Err A");
+    expect(summary).toContain("Err B");
+  });
+
+  it("disposes LiveMessages even when subtasks fail", async () => {
+    const { runOrchestration } = await loadModule();
+    const liveInstances: ReturnType<typeof makeLive>[] = [];
+    const deps = {
+      ...makeDeps([new Error("fail"), "ok"]),
+      createLiveMessage: vi.fn().mockImplementation(() => {
+        const l = makeLive();
+        liveInstances.push(l);
+        return l;
+      }),
+    };
+    await runOrchestration(makeSession(), deps);
+    for (const l of liveInstances) {
+      expect(l.dispose).toHaveBeenCalled();
+    }
+  });
 });
