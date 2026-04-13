@@ -7,13 +7,96 @@ import type { GatewayServerConfig } from "./gateway-server.js";
 const GATEWAY_PROCESSING_FAILED =
   "I'm having trouble thinking right now. Please try again in a moment.";
 
-const PROCESSING_ACK_DELAY_MS = 5000;
-
-const STILL_WORKING_DELAY_MS = 30_000;
-
 const TYPING_INTERVAL_MS = 4000;
 
 const senderQueues = new Map<string, Promise<void>>();
+
+export interface ToolProgressRef {
+  send: (text: string) => void;
+}
+
+export interface PermissionRef {
+  ask: (prompt: string) => Promise<"accept" | "deny">;
+}
+
+export interface ApprovalRef {
+  ask: (
+    rejected: Array<{ command: string; description: string }>,
+  ) => Promise<"approve" | "deny">;
+}
+
+const PERMISSION_TIMEOUT_MS = 120_000;
+
+const pendingPermissions = new Map<
+  string,
+  (decision: "accept" | "deny") => void
+>();
+
+export function resolvePermission(senderId: string, text: string): boolean {
+  const resolver = pendingPermissions.get(senderId);
+  if (!resolver) return false;
+  const lower = text.trim().toLowerCase();
+  if (lower === "accept" || lower === "yes" || lower === "y") {
+    resolver("accept");
+    pendingPermissions.delete(senderId);
+    return true;
+  }
+  if (lower === "deny" || lower === "no" || lower === "n") {
+    resolver("deny");
+    pendingPermissions.delete(senderId);
+    return true;
+  }
+  return false;
+}
+
+export function createPermissionAsker(
+  adapter: BotAdapter,
+  senderId: string,
+): (prompt: string) => Promise<"accept" | "deny"> {
+  return async (prompt) => {
+    const message = `🔐 Cursor is asking:\n${prompt}\n\nReply Accept or Deny`;
+    await adapter.sendMessage(senderId, message);
+    return new Promise<"accept" | "deny">((resolve) => {
+      const timer = setTimeout(() => {
+        pendingPermissions.delete(senderId);
+        adapter
+          .sendMessage(senderId, "⏰ Permission timed out — auto-denied.")
+          .catch(() => {});
+        resolve("deny");
+      }, PERMISSION_TIMEOUT_MS);
+      pendingPermissions.set(senderId, (decision) => {
+        clearTimeout(timer);
+        resolve(decision);
+      });
+    });
+  };
+}
+
+export function createApprovalAsker(
+  adapter: BotAdapter,
+  senderId: string,
+): (
+  rejected: Array<{ command: string; description: string }>,
+) => Promise<"approve" | "deny"> {
+  return async (rejected) => {
+    const cmds = rejected.map((r) => `  • ${r.command}`).join("\n");
+    const message = `Cursor needs approval to run:\n${cmds}\n\nReply Accept or Deny`;
+    await adapter.sendMessage(senderId, message);
+    return new Promise<"approve" | "deny">((resolve) => {
+      const timer = setTimeout(() => {
+        pendingPermissions.delete(senderId);
+        adapter
+          .sendMessage(senderId, "Permission timed out — auto-denied.")
+          .catch(() => {});
+        resolve("deny");
+      }, PERMISSION_TIMEOUT_MS);
+      pendingPermissions.set(senderId, (decision) => {
+        clearTimeout(timer);
+        resolve(decision === "accept" ? "approve" : "deny");
+      });
+    });
+  };
+}
 
 function safeTask(task: () => Promise<void>): () => Promise<void> {
   return () =>
@@ -35,50 +118,34 @@ function startTypingLoop(adapter: BotAdapter, senderId: string): () => void {
   return () => clearInterval(id);
 }
 
-function scheduleProcessingAck(
-  adapter: BotAdapter,
-  senderId: string,
-): NodeJS.Timeout {
-  return setTimeout(() => {
-    void adapter
-      .sendMessage(senderId, "Processing your message...")
-      .catch(() => {});
-  }, PROCESSING_ACK_DELAY_MS);
-}
-
-function scheduleStillWorkingReminder(
-  adapter: BotAdapter,
-  senderId: string,
-): NodeJS.Timeout {
-  return setTimeout(() => {
-    void adapter
-      .sendMessage(senderId, "Still working on it...")
-      .catch(() => {});
-  }, STILL_WORKING_DELAY_MS);
-}
-
 export async function runAgentResponse(
   adapter: BotAdapter,
   processor: NonNullable<GatewayServerConfig["messageProcessor"]>,
   msg: BotIncomingMessage,
+  progressRef?: ToolProgressRef,
+  permissionRef?: PermissionRef,
+  approvalRef?: ApprovalRef,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
-  const processingTimer = scheduleProcessingAck(adapter, msg.senderId);
-  const stillWorkingTimer = scheduleStillWorkingReminder(adapter, msg.senderId);
 
-  let ackCleared = false;
-  function clearAckOnce(): void {
-    if (ackCleared) return;
-    ackCleared = true;
-    clearTimeout(processingTimer);
-    if (stillWorkingTimer) clearTimeout(stillWorkingTimer);
-  }
-
-  const onIntermediate = async (text: string): Promise<void> => {
-    clearAckOnce();
+  const sendToUser = async (text: string): Promise<void> => {
     await adapter.sendMessage(msg.senderId, text);
     adapter.sendTypingIndicator(msg.senderId).catch(() => {});
   };
+
+  const onIntermediate = async (text: string): Promise<void> => {
+    await sendToUser(text);
+  };
+
+  if (progressRef) {
+    progressRef.send = (text) => void sendToUser(text);
+  }
+  if (permissionRef) {
+    permissionRef.ask = createPermissionAsker(adapter, msg.senderId);
+  }
+  if (approvalRef) {
+    approvalRef.ask = createApprovalAsker(adapter, msg.senderId);
+  }
 
   try {
     const response = await processor.processMessage(
@@ -88,18 +155,20 @@ export async function runAgentResponse(
       msg.senderDisplayName,
       onIntermediate,
     );
-    clearAckOnce();
     stopTyping();
     await adapter.sendMessage(msg.senderId, response);
   } catch (error) {
     console.error("[gateway] Message processing failed:", error);
-    clearAckOnce();
     stopTyping();
     await adapter
       .sendMessage(msg.senderId, GATEWAY_PROCESSING_FAILED)
       .catch((sendErr) =>
         console.error("[gateway] Failed to send error reply:", sendErr),
       );
+  } finally {
+    if (progressRef) progressRef.send = () => {};
+    if (permissionRef) permissionRef.ask = async () => "deny";
+    if (approvalRef) approvalRef.ask = async () => "deny";
   }
 }
 

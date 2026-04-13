@@ -2,48 +2,60 @@ import { describe, it, expect, vi } from "vitest";
 import {
   runTrustMode,
   type TrustModeRunnerDeps,
+  type SpawnAgentHandle,
 } from "@closeclaw/cursor-agent";
 
+function createMockHandle(lines: string[], exitCode: number): SpawnAgentHandle {
+  let lineCallback: ((line: string) => void) | undefined;
+  return {
+    onLine: (cb) => {
+      lineCallback = cb;
+    },
+    wait: () => {
+      for (const line of lines) lineCallback?.(line);
+      return Promise.resolve(exitCode);
+    },
+  };
+}
+
 function createMockDeps(
-  overrides: Partial<TrustModeRunnerDeps> = {},
+  lines: string[] = [],
+  exitCode = 0,
 ): TrustModeRunnerDeps {
   return {
-    spawnAgent: vi.fn().mockResolvedValue({
-      stdout: [],
-      exitCode: 0,
-    }),
-    ...overrides,
+    spawnAgent: vi.fn(() => createMockHandle(lines, exitCode)),
   };
 }
 
 describe("runTrustMode", () => {
   it("spawns agent with correct arguments", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [JSON.stringify({ type: "result", content: "Task done" })],
-      exitCode: 0,
-    });
-    const deps = createMockDeps({ spawnAgent });
+    const deps = createMockDeps(
+      [JSON.stringify({ type: "result", result: "Task done" })],
+      0,
+    );
     await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,
       vi.fn(),
     );
-    expect(spawnAgent).toHaveBeenCalledOnce();
-    const call = spawnAgent.mock.calls[0];
+    expect(deps.spawnAgent).toHaveBeenCalledOnce();
+    const call = (deps.spawnAgent as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(call[0]).toContain("fix lint");
     expect(call[1]).toBe("/tmp/proj");
   });
 
   it("calls onProgress for assistant events", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [
-        JSON.stringify({ type: "assistant", content: "Working on it" }),
-        JSON.stringify({ type: "result", content: "Done" }),
-      ],
-      exitCode: 0,
-    });
+    const deps = createMockDeps([
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          role: "assistant",
+          content: [{ type: "text", text: "Working on it" }],
+        },
+      }),
+      JSON.stringify({ type: "result", result: "Done" }),
+    ]);
     const onProgress = vi.fn();
-    const deps = createMockDeps({ spawnAgent });
     await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,
@@ -55,11 +67,10 @@ describe("runTrustMode", () => {
   });
 
   it("returns completed status on success", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [JSON.stringify({ type: "result", content: "All done" })],
-      exitCode: 0,
-    });
-    const deps = createMockDeps({ spawnAgent });
+    const deps = createMockDeps(
+      [JSON.stringify({ type: "result", result: "All done" })],
+      0,
+    );
     const result = await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,
@@ -70,11 +81,10 @@ describe("runTrustMode", () => {
   });
 
   it("returns failed status on non-zero exit", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [JSON.stringify({ type: "error", content: "Crashed" })],
-      exitCode: 1,
-    });
-    const deps = createMockDeps({ spawnAgent });
+    const deps = createMockDeps(
+      [JSON.stringify({ type: "error", content: "Crashed" })],
+      1,
+    );
     const result = await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,
@@ -84,23 +94,19 @@ describe("runTrustMode", () => {
   });
 
   it("collects tool_call events in output log", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [
-        JSON.stringify({
-          type: "tool_call",
-          toolName: "read_file",
-          status: "started",
-        }),
-        JSON.stringify({
-          type: "tool_call",
-          toolName: "read_file",
-          status: "completed",
-        }),
-        JSON.stringify({ type: "result", content: "Done" }),
-      ],
-      exitCode: 0,
-    });
-    const deps = createMockDeps({ spawnAgent });
+    const deps = createMockDeps([
+      JSON.stringify({
+        type: "tool_call",
+        toolName: "read_file",
+        status: "started",
+      }),
+      JSON.stringify({
+        type: "tool_call",
+        toolName: "read_file",
+        status: "completed",
+      }),
+      JSON.stringify({ type: "result", content: "Done" }),
+    ]);
     const result = await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,
@@ -109,12 +115,33 @@ describe("runTrustMode", () => {
     expect(result.outputLog.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("calls onProgress for tool_call events", async () => {
+    const deps = createMockDeps([
+      JSON.stringify({
+        type: "tool_call",
+        subtype: "started",
+        tool_call: {
+          shellToolCall: { description: "Install dependencies" },
+        },
+      }),
+      JSON.stringify({
+        type: "result",
+        result: "Done",
+      }),
+    ]);
+    const onProgress = vi.fn();
+    await runTrustMode(
+      { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
+      deps,
+      onProgress,
+    );
+    expect(onProgress).toHaveBeenCalledWith(
+      expect.stringContaining("Install dependencies"),
+    );
+  });
+
   it("handles empty output gracefully", async () => {
-    const spawnAgent = vi.fn().mockResolvedValue({
-      stdout: [],
-      exitCode: 0,
-    });
-    const deps = createMockDeps({ spawnAgent });
+    const deps = createMockDeps([], 0);
     const result = await runTrustMode(
       { prompt: "fix lint", projectDir: "/tmp/proj", timeoutMs: 5000 },
       deps,

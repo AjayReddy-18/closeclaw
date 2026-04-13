@@ -21,7 +21,6 @@ function createMockDeps(
       resume: vi.fn(),
     },
     onProgress: vi.fn(),
-    onPermission: vi.fn().mockResolvedValue("accept"),
     platform: "telegram",
     senderId: "user1",
     ...overrides,
@@ -53,16 +52,16 @@ describe("createCursorAgentTool", () => {
     expect(result).toContain("Fixed 3 lint errors");
   });
 
-  it("defaults mode to safe when not provided", async () => {
+  it("defaults mode to interactive when not provided", async () => {
     const deps = createMockDeps();
     const t = createCursorAgentTool(deps);
     await t.execute({
       prompt: "refactor module",
       projectDir: "/tmp/proj",
-      mode: undefined as unknown as "safe",
+      mode: undefined as unknown as "interactive",
     });
     expect(deps.sessionManager.start).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: "safe" }),
+      expect.objectContaining({ mode: "interactive" }),
     );
   });
 

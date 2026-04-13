@@ -6,7 +6,7 @@ alwaysApply: true
 
 # closeclaw Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-09
+Auto-generated from all feature plans. Last updated: 2026-04-10
 
 ## Constitution (SUPREME AUTHORITY)
 
@@ -32,6 +32,8 @@ All git write commands (commit, push, branch, merge, rebase, tag) MUST use `requ
 - JSON files (`~/.closeclaw/conversations/`, `~/.closeclaw/preferences/`, `~/.closeclaw/cron/tasks.json`) (005-agent-response-quality)
 - TypeScript 5.x (strict mode) + Node.js `child_process` (spawn), `readline` (line parsing), `tmux` (safe mode TTY), Vercel AI SDK `tool()` + Zod (tool definitions) (007-cursor-cli-delegation)
 - `~/.closeclaw/cursor-sessions.json` (session records), `~/.closeclaw/config.json` (cursor agent config) (007-cursor-cli-delegation)
+- TypeScript 5.x (strict mode) + node-pty (v1.1.0+), existing: grammY, Vercel AI SDK, Commander.js (008-interactive-pty-mode)
+- Temporary session file (existing pattern in os.tmpdir) (008-interactive-pty-mode)
 
 - TypeScript 5.x (strict mode, no `any`)
 - pnpm monorepo: packages/shared-types, packages/bot-adapters, packages/gateway, packages/cli, packages/ai-agent
@@ -74,9 +76,9 @@ pnpm build               # Build all packages
 TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
+- 008-interactive-pty-mode: Added TypeScript 5.x (strict mode) + node-pty (v1.1.0+), existing: grammY, Vercel AI SDK, Commander.js
 - 007-cursor-cli-delegation: Added TypeScript 5.x (strict mode) + Node.js `child_process` (spawn), `readline` (line parsing), `tmux` (safe mode TTY), Vercel AI SDK `tool()` + Zod (tool definitions)
 - 006-mcp-tool-integration: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 005-agent-response-quality: Added TypeScript 5.x (strict mode) + grammY (Telegram), Discord.js (Discord), Vercel AI SDK (`ai@^6.0.0`), `@closeclaw/ai-agent`, `@closeclaw/bot-adapters`, `@closeclaw/gateway`
 
 
 <!-- MANUAL ADDITIONS START -->

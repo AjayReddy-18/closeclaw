@@ -137,6 +137,7 @@ export {
 export {
   createCursorAgentTool,
   type CursorAgentToolDeps,
+  type ApprovalCallback,
 } from "./tools/cursor-agent-tool.js";
 
 export {

@@ -1,16 +1,25 @@
 import { z } from "zod";
 import { tool } from "ai";
 
+export interface RejectedToolInfo {
+  command: string;
+  description: string;
+}
+
+export type ApprovalCallback = (
+  rejected: RejectedToolInfo[],
+) => Promise<"approve" | "deny">;
+
 export interface CursorAgentToolDeps {
   sessionManager: {
     start: (params: {
       prompt: string;
       projectDir: string;
-      mode: "safe" | "trust";
+      mode: "interactive" | "trust";
       platform: string;
       senderId: string;
       onProgress: (text: string) => void;
-      onPermission: (prompt: string) => Promise<"accept" | "deny">;
+      onApprovalNeeded?: ApprovalCallback;
       timeoutMs?: number;
     }) => Promise<{ status: string; summary: string }>;
     cancel: (platform: string, senderId: string) => Promise<void>;
@@ -19,11 +28,10 @@ export interface CursorAgentToolDeps {
     resume: (
       chatId: string | undefined,
       onProgress: (text: string) => void,
-      onPermission: (prompt: string) => Promise<"accept" | "deny">,
     ) => Promise<{ status: string; summary: string }>;
   };
   onProgress: (text: string) => void;
-  onPermission: (prompt: string) => Promise<"accept" | "deny">;
+  onApprovalNeeded?: ApprovalCallback;
   platform: string;
   senderId: string;
 }
@@ -32,10 +40,12 @@ const inputSchema = z.object({
   prompt: z.string().describe("The coding task to delegate"),
   projectDir: z.string().describe("Absolute path to the project"),
   mode: z
-    .enum(["safe", "trust"])
+    .enum(["interactive", "trust"])
     .optional()
-    .default("safe")
-    .describe("Execution mode: safe (interactive) or trust (--force)"),
+    .default("interactive")
+    .describe(
+      "interactive: asks user approval for risky ops. trust: auto-accept all.",
+    ),
 });
 
 export function createCursorAgentTool(deps: CursorAgentToolDeps) {
@@ -45,14 +55,15 @@ export function createCursorAgentTool(deps: CursorAgentToolDeps) {
       "Use for refactoring, adding tests, fixing lint, writing code.",
     inputSchema,
     execute: async (params) => {
+      deps.onProgress("Delegating to Cursor agent...");
       const result = await deps.sessionManager.start({
         prompt: params.prompt,
         projectDir: params.projectDir,
-        mode: params.mode ?? "safe",
+        mode: params.mode ?? "interactive",
         platform: deps.platform,
         senderId: deps.senderId,
         onProgress: deps.onProgress,
-        onPermission: deps.onPermission,
+        onApprovalNeeded: deps.onApprovalNeeded,
       });
       const label = result.status === "completed" ? "completed" : "failed";
       return `Cursor task ${label}: ${result.summary}`;

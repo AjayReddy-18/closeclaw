@@ -6,6 +6,14 @@ export {
   type GatewayServerConfig,
 } from "./gateway-server.js";
 export {
+  type ToolProgressRef,
+  type PermissionRef,
+  type ApprovalRef,
+  resolvePermission,
+  createPermissionAsker,
+  createApprovalAsker,
+} from "./gateway-agent-handler.js";
+export {
   createPairingManager,
   type PairingManager,
 } from "./pairing-manager.js";

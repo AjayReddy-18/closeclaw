@@ -6,16 +6,22 @@ export type {
   SessionRecord,
   StreamJsonEvent,
   TaskResult,
+  RejectedTool,
+  PtySpawnOptions,
+  PtyHandle,
+  PtySpawnFn,
+  ProgressEvent,
+  DetectedPermission,
+  InteractiveTaskResult,
 } from "./types.js";
 export {
   CURSOR_AGENT_BINARY,
   DEFAULT_TIMEOUT_MS,
-  POLL_INTERVAL_MS,
   PROGRESS_THROTTLE_MS,
-  HEARTBEAT_SILENCE_MS,
   APPROVAL_TIMEOUT_MS,
   SESSION_MAX_AGE_MS,
-  TMUX_CAPTURE_LINES,
+  PTY_DEFAULT_COLS,
+  PTY_DEFAULT_ROWS,
 } from "./types.js";
 
 export {
@@ -26,31 +32,38 @@ export {
 
 export { parseStreamJsonEvents } from "./stream-json-parser.js";
 
-export {
-  createTmuxController,
-  type TmuxController,
-  type ShellExec,
-} from "./tmux-controller.js";
+export { createPtySpawner } from "./pty-spawner.js";
 
 export {
-  detectPermissionPrompt,
-  type DetectedPrompt,
-} from "./permission-detector.js";
+  stripAnsi,
+  createLineBuffer,
+  type LineBuffer,
+} from "./pty-output-parser.js";
+
+export { detectPtyPermission } from "./pty-permission-detector.js";
+
+export {
+  runInteractiveMode,
+  type InteractiveRunnerDeps,
+  type InteractiveResult,
+} from "./interactive-runner.js";
+
+export { buildStructuredSummary } from "./summary-builder.js";
+
+export {
+  runTrustMode,
+  type TrustModeRunnerDeps,
+  type SpawnAgentFn,
+  type SpawnAgentHandle,
+} from "./trust-mode-runner.js";
 
 export { createSessionStore, type SessionStore } from "./session-store.js";
-
-export { runTrustMode, type TrustModeRunnerDeps } from "./trust-mode-runner.js";
-
-export { runSafeMode, type SafeModeRunnerDeps } from "./safe-mode-runner.js";
-
-export {
-  createProgressThrottle,
-  type ProgressThrottle,
-} from "./progress-throttle.js";
 
 export {
   createCursorSessionManager,
   type CursorSessionManagerDeps,
   type CursorSessionManager,
   type SessionStartParams,
+  type OnApprovalNeeded,
+  type ApprovalDecision,
 } from "./session-manager.js";

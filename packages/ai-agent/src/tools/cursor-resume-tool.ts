@@ -6,12 +6,10 @@ export interface CursorResumeToolDeps {
     resume: (
       chatId: string | undefined,
       onProgress: (text: string) => void,
-      onPermission: (prompt: string) => Promise<"accept" | "deny">,
     ) => Promise<{ status: string; summary: string }>;
     listSessions: () => unknown[];
   };
   onProgress: (text: string) => void;
-  onPermission: (prompt: string) => Promise<"accept" | "deny">;
 }
 
 const inputSchema = z.object({
@@ -30,7 +28,6 @@ export function createCursorResumeTool(deps: CursorResumeToolDeps) {
       const result = await deps.sessionManager.resume(
         params.chatId,
         deps.onProgress,
-        deps.onPermission,
       );
       const label = result.status === "completed" ? "completed" : "failed";
       return `Cursor resume ${label}: ${result.summary}`;

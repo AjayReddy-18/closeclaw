@@ -96,12 +96,11 @@ function buildBehaviorSections(platform?: string): string {
 
 const CURSOR_AGENT_GUIDANCE = `Cursor Agent (code delegation):
 - You can delegate coding tasks to a local Cursor agent using the cursor_agent tool.
-- Use this for: refactoring, adding tests, fixing lint errors, writing code, analyzing codebases.
+- Use this for: refactoring, adding tests, fixing lint errors, writing code, building apps.
 - Do NOT use this for: simple questions, non-code tasks, tasks you can answer from memory.
-- Choose the mode automatically based on task risk — do NOT ask the user to pick:
-  - trust: lint fixes, formatting, doc generation, simple additions
-  - safe: refactoring, architecture changes, deletions, config changes
-- If the user explicitly says "use trust/force mode" or "use safe mode", respect that override.
+- Default mode is interactive: streams real-time progress (file writes, commands, tool calls) to the user.
+- Trust mode uses --force to auto-accept all operations. Only use when user explicitly requests it.
+- The user sees live updates as Cursor works: what files are being written, commands being run, etc.
 - To resume a previous session, use the cursor_resume tool.`;
 
 export function buildCursorAgentSection(hasCursorAgent: boolean): string {
