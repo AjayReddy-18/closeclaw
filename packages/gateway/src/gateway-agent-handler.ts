@@ -99,7 +99,10 @@ export async function runAgentResponse(
       msg.senderId,
       msg.text,
       msg.senderDisplayName,
-      async (text: string) => live.update(text),
+      async (text: string) => {
+        await live.finalize(text);
+        live.reset();
+      },
     );
     stopTyping();
 

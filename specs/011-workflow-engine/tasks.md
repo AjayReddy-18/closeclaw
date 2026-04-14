@@ -70,23 +70,23 @@
 
 ### Tests for User Story 1
 
-- [ ] T023 [P] [US1] Test workflow-runner in tests/unit/workflow/workflow-runner.test.ts (sequential steps, condition branching true/false, output forwarding between steps, step failure with stop policy, step failure with continue policy)
-- [ ] T024 [P] [US1] Test create-workflow-tool in tests/unit/ai-agent/create-workflow-tool.test.ts (schema validation, signal tool populates WorkflowPlanRef, execute returns definition)
-- [ ] T025 [P] [US1] Test workflow-scheduler in tests/unit/cli/workflow-scheduler.test.ts (arm cron workflow, disarm workflow, start re-arms all active cron workflows, stop clears timers)
-- [ ] T026 [P] [US1] Contract test for workflow definition schema in tests/contract/workflow-schema.test.ts (valid YAML examples from contracts/ parse and validate, invalid examples rejected)
+- [x] T023 [P] [US1] Test workflow-runner in tests/unit/workflow/workflow-runner.test.ts (sequential steps, condition branching true/false, output forwarding between steps, step failure with stop policy, step failure with continue policy)
+- [x] T024 [P] [US1] Test create-workflow-tool in tests/unit/ai-agent/create-workflow-tool.test.ts (schema validation, signal tool populates WorkflowPlanRef, execute returns definition)
+- [x] T025 [P] [US1] Test workflow-scheduler in tests/unit/cli/workflow-scheduler.test.ts (arm cron workflow, disarm workflow, start re-arms all active cron workflows, stop clears timers)
+- [x] T026 [P] [US1] Contract test for workflow definition schema in tests/contract/workflow-schema.test.ts (valid YAML examples from contracts/ parse and validate, invalid examples rejected)
 
 ### Implementation for User Story 1
 
-- [ ] T027 [US1] Implement workflow-runner in packages/workflow/src/workflow-runner.ts (execute WorkflowDefinition: iterate steps, dispatch by type, build StepOutputContext, use step-executor/condition-evaluator/progress-reporter/execution-recorder)
-- [ ] T028 [US1] Implement create-workflow-tool in packages/ai-agent/src/tools/create-workflow-tool.ts (Zod schema from contracts, signal tool pattern with WorkflowPlanRef, return definition for AI confirmation)
-- [ ] T029 [US1] Add WORKFLOW_GUIDANCE section to packages/ai-agent/src/system-prompt-builder.ts (SystemPromptParts.hasWorkflows, guidance on when to use create_workflow tool)
-- [ ] T030 [US1] Implement workflow-scheduler in packages/cli/src/commands/workflow-scheduler.ts (arm/disarm cron workflows using setTimeout pattern from task-scheduler, executor calls workflow-runner)
+- [x] T027 [US1] Implement workflow-runner in packages/workflow/src/workflow-runner.ts (execute WorkflowDefinition: iterate steps, dispatch by type, build StepOutputContext, use step-executor/condition-evaluator/progress-reporter/execution-recorder)
+- [x] T028 [US1] Implement create-workflow-tool in packages/ai-agent/src/tools/create-workflow-tool.ts (Zod schema from contracts, signal tool pattern with WorkflowPlanRef, return definition for AI confirmation)
+- [x] T029 [US1] Add WORKFLOW_GUIDANCE section to packages/ai-agent/src/system-prompt-builder.ts (SystemPromptParts.hasWorkflows, guidance on when to use create_workflow tool)
+- [x] T030 [US1] Implement workflow-scheduler in packages/cli/src/commands/workflow-scheduler.ts (arm/disarm cron workflows using setTimeout pattern from task-scheduler, executor calls workflow-runner)
 - [ ] T030a [US1] Implement chat keyword trigger detection in packages/gateway/src/gateway-agent-handler.ts (before AI invocation, check incoming message against active workflows with trigger.type=chat_keyword, if match execute workflow via workflow-runner, FR-005)
 - [ ] T030b [P] [US1] Test chat keyword trigger in tests/unit/gateway/gateway-agent-handler-keyword-trigger.test.ts (keyword match triggers workflow, partial match does not, disabled workflow skipped, case-insensitive matching)
-- [ ] T031 [US1] Implement workflow-setup in packages/cli/src/commands/workflow-setup.ts (factory: create store, scheduler, wire tools, create WorkflowPlanRef)
-- [ ] T032 [US1] Wire workflow system into packages/cli/src/commands/gateway-start.ts (init workflow store, scheduler, tools into agent, start scheduler on gateway start, stop on shutdown)
+- [x] T031 [US1] Implement workflow-setup in packages/cli/src/commands/workflow-setup.ts (factory: create store, scheduler, wire tools, create WorkflowPlanRef)
+- [x] T032 [US1] Wire workflow system into packages/cli/src/commands/gateway-start.ts (init workflow store, scheduler, tools into agent, start scheduler on gateway start, stop on shutdown)
 - [ ] T033 [US1] Wire WorkflowPlanRef detection in packages/gateway/src/gateway-agent-handler.ts (after processMessage, check workflowPlanRef, confirm with user or execute one-shot)
-- [ ] T034 [US1] Add `@closeclaw/workflow` dependency to packages/cli/package.json
+- [x] T034 [US1] Add `@closeclaw/workflow` dependency to packages/cli/package.json
 - [ ] T035 [P] [US1] Integration test in tests/integration/workflow-execution-flow.test.ts (end-to-end: create definition, run workflow-runner with mock processMessage, verify step execution order, condition branching, output interpolation, execution record)
 
 **Checkpoint**: User Story 1 fully functional — reusable workflows can be created via chat and executed on schedule

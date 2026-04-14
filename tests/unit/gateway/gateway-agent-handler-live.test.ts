@@ -44,7 +44,7 @@ describe("runAgentResponse with LiveMessage", () => {
     expect(adapter.editMessage).toHaveBeenCalledWith("42", 100, "Final answer");
   });
 
-  it("intermediate callback routes through LiveMessage update not sendMessage", async () => {
+  it("intermediate callback finalizes then resets so next response is a new message", async () => {
     let capturedIntermediate: ((text: string) => Promise<void>) | undefined;
     const processor = {
       processMessage: vi.fn(
@@ -63,9 +63,15 @@ describe("runAgentResponse with LiveMessage", () => {
     };
     await runAgentResponse(adapter, processor, createMockMsg(), progressRef);
     expect(capturedIntermediate).toBeDefined();
-    expect(adapter.sendMessage).toHaveBeenCalledTimes(1);
-    expect(adapter.sendMessage).toHaveBeenCalledWith("42", "Thinking...");
-    expect(adapter.editMessage).toHaveBeenCalledWith("42", 100, "Done");
+    expect(adapter.editMessage).toHaveBeenCalledWith(
+      "42",
+      100,
+      "Let me check...",
+    );
+    const sendCalls = adapter.sendMessage.mock.calls;
+    expect(sendCalls.length).toBe(2);
+    expect(sendCalls[0][1]).toBe("Thinking...");
+    expect(sendCalls[1][1]).toBe("Done");
   });
 
   it("cursor progress ref updates use editMessage", async () => {

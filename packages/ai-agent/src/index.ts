@@ -132,6 +132,7 @@ export {
   buildFullSystemPrompt,
   buildCursorAgentSection,
   buildOrchestrationSection,
+  buildWorkflowSection,
   type SystemPromptParts,
 } from "./system-prompt-builder.js";
 
@@ -152,3 +153,10 @@ export {
   type ParallelTasksPlan,
   type OrchestrationPlanRef,
 } from "./tools/parallel-tasks-tool.js";
+
+export {
+  createWorkflowTool,
+  workflowToolSchema,
+  type WorkflowPlan,
+  type WorkflowPlanRef,
+} from "./tools/create-workflow-tool.js";

@@ -27,6 +27,7 @@ export function assembleAgent(
   mcpToolNames?: string[],
   hasCursorAgent?: boolean,
   hasOrchestration?: boolean,
+  hasWorkflows?: boolean,
 ): AgentAssemblyResult {
   const baseDir = join(homedir(), ".closeclaw");
   const persistence = createConversationPersistence(
@@ -52,6 +53,7 @@ export function assembleAgent(
     mcpToolNames,
     hasCursorAgent,
     hasOrchestration,
+    hasWorkflows,
   });
   return { conversationStore, messageProcessor };
 }

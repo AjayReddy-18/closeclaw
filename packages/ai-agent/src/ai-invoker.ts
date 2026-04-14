@@ -23,6 +23,7 @@ export function buildSystemPrompt(
   mcpToolNames?: string[],
   hasCursorAgent?: boolean,
   hasOrchestration?: boolean,
+  hasWorkflows?: boolean,
 ): string {
   return buildFullSystemPrompt({
     userCustomPrompt: config.systemPrompt,
@@ -32,6 +33,7 @@ export function buildSystemPrompt(
     mcpToolNames,
     hasCursorAgent,
     hasOrchestration,
+    hasWorkflows,
   });
 }
 
@@ -46,6 +48,7 @@ export function sdkMessagesForGenerate(
   mcpToolNames?: string[],
   hasCursorAgent?: boolean,
   hasOrchestration?: boolean,
+  hasWorkflows?: boolean,
 ): Array<{ role: "system" | "user" | "assistant"; content: string }> {
   const systemContent = buildSystemPrompt(
     config,
@@ -55,6 +58,7 @@ export function sdkMessagesForGenerate(
     mcpToolNames,
     hasCursorAgent,
     hasOrchestration,
+    hasWorkflows,
   );
   const systemMsg: ConversationMessage = {
     role: "system",
@@ -109,6 +113,7 @@ export async function invokeModel(
   onIntermediate?: IntermediateResponseFn,
   hasCursorAgent?: boolean,
   hasOrchestration?: boolean,
+  hasWorkflows?: boolean,
 ): Promise<string> {
   let continuationRound = 0;
 
@@ -123,6 +128,7 @@ export async function invokeModel(
         mcpToolNames,
         hasCursorAgent,
         hasOrchestration,
+        hasWorkflows,
       );
       const args = {
         model,

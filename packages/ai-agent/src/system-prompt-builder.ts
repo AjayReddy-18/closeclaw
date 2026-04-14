@@ -7,6 +7,7 @@ export interface SystemPromptParts {
   mcpToolNames?: string[];
   hasCursorAgent?: boolean;
   hasOrchestration?: boolean;
+  hasWorkflows?: boolean;
 }
 
 const IDENTITY = `You are CloseClaw, a personal automation assistant. You help users by answering questions, executing tasks, monitoring systems, and managing scheduled jobs. You are direct, concise, and action-oriented.`;
@@ -17,7 +18,9 @@ const RESPONSE_STYLE = `Response Style:
 - Use bullet points for lists, not prose paragraphs.
 - For complex topics, use structured sections with bold headers.
 - Keep responses under 500 words unless the user asks for detail.
-- When reporting data (stocks, issues, status), use compact formatting.`;
+- When reporting data (stocks, issues, status), use compact formatting.
+- NEVER paste full file contents into a response. You may include 2-5 relevant lines of code when they directly answer the question, but never dump entire files or large blocks.
+- When the user says "analyse" or "just check", deliver a concise report. Do not go beyond the scope of what was asked.`;
 
 const PLATFORM_AWARENESS = `Platform Awareness:
 - You are messaging on a chat platform (Telegram/Discord). Keep messages mobile-friendly.
@@ -31,7 +34,8 @@ const TOOL_USAGE = `Tool Usage:
 - Use HTTP requests instead of speculating about API responses.
 - When a tool fails, explain what happened and suggest alternatives.
 - For multi-step tasks: if you need more information after a tool call, say what you're doing next and keep going. You will be prompted to continue automatically — do not wait for the user.
-- Always finish the full task. If you said "let me check X", follow through and deliver the result.`;
+- Always finish the full task. If you said "let me check X", follow through and deliver the result.
+- When fetching code/files via tools, extract only the relevant 2-5 lines. Never relay entire file contents — the user is reading on a phone.`;
 
 const SCHEDULING = `Scheduling Behavior:
 - When running a scheduled/monitoring task, prefix your response:
@@ -122,6 +126,20 @@ export function buildOrchestrationSection(has: boolean): string {
   return `\n\n${ORCHESTRATION_GUIDANCE}`;
 }
 
+const WORKFLOW_GUIDANCE = `Workflow Engine:
+- Use the create_workflow tool when the user describes a multi-step automation or conditional process.
+- For recurring automations (e.g., "every morning check X"), create a reusable workflow with a cron trigger.
+- For one-time multi-step tasks (e.g., "check CI then create a ticket if failed"), set oneShot=true.
+- Each step prompt must be self-contained. Use {{stepId.output}} to reference previous step outputs.
+- Condition steps use natural language — the AI evaluates them against previous outputs.
+- Do NOT use create_workflow for single-step tasks — just execute them directly.
+- Do NOT use create_workflow AND parallel_tasks for the same request — pick one.`;
+
+export function buildWorkflowSection(has: boolean): string {
+  if (!has) return "";
+  return `\n\n${WORKFLOW_GUIDANCE}`;
+}
+
 function buildContextSections(parts: SystemPromptParts): string {
   const sections: string[] = [];
   if (parts.senderIdentity) sections.push(parts.senderIdentity);
@@ -143,6 +161,7 @@ export function buildFullSystemPrompt(parts: SystemPromptParts): string {
   const orchestration = buildOrchestrationSection(
     parts.hasOrchestration ?? false,
   );
+  const workflow = buildWorkflowSection(parts.hasWorkflows ?? false);
   const context = buildContextSections(parts);
-  return `${owner}${identity}${behavior}${mcp}${cursor}${orchestration}${context}`;
+  return `${owner}${identity}${behavior}${mcp}${cursor}${orchestration}${workflow}${context}`;
 }

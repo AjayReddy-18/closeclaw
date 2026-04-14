@@ -28,6 +28,7 @@ import {
   type OrchestrationRef,
 } from "./agent-init.js";
 import { createOrchestrationRunner } from "./orchestration-setup.js";
+import { initWorkflowSystem, wireWorkflowExecutor } from "./workflow-wiring.js";
 
 const require = createRequire(import.meta.url);
 
@@ -115,6 +116,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
   const approvalRef: CursorApprovalRef = { ask: async () => "deny" };
   const orchestrationRef: OrchestrationRef = { plan: null };
   let schedulerAssembly: SchedulerAssembly | undefined;
+  const workflowAssembly = initWorkflowSystem();
   const agentInit = await initAgent(
     config,
     deps,
@@ -125,6 +127,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     progressRef,
     approvalRef,
     orchestrationRef,
+    workflowAssembly.tools,
   );
   const { store, processor, mcpManager, pruneInterval } = agentInit ?? {};
   let heartbeat: HeartbeatRunner | undefined;
@@ -132,6 +135,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     heartbeat = setupHeartbeat(config, processor, adapters);
     schedulerAssembly = setupScheduler(taskStore, processor, adapters);
     schedulerRef.current = schedulerAssembly;
+    wireWorkflowExecutor(workflowAssembly, processor, adapters);
   }
   const server = deps.createGatewayServer({
     port: config.gateway.port,
@@ -163,6 +167,7 @@ export async function runGatewayStart(deps: GatewayStartDeps): Promise<void> {
     console.log("Gateway running. Press Ctrl+C to stop.");
     await (deps.waitForShutdown ?? waitForSigint)();
   } finally {
+    workflowAssembly.scheduler.stop();
     schedulerAssembly?.scheduler.stop();
     heartbeat?.stop();
     if (pruneInterval !== undefined) clearInterval(pruneInterval);

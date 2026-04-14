@@ -6,7 +6,7 @@ alwaysApply: true
 
 # closeclaw Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-13
+Auto-generated from all feature plans. Last updated: 2026-04-14
 
 ## Constitution (SUPREME AUTHORITY)
 
@@ -80,9 +80,9 @@ pnpm build               # Build all packages
 TypeScript 5.x strict mode. No `any`. No comments. Small functions. Dependency injection everywhere.
 
 ## Recent Changes
+- 011-workflow-engine: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 010-multi-agent-orchestration: Added TypeScript 5.x (strict mode) + Vercel AI SDK (`ai@^6.0.0`), grammY, Discord.js, node-pty, Zod
 - 009-live-progress-streaming: Added TypeScript 5.x (strict mode) + grammY (Telegram), Discord.js (Discord), Vercel AI SDK, node-pty
-- 008-interactive-pty-mode: Added TypeScript 5.x (strict mode) + node-pty (v1.1.0+), existing: grammY, Vercel AI SDK, Commander.js
 
 
 <!-- MANUAL ADDITIONS START -->

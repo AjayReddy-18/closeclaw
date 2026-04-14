@@ -59,6 +59,7 @@ export interface CreateMessageProcessorDeps {
   mcpToolNames?: string[];
   hasCursorAgent?: boolean;
   hasOrchestration?: boolean;
+  hasWorkflows?: boolean;
 }
 
 export function createMessageProcessor(
@@ -68,6 +69,7 @@ export function createMessageProcessor(
   const mcpToolNames = deps.mcpToolNames ?? [];
   const hasCursorAgent = deps.hasCursorAgent ?? false;
   const hasOrchestration = deps.hasOrchestration ?? false;
+  const hasWorkflows = deps.hasWorkflows ?? false;
   const gen = deps.generate ?? generateText;
   const model = createModelProvider(agentConfig);
   const afterHook = deps.onAfterResponse;
@@ -101,6 +103,7 @@ export function createMessageProcessor(
       onIntermediate,
       hasCursorAgent,
       hasOrchestration,
+      hasWorkflows,
     );
     if (afterHook) afterHook(platform, senderId);
     return result;
@@ -134,6 +137,7 @@ async function handleIncomingText(
   onIntermediate?: IntermediateResponseFn,
   hasCursorAgent?: boolean,
   hasOrchestration?: boolean,
+  hasWorkflows?: boolean,
 ): Promise<string> {
   if (text.trim() === CLEAR_COMMAND) {
     conversationStore.clear(platform, senderId);
@@ -163,6 +167,7 @@ async function handleIncomingText(
     onIntermediate,
     hasCursorAgent,
     hasOrchestration,
+    hasWorkflows,
   );
 }
 

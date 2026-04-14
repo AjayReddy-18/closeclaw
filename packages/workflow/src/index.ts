@@ -61,3 +61,10 @@ export {
   createWorkflowStore,
   type WorkflowStore,
 } from "./workflow-store.js";
+
+export {
+  runWorkflow,
+  type WorkflowRunnerDeps,
+} from "./workflow-runner.js";
+
+export { countTopLevelSteps } from "./step-counter.js";

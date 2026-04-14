@@ -63,6 +63,23 @@ vi.mock("@closeclaw/ai-agent", () => ({
   createListTasksTool: vi.fn(() => ({ execute: vi.fn() })),
   createCursorAgentTool: vi.fn(() => ({ execute: vi.fn() })),
   createCursorResumeTool: vi.fn(() => ({ execute: vi.fn() })),
+  createWorkflowTool: vi.fn(() => ({
+    description: "mock workflow",
+    execute: vi.fn(),
+  })),
+}));
+
+vi.mock("@closeclaw/workflow", () => ({
+  createWorkflowStore: vi.fn(() => ({
+    getWorkflow: vi.fn(),
+    saveWorkflow: vi.fn(),
+    listWorkflows: vi.fn(() => []),
+    updateWorkflow: vi.fn(),
+    deleteWorkflow: vi.fn(),
+    addExecution: vi.fn(),
+    getExecutions: vi.fn(() => []),
+  })),
+  runWorkflow: vi.fn().mockResolvedValue({ status: "completed" }),
 }));
 
 function makeAdapter(overrides: Partial<BotAdapter> = {}): BotAdapter {

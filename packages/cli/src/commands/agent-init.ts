@@ -51,6 +51,7 @@ export async function initAgent(
   progressRef: CursorProgressRef,
   approvalRef: CursorApprovalRef,
   orchestrationRef?: OrchestrationRef,
+  workflowTools?: Record<string, unknown>,
 ): Promise<AgentInit | null> {
   if (!config.agent || !isValidAgentConfig(config.agent)) return null;
   const schedTools = createSchedulerTools(taskStore, schedulerRef, senderRef);
@@ -73,14 +74,17 @@ export async function initAgent(
     ...mcpTools.tools,
     ...cursorTools,
     ...parallelTool,
+    ...(workflowTools ?? {}),
   };
   const mcpToolNames = Object.keys(mcpTools.tools);
+  const hasWorkflows = workflowTools !== undefined;
   const assembly = assembleAgent(
     config.agent,
     extraTools,
     mcpToolNames,
     cursorSetup !== null,
     true,
+    hasWorkflows,
   );
   adapters.forEach((a) =>
     a.onMessage((msg) => {
