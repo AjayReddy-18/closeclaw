@@ -7,3 +7,4 @@ packages:
   - "packages/mcp-client"
   - "packages/cursor-agent"
   - "packages/orchestrator"
+  - "packages/workflow"

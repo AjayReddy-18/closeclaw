@@ -1,0 +1,24 @@
+{
+  "name": "@closeclaw/workflow",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts"
+  },
+  "dependencies": {
+    "@closeclaw/shared-types": "workspace:*",
+    "yaml": "^2.7.1",
+    "zod": "^3.24.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

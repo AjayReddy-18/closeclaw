@@ -1,0 +1,119 @@
+# Example YAML workflow definition (user-facing format)
+# This is the schema users hand-write or the AI generates
+
+name: morning-jira-check
+description: Check Jira every morning and alert on critical bugs
+trigger:
+  type: cron
+  value: "0 9 * * 1-5"
+  timezone: Asia/Kolkata
+
+steps:
+  - id: fetch-issues
+    type: action
+    label: Fetch open Jira issues
+    prompt: "Search for open Jira issues assigned to me using jira__search_issues"
+    onError: stop
+
+  - id: check-critical
+    type: condition
+    label: Check for critical bugs
+    condition: "Are there any critical or blocker priority issues in the previous result?"
+    thenSteps:
+      - id: alert
+        type: action
+        label: Alert about critical bugs
+        prompt: >
+          Summarize the critical/blocker issues from {{fetch-issues.output}}
+          in a concise alert format with ticket IDs and titles.
+        onError: continue
+    elseSteps:
+      - id: all-clear
+        type: action
+        label: Report all clear
+        prompt: "Say 'All clear — no critical issues this morning.'"
+        onError: continue
+
+---
+
+# Example: One-shot workflow with approval
+name: deploy-with-approval
+description: Check CI then deploy with approval
+
+steps:
+  - id: check-ci
+    type: action
+    label: Check CI status
+    prompt: "Check the latest CI build status for project X"
+    onError: stop
+
+  - id: approve-deploy
+    type: action
+    label: Deploy to staging
+    prompt: "Deploy the latest build to staging environment"
+    requiresApproval: true
+    approvalPrompt: "CI passed. Deploy to staging?"
+    onError: stop
+
+---
+
+# Example: Parallel checks
+name: morning-status
+description: Parallel morning health checks
+
+steps:
+  - id: parallel-checks
+    type: parallel
+    label: Run all health checks
+    branches:
+      - - id: check-jira
+          type: action
+          label: Check Jira
+          prompt: "List my open Jira tickets"
+          onError: continue
+      - - id: check-ci
+          type: action
+          label: Check CI
+          prompt: "Check CI pipeline status"
+          onError: continue
+      - - id: check-monitoring
+          type: action
+          label: Check Datadog
+          prompt: "Check for any Datadog alerts in the last 24 hours"
+          onError: continue
+
+  - id: summarize
+    type: action
+    label: Morning summary
+    prompt: >
+      Create a morning status summary from these results:
+      Jira: {{check-jira.output}}
+      CI: {{check-ci.output}}
+      Monitoring: {{check-monitoring.output}}
+    onError: continue
+
+---
+
+# Example: Loop (polling)
+name: wait-for-deploy
+description: Poll deploy status until complete
+
+steps:
+  - id: poll-deploy
+    type: loop
+    label: Wait for deployment
+    maxIterations: 12
+    delaySeconds: 300
+    untilCondition: "Is the deployment status 'completed' or 'failed'?"
+    steps:
+      - id: check-status
+        type: action
+        label: Check deploy status
+        prompt: "Check the deployment status for project X"
+        onError: continue
+
+  - id: report-result
+    type: action
+    label: Report deploy outcome
+    prompt: "The deployment polling is done. Summarize the final status from {{check-status.output}}"
+    onError: continue

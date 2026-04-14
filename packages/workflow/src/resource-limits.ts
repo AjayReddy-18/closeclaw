@@ -1,0 +1,5 @@
+export const MAX_STEPS = 20;
+export const MAX_PARALLEL_BRANCHES = 5;
+export const MAX_LOOP_ITERATIONS = 50;
+export const MAX_CONCURRENT_WORKFLOWS = 3;
+export const DEFAULT_APPROVAL_TIMEOUT_SECONDS = 300;
