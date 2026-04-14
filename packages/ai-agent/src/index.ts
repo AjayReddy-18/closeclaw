@@ -160,3 +160,5 @@ export {
   type WorkflowPlan,
   type WorkflowPlanRef,
 } from "./tools/create-workflow-tool.js";
+
+export { createManageWorkflowTool } from "./tools/manage-workflow-tool.js";

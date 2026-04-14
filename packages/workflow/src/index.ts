@@ -68,3 +68,16 @@ export {
 } from "./workflow-runner.js";
 
 export { countTopLevelSteps } from "./step-counter.js";
+
+export {
+  parseWorkflowYaml,
+  type YamlParseResult,
+  type YamlParseSuccess,
+  type YamlParseFailure,
+} from "./yaml-parser.js";
+
+export { requestApproval } from "./approval-handler.js";
+
+export { executeParallel } from "./parallel-executor.js";
+
+export { executeLoop } from "./loop-executor.js";

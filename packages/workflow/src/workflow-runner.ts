@@ -4,6 +4,8 @@ import type {
   StepNode,
   StepOutputContext,
   ConditionStep,
+  ParallelStep,
+  LoopStep,
   ProcessMessageFn,
   ProgressCallback,
 } from "./types.js";
@@ -12,6 +14,8 @@ import { evaluateCondition } from "./condition-evaluator.js";
 import { createExecutionRecorder } from "./execution-recorder.js";
 import { createProgressReporter } from "./progress-reporter.js";
 import { countTopLevelSteps } from "./step-counter.js";
+import { executeParallel } from "./parallel-executor.js";
+import { executeLoop } from "./loop-executor.js";
 
 export interface WorkflowRunnerDeps {
   processMessage: ProcessMessageFn;
@@ -98,6 +102,12 @@ async function dispatchStep(
       progress,
     );
   }
+  if (step.type === "parallel") {
+    return handleParallelStep(step, execDeps, context, recorder);
+  }
+  if (step.type === "loop") {
+    return handleLoopStep(step, execDeps, context, recorder);
+  }
   return false;
 }
 
@@ -138,4 +148,26 @@ async function handleConditionStep(
   });
   const branch = condResult ? step.thenSteps : step.elseSteps;
   return executeStepList(branch, execDeps, runnerDeps, context, recorder, progress);
+}
+
+async function handleParallelStep(
+  step: ParallelStep,
+  execDeps: StepExecutorDeps,
+  context: StepOutputContext,
+  recorder: ReturnType<typeof createExecutionRecorder>,
+): Promise<boolean> {
+  const results = await executeParallel(step.branches, execDeps, context);
+  for (const r of results) recorder.addStepResult(r);
+  return results.some((r) => r.status === "failed");
+}
+
+async function handleLoopStep(
+  step: LoopStep,
+  execDeps: StepExecutorDeps,
+  context: StepOutputContext,
+  recorder: ReturnType<typeof createExecutionRecorder>,
+): Promise<boolean> {
+  const results = await executeLoop(step, execDeps, context);
+  for (const r of results) recorder.addStepResult(r);
+  return results.some((r) => r.status === "failed");
 }

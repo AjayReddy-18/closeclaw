@@ -26,3 +26,9 @@ export {
   type DmPolicyEnforcer,
   type DmPolicyEnforcerConfig,
 } from "./dm-policy-enforcer.js";
+export {
+  handleWorkflowPlan,
+  hasWorkflowPlan,
+  type WorkflowPlanRef,
+  type WorkflowPlanCallbacks,
+} from "./workflow-plan-handler.js";

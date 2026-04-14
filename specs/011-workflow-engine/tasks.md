@@ -85,9 +85,9 @@
 - [ ] T030b [P] [US1] Test chat keyword trigger in tests/unit/gateway/gateway-agent-handler-keyword-trigger.test.ts (keyword match triggers workflow, partial match does not, disabled workflow skipped, case-insensitive matching)
 - [x] T031 [US1] Implement workflow-setup in packages/cli/src/commands/workflow-setup.ts (factory: create store, scheduler, wire tools, create WorkflowPlanRef)
 - [x] T032 [US1] Wire workflow system into packages/cli/src/commands/gateway-start.ts (init workflow store, scheduler, tools into agent, start scheduler on gateway start, stop on shutdown)
-- [ ] T033 [US1] Wire WorkflowPlanRef detection in packages/gateway/src/gateway-agent-handler.ts (after processMessage, check workflowPlanRef, confirm with user or execute one-shot)
+- [x] T033 [US1] Wire WorkflowPlanRef detection in packages/gateway/src/gateway-agent-handler.ts (after processMessage, check workflowPlanRef, confirm with user or execute one-shot)
 - [x] T034 [US1] Add `@closeclaw/workflow` dependency to packages/cli/package.json
-- [ ] T035 [P] [US1] Integration test in tests/integration/workflow-execution-flow.test.ts (end-to-end: create definition, run workflow-runner with mock processMessage, verify step execution order, condition branching, output interpolation, execution record)
+- [x] T035 [P] [US1] Integration test in tests/integration/workflow-execution-flow.test.ts (end-to-end: create definition, run workflow-runner with mock processMessage, verify step execution order, condition branching, output interpolation, execution record)
 
 **Checkpoint**: User Story 1 fully functional — reusable workflows can be created via chat and executed on schedule
 
@@ -101,13 +101,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T036 [P] [US2] Test one-shot execution path in tests/unit/gateway/gateway-agent-handler-workflow.test.ts (WorkflowPlanRef with oneShot=true triggers immediate execution, no store.saveWorkflow called, execution record IS saved to history/_oneshot/, results delivered)
+- [x] T036 [P] [US2] Test one-shot execution path in tests/unit/gateway/gateway-agent-handler-workflow.test.ts (WorkflowPlanRef with oneShot=true triggers immediate execution, no store.saveWorkflow called, execution record IS saved to history/_oneshot/, results delivered)
 
 ### Implementation for User Story 2
 
-- [ ] T037 [US2] Extend gateway-agent-handler.ts WorkflowPlanRef handling to detect oneShot flag and execute immediately via workflow-runner without saving definition, but persist execution record to history/_oneshot/ in packages/gateway/src/gateway-agent-handler.ts
-- [ ] T038 [US2] Extend create-workflow-tool to pass oneShot flag from AI schema in packages/ai-agent/src/tools/create-workflow-tool.ts
-- [ ] T039 [US2] Update WORKFLOW_GUIDANCE in system-prompt-builder.ts to instruct AI on when to use oneShot vs reusable in packages/ai-agent/src/system-prompt-builder.ts
+- [x] T037 [US2] Extend gateway-agent-handler.ts WorkflowPlanRef handling to detect oneShot flag and execute immediately via workflow-runner without saving definition, but persist execution record to history/_oneshot/ in packages/gateway/src/gateway-agent-handler.ts
+- [x] T038 [US2] Extend create-workflow-tool to pass oneShot flag from AI schema in packages/ai-agent/src/tools/create-workflow-tool.ts
+- [x] T039 [US2] Update WORKFLOW_GUIDANCE in system-prompt-builder.ts to instruct AI on when to use oneShot vs reusable in packages/ai-agent/src/system-prompt-builder.ts
 
 **Checkpoint**: Both one-shot and reusable workflows work from chat
 
@@ -121,11 +121,11 @@
 
 ### Tests for User Story 3
 
-- [ ] T040 [P] [US3] Test yaml-parser in tests/unit/workflow/yaml-parser.test.ts (valid YAML parses to WorkflowDefinition, invalid YAML returns parse errors, multi-document YAML, missing fields)
+- [x] T040 [P] [US3] Test yaml-parser in tests/unit/workflow/yaml-parser.test.ts (valid YAML parses to WorkflowDefinition, invalid YAML returns parse errors, multi-document YAML, missing fields)
 
 ### Implementation for User Story 3
 
-- [ ] T041 [US3] Implement yaml-parser in packages/workflow/src/yaml-parser.ts (parse YAML string to raw object, validate with workflow-validator, return WorkflowDefinition or errors)
+- [x] T041 [US3] Implement yaml-parser in packages/workflow/src/yaml-parser.ts (parse YAML string to raw object, validate with workflow-validator, return WorkflowDefinition or errors)
 - [ ] T042 [US3] Add YAML detection logic in gateway-agent-handler.ts — detect YAML blocks in user messages (triple backtick yaml or raw YAML structure), parse and validate, confirm with user in packages/gateway/src/gateway-agent-handler.ts
 
 **Checkpoint**: YAML workflow creation works alongside natural language creation
@@ -140,11 +140,11 @@
 
 ### Tests for User Story 4
 
-- [ ] T043 [P] [US4] Test approval-handler in tests/unit/workflow/approval-handler.test.ts (pause and wait for approval, resume on approve, abort on deny, abort on timeout)
+- [x] T043 [P] [US4] Test approval-handler in tests/unit/workflow/approval-handler.test.ts (pause and wait for approval, resume on approve, abort on deny, abort on timeout)
 
 ### Implementation for User Story 4
 
-- [ ] T044 [US4] Implement approval-handler in packages/workflow/src/approval-handler.ts (send approval prompt via adapter, wait for response with timeout, return decision)
+- [x] T044 [US4] Implement approval-handler in packages/workflow/src/approval-handler.ts (send approval prompt via adapter, wait for response with timeout, return decision)
 - [ ] T045 [US4] Integrate approval-handler into step-executor — check requiresApproval before executing, call approval-handler, abort if denied/timeout in packages/workflow/src/step-executor.ts
 - [ ] T046 [US4] Wire approval callback from gateway into workflow-setup (reuse existing approval button pattern from Telegram/Discord) in packages/cli/src/commands/workflow-setup.ts
 
@@ -160,12 +160,12 @@
 
 ### Tests for User Story 5
 
-- [ ] T047 [P] [US5] Test parallel-executor in tests/unit/workflow/parallel-executor.test.ts (concurrent execution, one branch fails but others complete, results merged into StepOutputContext, resource limit enforced)
+- [x] T047 [P] [US5] Test parallel-executor in tests/unit/workflow/parallel-executor.test.ts (concurrent execution, one branch fails but others complete, results merged into StepOutputContext, resource limit enforced)
 
 ### Implementation for User Story 5
 
-- [ ] T048 [US5] Implement parallel-executor in packages/workflow/src/parallel-executor.ts (Promise.allSettled for branches, collect results, merge into StepOutputContext)
-- [ ] T049 [US5] Integrate parallel-executor into workflow-runner — dispatch parallel StepNode type to parallel-executor in packages/workflow/src/workflow-runner.ts
+- [x] T048 [US5] Implement parallel-executor in packages/workflow/src/parallel-executor.ts (Promise.allSettled for branches, collect results, merge into StepOutputContext)
+- [x] T049 [US5] Integrate parallel-executor into workflow-runner — dispatch parallel StepNode type to parallel-executor in packages/workflow/src/workflow-runner.ts
 
 **Checkpoint**: Parallel steps execute concurrently within workflows
 
@@ -179,12 +179,12 @@
 
 ### Tests for User Story 6
 
-- [ ] T050 [P] [US6] Test loop-executor in tests/unit/workflow/loop-executor.test.ts (exit on condition met, exit on max iterations, delay between iterations, step failure within loop)
+- [x] T050 [P] [US6] Test loop-executor in tests/unit/workflow/loop-executor.test.ts (exit on condition met, exit on max iterations, delay between iterations, step failure within loop)
 
 ### Implementation for User Story 6
 
-- [ ] T051 [US6] Implement loop-executor in packages/workflow/src/loop-executor.ts (repeat steps, evaluate untilCondition via condition-evaluator after each iteration, respect delaySeconds and maxIterations)
-- [ ] T052 [US6] Integrate loop-executor into workflow-runner — dispatch loop StepNode type to loop-executor in packages/workflow/src/workflow-runner.ts
+- [x] T051 [US6] Implement loop-executor in packages/workflow/src/loop-executor.ts (repeat steps, evaluate untilCondition via condition-evaluator after each iteration, respect delaySeconds and maxIterations)
+- [x] T052 [US6] Integrate loop-executor into workflow-runner — dispatch loop StepNode type to loop-executor in packages/workflow/src/workflow-runner.ts
 
 **Checkpoint**: Loop/polling patterns work within workflows
 
@@ -198,11 +198,11 @@
 
 ### Tests for User Story 7
 
-- [ ] T053 [P] [US7] Test manage-workflow-tool in tests/unit/ai-agent/manage-workflow-tool.test.ts (list returns workflows, enable/disable toggles status, delete removes workflow, history returns execution records)
+- [x] T053 [P] [US7] Test manage-workflow-tool in tests/unit/ai-agent/manage-workflow-tool.test.ts (list returns workflows, enable/disable toggles status, delete removes workflow, history returns execution records)
 
 ### Implementation for User Story 7
 
-- [ ] T054 [US7] Implement manage-workflow-tool in packages/ai-agent/src/tools/manage-workflow-tool.ts (Zod schema for manage_workflow and run_workflow actions, delegates to WorkflowStore and WorkflowScheduler)
+- [x] T054 [US7] Implement manage-workflow-tool in packages/ai-agent/src/tools/manage-workflow-tool.ts (Zod schema for manage_workflow and run_workflow actions, delegates to WorkflowStore and WorkflowScheduler)
 - [ ] T055 [US7] Wire manage-workflow and run-workflow tools into agent-init.ts extraTools in packages/cli/src/commands/agent-init.ts
 - [ ] T056 [US7] Add workflow management guidance to WORKFLOW_GUIDANCE in system-prompt-builder.ts in packages/ai-agent/src/system-prompt-builder.ts
 
@@ -218,11 +218,11 @@
 
 ### Tests for User Story 8
 
-- [ ] T057 [P] [US8] Test webhook route in tests/unit/gateway/webhook-route.test.ts (valid secret triggers execution, invalid secret returns 401, disabled workflow returns 404, payload forwarded to execution)
+- [x] T057 [P] [US8] Test webhook route in tests/unit/gateway/webhook-route.test.ts (valid secret triggers execution, invalid secret returns 401, disabled workflow returns 404, payload forwarded to execution)
 
 ### Implementation for User Story 8
 
-- [ ] T058 [US8] Add POST /webhooks/:workflowId route to packages/gateway/src/gateway-routes.ts (authenticate via Bearer webhook secret, look up workflow from store, execute via workflow-runner)
+- [x] T058 [US8] Add POST /webhooks/:workflowId route to packages/gateway/src/gateway-routes.ts (authenticate via Bearer webhook secret, look up workflow from store, execute via workflow-runner)
 - [ ] T059 [US8] Generate webhook secret on workflow save (when trigger.type is webhook) in packages/workflow/src/workflow-store.ts
 - [ ] T060 [US8] Wire webhook route with workflow store and runner in packages/cli/src/commands/gateway-start.ts
 
