@@ -42,21 +42,21 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 [P] Test workflow-validator in tests/unit/workflow/workflow-validator.test.ts (valid definitions, invalid schemas, step limit enforcement, missing fields)
-- [ ] T009 [P] Test output-interpolator in tests/unit/workflow/output-interpolator.test.ts (single reference, multiple references, missing references, no-op when no templates)
-- [ ] T010 [P] Test step-executor in tests/unit/workflow/step-executor.test.ts (successful execution, failure handling, output capture, approval pause flow)
-- [ ] T011 [P] Test condition-evaluator in tests/unit/workflow/condition-evaluator.test.ts (true result, false result, AI error handling)
-- [ ] T012 [P] Test execution-recorder in tests/unit/workflow/execution-recorder.test.ts (create record, add step result, finalize with status/duration)
-- [ ] T013 [P] Test progress-reporter in tests/unit/workflow/progress-reporter.test.ts (step progress format, finalize with summary)
-- [ ] T014 [P] Test workflow-store in tests/unit/workflow/workflow-store.test.ts (save writes both JSON and YAML, get, list by owner, update, delete, add execution, get executions with limit, one-shot execution records saved to _oneshot/, atomic write)
-- [ ] T015 Implement workflow-validator in packages/workflow/src/workflow-validator.ts (Zod schema for WorkflowDefinition, recursive StepNode validation, resource limit checks)
-- [ ] T016 Implement output-interpolator in packages/workflow/src/output-interpolator.ts (resolve `{{stepId.output}}` templates from StepOutputContext)
-- [ ] T017 Implement step-executor in packages/workflow/src/step-executor.ts (execute single action step via processMessage, capture output, handle errors per onError policy)
-- [ ] T018 Implement condition-evaluator in packages/workflow/src/condition-evaluator.ts (send condition + context to processMessage, parse boolean result)
-- [ ] T019 Implement execution-recorder in packages/workflow/src/execution-recorder.ts (create ExecutionRecord, append StepResult, finalize with status/duration/completedAt)
-- [ ] T020 Implement progress-reporter in packages/workflow/src/progress-reporter.ts (format "[Step N/M: label] Running...", update LiveMessage, finalize with summary)
-- [ ] T021 Implement workflow-store in packages/workflow/src/workflow-store.ts (save definitions as both JSON and human-readable YAML in ~/.closeclaw/workflows/definitions/, execution history as JSON in history/, one-shot execution records in history/_oneshot/, atomic writes)
-- [ ] T022 Update packages/workflow/src/index.ts with all new exports
+- [x] T008 [P] Test workflow-validator in tests/unit/workflow/workflow-validator.test.ts (valid definitions, invalid schemas, step limit enforcement, missing fields)
+- [x] T009 [P] Test output-interpolator in tests/unit/workflow/output-interpolator.test.ts (single reference, multiple references, missing references, no-op when no templates)
+- [x] T010 [P] Test step-executor in tests/unit/workflow/step-executor.test.ts (successful execution, failure handling, output capture, approval pause flow)
+- [x] T011 [P] Test condition-evaluator in tests/unit/workflow/condition-evaluator.test.ts (true result, false result, AI error handling)
+- [x] T012 [P] Test execution-recorder in tests/unit/workflow/execution-recorder.test.ts (create record, add step result, finalize with status/duration)
+- [x] T013 [P] Test progress-reporter in tests/unit/workflow/progress-reporter.test.ts (step progress format, finalize with summary)
+- [x] T014 [P] Test workflow-store in tests/unit/workflow/workflow-store.test.ts (save writes both JSON and YAML, get, list by owner, update, delete, add execution, get executions with limit, one-shot execution records saved to _oneshot/, atomic write)
+- [x] T015 Implement workflow-validator in packages/workflow/src/workflow-validator.ts (Zod schema for WorkflowDefinition, recursive StepNode validation, resource limit checks)
+- [x] T016 Implement output-interpolator in packages/workflow/src/output-interpolator.ts (resolve `{{stepId.output}}` templates from StepOutputContext)
+- [x] T017 Implement step-executor in packages/workflow/src/step-executor.ts (execute single action step via processMessage, capture output, handle errors per onError policy)
+- [x] T018 Implement condition-evaluator in packages/workflow/src/condition-evaluator.ts (send condition + context to processMessage, parse boolean result)
+- [x] T019 Implement execution-recorder in packages/workflow/src/execution-recorder.ts (create ExecutionRecord, append StepResult, finalize with status/duration/completedAt)
+- [x] T020 Implement progress-reporter in packages/workflow/src/progress-reporter.ts (format "[Step N/M: label] Running...", update LiveMessage, finalize with summary)
+- [x] T021 Implement workflow-store in packages/workflow/src/workflow-store.ts (save definitions as both JSON and human-readable YAML in ~/.closeclaw/workflows/definitions/, execution history as JSON in history/, one-shot execution records in history/_oneshot/, atomic writes)
+- [x] T022 Update packages/workflow/src/index.ts with all new exports
 
 **Checkpoint**: Foundation ready — all core modules tested and passing, user story implementation can begin
 

@@ -28,3 +28,36 @@ export {
   MAX_CONCURRENT_WORKFLOWS,
   DEFAULT_APPROVAL_TIMEOUT_SECONDS,
 } from "./resource-limits.js";
+
+export {
+  validateWorkflowDefinition,
+  workflowDefinitionSchema,
+  type ValidationResult,
+} from "./workflow-validator.js";
+
+export { interpolateOutputs } from "./output-interpolator.js";
+
+export {
+  executeStep,
+  type StepExecutorDeps,
+} from "./step-executor.js";
+
+export {
+  evaluateCondition,
+  type ConditionEvalDeps,
+} from "./condition-evaluator.js";
+
+export {
+  createExecutionRecorder,
+  type ExecutionRecorder,
+} from "./execution-recorder.js";
+
+export {
+  createProgressReporter,
+  type ProgressReporter,
+} from "./progress-reporter.js";
+
+export {
+  createWorkflowStore,
+  type WorkflowStore,
+} from "./workflow-store.js";
