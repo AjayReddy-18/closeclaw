@@ -52,7 +52,14 @@ describe("LoopExecutor", () => {
   it("exits on max iterations", async () => {
     const { executeLoop } = await loadModule();
     const loop = makeLoop({ maxIterations: 3 });
-    const deps = makeDeps(["pending", "false", "pending", "false", "pending", "false"]);
+    const deps = makeDeps([
+      "pending",
+      "false",
+      "pending",
+      "false",
+      "pending",
+      "false",
+    ]);
     const context: StepOutputContext = {};
     const results = await executeLoop(loop, deps, context);
     expect(results).toHaveLength(3);
@@ -76,5 +83,39 @@ describe("LoopExecutor", () => {
     const context: StepOutputContext = {};
     const results = await executeLoop(makeLoop(), deps, context);
     expect(results[0].loopIteration).toBe(1);
+  });
+
+  it("applies delay between iterations", async () => {
+    vi.useFakeTimers();
+    const { executeLoop } = await loadModule();
+    const loop = makeLoop({ maxIterations: 2, delaySeconds: 1 });
+    const deps = makeDeps(["pending", "false", "done", "true"]);
+    const context: StepOutputContext = {};
+    const promise = executeLoop(loop, deps, context);
+    await vi.advanceTimersByTimeAsync(1500);
+    const results = await promise;
+    expect(results.length).toBeGreaterThanOrEqual(1);
+    vi.useRealTimers();
+  });
+
+  it("skips non-action steps inside loop body", async () => {
+    const { executeLoop } = await loadModule();
+    const loop = makeLoop({
+      maxIterations: 1,
+      steps: [
+        {
+          id: "cond",
+          type: "condition",
+          label: "Cond",
+          condition: "check",
+          thenSteps: [],
+          elseSteps: [],
+        } as unknown as import("@closeclaw/workflow").LoopStep["steps"][number],
+      ],
+    });
+    const deps = makeDeps(["true"]);
+    const context: StepOutputContext = {};
+    const results = await executeLoop(loop, deps, context);
+    expect(results).toHaveLength(0);
   });
 });

@@ -5,9 +5,7 @@ import { parseAllDocuments } from "yaml";
 
 describe("Workflow YAML Schema Contract", () => {
   async function loadValidator() {
-    return import(
-      "../../packages/workflow/src/workflow-validator.js"
-    );
+    return import("../../packages/workflow/src/workflow-validator.js");
   }
 
   function loadYamlExamples(): unknown[] {

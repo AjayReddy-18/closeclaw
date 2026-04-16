@@ -1,9 +1,7 @@
 import type { WorkflowDefinition } from "@closeclaw/workflow";
 import { nextCronOccurrence } from "@closeclaw/ai-agent";
 
-export type WorkflowExecuteFn = (
-  workflow: WorkflowDefinition,
-) => Promise<void>;
+export type WorkflowExecuteFn = (workflow: WorkflowDefinition) => Promise<void>;
 
 export interface WorkflowScheduler {
   start(workflows?: WorkflowDefinition[]): void;
@@ -17,18 +15,25 @@ export function createWorkflowScheduler(
   onExecute: WorkflowExecuteFn,
 ): WorkflowScheduler {
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
+  const disarmed = new Set<string>();
+
+  function clearTimer(workflowId: string): void {
+    const timer = timers.get(workflowId);
+    if (timer) clearTimeout(timer);
+    timers.delete(workflowId);
+  }
 
   function arm(workflow: WorkflowDefinition): void {
     if (workflow.trigger.type !== "cron") return;
     if (workflow.status !== "active") return;
-    disarm(workflow.id);
-    scheduleNext(workflow, onExecute, timers);
+    disarmed.delete(workflow.id);
+    clearTimer(workflow.id);
+    scheduleNext(workflow, onExecute, timers, disarmed);
   }
 
   function disarm(workflowId: string): void {
-    const timer = timers.get(workflowId);
-    if (timer) clearTimeout(timer);
-    timers.delete(workflowId);
+    disarmed.add(workflowId);
+    clearTimer(workflowId);
   }
 
   return {
@@ -46,8 +51,9 @@ function scheduleNext(
   workflow: WorkflowDefinition,
   onExecute: WorkflowExecuteFn,
   timers: Map<string, ReturnType<typeof setTimeout>>,
+  disarmed: Set<string>,
 ): void {
-  const nextRun = nextCronOccurrence(workflow.trigger.value);
+  const nextRun = nextCronOccurrence(workflow.trigger.value, new Date());
   if (!nextRun) return;
   const delayMs = nextRun.getTime() - Date.now();
   const safeDelay = Math.max(delayMs, 1000);
@@ -58,7 +64,8 @@ function scheduleNext(
     } catch (err) {
       console.error(`[workflow-scheduler] Error: ${String(err)}`);
     }
-    scheduleNext(workflow, onExecute, timers);
+    if (disarmed.has(workflow.id)) return;
+    scheduleNext(workflow, onExecute, timers, disarmed);
   }, safeDelay);
   timers.set(workflow.id, timer);
 }

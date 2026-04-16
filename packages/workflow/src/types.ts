@@ -9,7 +9,8 @@ export type ExecutionStatus =
   | "completed"
   | "failed"
   | "aborted"
-  | "interrupted";
+  | "interrupted"
+  | "condition_unmet";
 export type StepOutcome = "success" | "failed" | "skipped" | "aborted";
 export type ApprovalDecision = "approved" | "denied" | "timeout";
 
@@ -72,6 +73,8 @@ export interface WorkflowDefinition {
   updatedAt: string;
   lastRunAt?: string;
   runCount: number;
+  maxRuns?: number;
+  retireOnSuccess?: boolean;
 }
 
 export interface StepResult {

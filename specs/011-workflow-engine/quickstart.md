@@ -20,6 +20,7 @@ Send a message to the bot describing a multi-step workflow:
 > "Every weekday at 9am, check my open Jira tickets. If any are critical, send me an alert. Otherwise just say all clear."
 
 **Expected**: The bot responds with a workflow definition summary showing:
+
 - Name (auto-generated or user-provided)
 - Trigger (cron: `0 9 * * 1-5`)
 - Steps (fetch issues → condition → alert or all-clear)
@@ -34,6 +35,7 @@ Reply "yes" to save it.
 Wait for the next scheduled trigger time (or ask the bot to "run morning-jira-check now").
 
 **Expected**: The bot shows live progress:
+
 - "[Step 1/3: Fetch open Jira issues] Running..."
 - "[Step 2/3: Check for critical bugs] Evaluating..."
 - "[Step 3/3: Report all clear] Done"

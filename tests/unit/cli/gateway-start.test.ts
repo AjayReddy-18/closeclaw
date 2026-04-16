@@ -47,6 +47,7 @@ vi.mock("@closeclaw/ai-agent", () => ({
     updateTask: vi.fn(),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   })),
   createTaskExecutor: vi.fn(() => ({
     executeTask: vi.fn(),
@@ -67,6 +68,10 @@ vi.mock("@closeclaw/ai-agent", () => ({
     description: "mock workflow",
     execute: vi.fn(),
   })),
+  createManageWorkflowTool: vi.fn(() => ({
+    description: "mock manage workflow",
+    execute: vi.fn(),
+  })),
 }));
 
 vi.mock("@closeclaw/workflow", () => ({
@@ -74,6 +79,7 @@ vi.mock("@closeclaw/workflow", () => ({
     getWorkflow: vi.fn(),
     saveWorkflow: vi.fn(),
     listWorkflows: vi.fn(() => []),
+    listAll: vi.fn(() => []),
     updateWorkflow: vi.fn(),
     deleteWorkflow: vi.fn(),
     addExecution: vi.fn(),

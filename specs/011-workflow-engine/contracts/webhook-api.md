@@ -27,9 +27,9 @@ Content-Type: application/json
 
 ### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| 401 | Missing or invalid webhook secret |
-| 404 | Workflow not found or disabled |
-| 429 | Concurrent execution limit reached |
-| 500 | Internal error starting execution |
+| Status | Condition                          |
+| ------ | ---------------------------------- |
+| 401    | Missing or invalid webhook secret  |
+| 404    | Workflow not found or disabled     |
+| 429    | Concurrent execution limit reached |
+| 500    | Internal error starting execution  |

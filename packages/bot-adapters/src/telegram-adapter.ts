@@ -14,6 +14,14 @@ import { formatForTelegram } from "./formatter/markdown-to-telegram.js";
 import { splitMessage } from "./formatter/message-splitter.js";
 import { createPublicDnsAgent } from "./doh-resolver.js";
 
+function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -139,7 +147,8 @@ export class TelegramAdapter implements BotAdapter {
       });
       return msg?.message_id ? { messageId: msg.message_id } : undefined;
     } catch {
-      const msg = await this.bot.api.sendMessage(Number(senderId), text);
+      const plain = stripHtmlTags(text);
+      const msg = await this.bot.api.sendMessage(Number(senderId), plain);
       return msg?.message_id ? { messageId: msg.message_id } : undefined;
     }
   }
@@ -163,7 +172,17 @@ export class TelegramAdapter implements BotAdapter {
       return true;
     } catch (error: unknown) {
       if (isMessageNotModified(error)) return true;
-      return false;
+      try {
+        const plain = stripHtmlTags(formatted.text);
+        await this.bot.api.editMessageText(
+          Number(chatId),
+          Number(messageId),
+          plain,
+        );
+        return true;
+      } catch {
+        return false;
+      }
     }
   }
 

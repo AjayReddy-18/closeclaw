@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("WorkflowPlanHandler", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/gateway/src/workflow-plan-handler.js"
-    );
+    return import("../../../packages/gateway/src/workflow-plan-handler.js");
   }
 
   function makeAdapter() {

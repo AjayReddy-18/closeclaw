@@ -3,9 +3,7 @@ import type { StepOutputContext } from "@closeclaw/workflow";
 
 describe("interpolateOutputs", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/output-interpolator.js"
-    );
+    return import("../../../packages/workflow/src/output-interpolator.js");
   }
 
   it("replaces a single reference", async () => {

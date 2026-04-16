@@ -67,6 +67,15 @@ steps:
     expect(result.success).toBe(true);
   });
 
+  it("returns error when YAML parses to a non-object", async () => {
+    const { parseWorkflowYaml } = await loadModule();
+    const result = parseWorkflowYaml("just a string");
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors[0]).toContain("object");
+    }
+  });
+
   it("returns parse result for multi-document YAML (first doc)", async () => {
     const { parseWorkflowYaml } = await loadModule();
     const yaml = `

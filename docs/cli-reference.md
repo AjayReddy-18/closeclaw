@@ -174,6 +174,67 @@ View run history for a specific task.
 closeclaw cron runs <task-id>
 ```
 
+## workflow list
+
+Display all saved workflows.
+
+```bash
+closeclaw workflow list
+```
+
+Shows a table with ID, Name, Trigger, Status, Runs, and Created columns.
+
+## workflow inspect
+
+Show a workflow's definition and recent execution history.
+
+```bash
+closeclaw workflow inspect <workflow-id>
+```
+
+Displays name, trigger, status, step count, run count, and the last 5 executions.
+
+## workflow enable
+
+Enable a disabled workflow.
+
+```bash
+closeclaw workflow enable <workflow-id>
+```
+
+## workflow disable
+
+Disable an active workflow (stops it from being triggered).
+
+```bash
+closeclaw workflow disable <workflow-id>
+```
+
+## workflow delete
+
+Permanently delete a workflow and its definition files.
+
+```bash
+closeclaw workflow delete <workflow-id>
+```
+
+## workflow history
+
+View execution history for a specific workflow.
+
+```bash
+closeclaw workflow history <workflow-id>
+closeclaw workflow history <workflow-id> -n 5
+```
+
+**Options:**
+
+| Flag              | Description                             |
+| ----------------- | --------------------------------------- |
+| `-n, --limit <n>` | Number of records to show (default: 20) |
+
+Shows a table with execution ID, Status, Duration, Trigger, and Started columns.
+
 ## heartbeat configure
 
 Interactive heartbeat schedule setup.

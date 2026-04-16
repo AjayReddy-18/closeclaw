@@ -17,7 +17,15 @@ import {
   type OrchestrationPlanRef,
   type OrchestrationRunner,
 } from "./gateway-agent-handler.js";
-import { routeRequest } from "./gateway-routes.js";
+import type {
+  WorkflowPlanCallbacks,
+  WorkflowPlanRef,
+} from "./workflow-plan-handler.js";
+import {
+  matchKeywordWorkflow,
+  type KeywordTriggerCallback,
+} from "./keyword-trigger.js";
+import { routeRequest, type WebhookRouteConfig } from "./gateway-routes.js";
 import { createDmPolicyEnforcer } from "./dm-policy-enforcer.js";
 import {
   createPairingManager,
@@ -56,6 +64,19 @@ export type GatewayServerConfig = {
   approvalRef?: ApprovalRef;
   orchestrationPlanRef?: OrchestrationPlanRef;
   orchestrationRunner?: OrchestrationRunner;
+  workflowStore?: {
+    listWorkflows(
+      platform: string,
+      senderId: string,
+    ): Array<{
+      id: string;
+      status: string;
+      trigger: { type: string; value: string };
+    }>;
+  };
+  onKeywordTrigger?: KeywordTriggerCallback;
+  workflowPlanRef?: WorkflowPlanRef;
+  workflowPlanCallbacks?: WorkflowPlanCallbacks;
 };
 
 export type GatewayServer = {
@@ -94,6 +115,10 @@ function wireMessageHandlers(
       approval: cfg.approvalRef,
       orchestrationPlan: cfg.orchestrationPlanRef,
       orchestrationRunner: cfg.orchestrationRunner,
+      workflowStore: cfg.workflowStore,
+      onKeywordTrigger: cfg.onKeywordTrigger,
+      workflowPlanRef: cfg.workflowPlanRef,
+      workflowPlanCallbacks: cfg.workflowPlanCallbacks,
     };
     adapter.onMessage((msg: BotIncomingMessage) => {
       void handleAdapterMessage(
@@ -122,6 +147,10 @@ interface AdapterMsgRefs {
   approval?: ApprovalRef;
   orchestrationPlan?: OrchestrationPlanRef;
   orchestrationRunner?: OrchestrationRunner;
+  workflowStore?: GatewayServerConfig["workflowStore"];
+  onKeywordTrigger?: KeywordTriggerCallback;
+  workflowPlanRef?: WorkflowPlanRef;
+  workflowPlanCallbacks?: WorkflowPlanCallbacks;
 }
 
 async function handleAdapterMessage(
@@ -141,6 +170,26 @@ async function handleAdapterMessage(
     return maybeSendPairingReply(adapter, allowed, pairingCode, msg.senderId);
   if (resolvePermission(msg.senderId, msg.text)) return;
   logAcceptedMessage(msg);
+  if (refs.workflowStore && refs.onKeywordTrigger) {
+    const match = matchKeywordWorkflow(
+      msg.text,
+      refs.workflowStore,
+      msg.platform,
+      msg.senderId,
+    );
+    if (match) {
+      await adapter.sendMessage(
+        msg.senderId,
+        `Running workflow **${match.trigger.value}**...`,
+      );
+      refs
+        .onKeywordTrigger(match)
+        .catch((err) =>
+          console.error("[workflow] Keyword trigger error:", err),
+        );
+      return;
+    }
+  }
   if (!processor) return;
   enqueueForSender(`${msg.platform}:${msg.senderId}`, () =>
     runAgentResponse(
@@ -152,6 +201,8 @@ async function handleAdapterMessage(
       refs.approval,
       refs.orchestrationPlan,
       refs.orchestrationRunner,
+      refs.workflowPlanRef,
+      refs.workflowPlanCallbacks,
     ),
   );
 }
@@ -163,6 +214,9 @@ export function createGatewayServer(
     ? createPairingManager(config.pairingStorePath)
     : undefined;
   if (pairingManager) wireMessageHandlers(config, pairingManager);
+  const webhookCfg: WebhookRouteConfig | undefined = config.workflowStore
+    ? { store: config.workflowStore, onTrigger: config.onKeywordTrigger }
+    : undefined;
   const server = createServer((req, res) => {
     void routeRequest(
       req.method,
@@ -173,6 +227,7 @@ export function createGatewayServer(
       pairingManager,
       req,
       config.conversationStore,
+      webhookCfg,
     ).catch(() => {
       if (!res.headersSent) {
         res.statusCode = 500;

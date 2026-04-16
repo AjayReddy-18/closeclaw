@@ -84,6 +84,8 @@ const workflowDefinitionSchema = z.object({
   updatedAt: z.string(),
   lastRunAt: z.string().optional(),
   runCount: z.number().int().min(0),
+  maxRuns: z.number().int().min(1).optional(),
+  retireOnSuccess: z.boolean().optional(),
 });
 
 export interface ValidationResult {

@@ -9,7 +9,7 @@ export interface SuppressionResult {
   reason: string;
 }
 
-const DEFAULT_SAFETY_VALVE_MS = 30 * 60 * 1000;
+export const DEFAULT_SAFETY_VALVE_MS = 10 * 60 * 1000;
 
 const PREFIX_COMPLETE = "TASK_COMPLETE:";
 const PREFIX_FAILED = "TASK_FAILED:";
@@ -30,6 +30,20 @@ const DELIVERY_KEYWORDS = [
   "results",
   "summary",
   "report",
+  "passed",
+  "triggered",
+  "queued",
+  "published",
+  "released",
+  "merged",
+  "approved",
+  "rejected",
+  "created",
+  "updated",
+  "alert",
+  "warning",
+  "critical",
+  "resolved",
 ];
 
 const SUPPRESSION_KEYWORDS = [
@@ -44,6 +58,13 @@ const SUPPRESSION_KEYWORDS = [
   "not yet",
   "same as before",
   "no new",
+  "already alerted",
+  "already notified",
+  "silent",
+  "condition not met",
+  "still above",
+  "still below",
+  "no action needed",
 ];
 
 function stripPrefix(response: string, prefix: string): string {
@@ -76,31 +97,34 @@ function checkStructuredPrefix(response: string): SuppressionResult | null {
   return null;
 }
 
+/**
+ * AI explicitly chose a prefix or keywords matched a suppression signal —
+ * the safety valve must NOT override these intentional signals.
+ */
+
 function containsAny(text: string, keywords: string[]): boolean {
   const lower = text.toLowerCase();
   return keywords.some((kw) => lower.includes(kw));
 }
 
 function checkKeywordHeuristics(response: string): SuppressionResult | null {
-  if (containsAny(response, DELIVERY_KEYWORDS)) {
-    return {
-      suppressed: false,
-      cleanedResponse: response,
-      reason: "keyword-delivery-signal",
-    };
-  }
-  if (containsAny(response, SUPPRESSION_KEYWORDS)) {
+  const hasSuppression = containsAny(response, SUPPRESSION_KEYWORDS);
+  const hasDelivery = containsAny(response, DELIVERY_KEYWORDS);
+
+  // Suppression wins when both match — "already alerted" should suppress
+  // even though "alert" is a delivery keyword.
+  if (hasSuppression) {
     return {
       suppressed: true,
       cleanedResponse: response,
       reason: "keyword-suppression-signal",
     };
   }
-  if (response.trim().length > 200) {
+  if (hasDelivery) {
     return {
       suppressed: false,
       cleanedResponse: response,
-      reason: "substantial-content",
+      reason: "keyword-delivery-signal",
     };
   }
   return null;
@@ -128,17 +152,10 @@ export function evaluateResponse(
   if (prefixResult) return prefixResult;
 
   const keywordResult = checkKeywordHeuristics(response);
-  if (keywordResult) {
-    if (keywordResult.suppressed && isSafetyValveExpired(context)) {
-      return {
-        suppressed: false,
-        cleanedResponse: `Status update: ${response}`,
-        reason: "safety-valve-expired",
-      };
-    }
-    return keywordResult;
-  }
+  if (keywordResult) return keywordResult;
 
+  // No explicit signal — ambiguous response. Use safety valve to avoid
+  // permanent silence: deliver after enough time without any delivery.
   if (isSafetyValveExpired(context)) {
     return {
       suppressed: false,

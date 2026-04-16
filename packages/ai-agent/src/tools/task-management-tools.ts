@@ -52,6 +52,8 @@ export function createListTasksTool(deps: TaskManagementDeps) {
               : `${t.scheduleType}: ${t.scheduleValue}`,
           status: t.status,
           runs: t.runCount,
+          lastRunAt: t.lastRunAt ?? null,
+          nextRunAt: t.nextRunAt ?? null,
         })),
       };
     },

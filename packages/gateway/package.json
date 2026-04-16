@@ -14,6 +14,7 @@
     "build": "tsdown src/index.ts --format esm --dts"
   },
   "dependencies": {
+    "@closeclaw/ai-agent": "workspace:*",
     "@closeclaw/shared-types": "workspace:*",
     "@closeclaw/bot-adapters": "workspace:*"
   },

@@ -35,7 +35,6 @@ steps:
         onError: continue
 
 ---
-
 # Example: One-shot workflow with approval
 name: deploy-with-approval
 description: Check CI then deploy with approval
@@ -56,7 +55,6 @@ steps:
     onError: stop
 
 ---
-
 # Example: Parallel checks
 name: morning-status
 description: Parallel morning health checks
@@ -93,7 +91,6 @@ steps:
     onError: continue
 
 ---
-
 # Example: Loop (polling)
 name: wait-for-deploy
 description: Poll deploy status until complete

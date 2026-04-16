@@ -3,9 +3,7 @@ import type { StepOutputContext } from "@closeclaw/workflow";
 
 describe("evaluateCondition", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/condition-evaluator.js"
-    );
+    return import("../../../packages/workflow/src/condition-evaluator.js");
   }
 
   function makeDeps(response: string | Error = "true") {

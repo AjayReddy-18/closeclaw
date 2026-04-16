@@ -14,6 +14,7 @@ function makeStore(): TaskStore {
     updateTask: vi.fn(),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   };
 }
 
@@ -116,6 +117,8 @@ describe("list_tasks tool", () => {
       schedule: "cron: 0 9 * * *",
       status: "active",
       runs: 5,
+      lastRunAt: null,
+      nextRunAt: null,
     });
   });
 });

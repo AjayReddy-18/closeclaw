@@ -8,6 +8,12 @@ import {
   createPermissionAsker,
   createApprovalAsker,
 } from "./approval-handler.js";
+import {
+  handleWorkflowPlan,
+  hasWorkflowPlan,
+  type WorkflowPlanCallbacks,
+  type WorkflowPlanRef,
+} from "./workflow-plan-handler.js";
 
 export {
   resolvePermission,
@@ -80,6 +86,8 @@ export async function runAgentResponse(
   approvalRef?: ApprovalRef,
   orchestrationPlanRef?: OrchestrationPlanRef,
   orchestrationRunner?: OrchestrationRunner,
+  workflowPlanRef?: WorkflowPlanRef,
+  workflowPlanCallbacks?: WorkflowPlanCallbacks,
 ): Promise<void> {
   const stopTyping = startTypingLoop(adapter, msg.senderId);
   const live = buildLiveMessage(adapter, msg.senderId);
@@ -115,10 +123,34 @@ export async function runAgentResponse(
         orchestrationPlanRef.plan.tasks,
         processor,
       );
+      if (
+        workflowPlanRef &&
+        hasWorkflowPlan(workflowPlanRef) &&
+        workflowPlanCallbacks
+      ) {
+        await handleWorkflowPlan(
+          workflowPlanRef,
+          adapter,
+          msg.senderId,
+          workflowPlanCallbacks,
+        );
+      }
       return void summary;
     }
 
     await live.finalize(response || GATEWAY_PROCESSING_FAILED);
+    if (
+      workflowPlanRef &&
+      hasWorkflowPlan(workflowPlanRef) &&
+      workflowPlanCallbacks
+    ) {
+      await handleWorkflowPlan(
+        workflowPlanRef,
+        adapter,
+        msg.senderId,
+        workflowPlanCallbacks,
+      );
+    }
   } catch (error) {
     console.error("[gateway] Message processing failed:", error);
     stopTyping();

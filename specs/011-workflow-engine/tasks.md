@@ -48,14 +48,14 @@
 - [x] T011 [P] Test condition-evaluator in tests/unit/workflow/condition-evaluator.test.ts (true result, false result, AI error handling)
 - [x] T012 [P] Test execution-recorder in tests/unit/workflow/execution-recorder.test.ts (create record, add step result, finalize with status/duration)
 - [x] T013 [P] Test progress-reporter in tests/unit/workflow/progress-reporter.test.ts (step progress format, finalize with summary)
-- [x] T014 [P] Test workflow-store in tests/unit/workflow/workflow-store.test.ts (save writes both JSON and YAML, get, list by owner, update, delete, add execution, get executions with limit, one-shot execution records saved to _oneshot/, atomic write)
+- [x] T014 [P] Test workflow-store in tests/unit/workflow/workflow-store.test.ts (save writes both JSON and YAML, get, list by owner, update, delete, add execution, get executions with limit, one-shot execution records saved to \_oneshot/, atomic write)
 - [x] T015 Implement workflow-validator in packages/workflow/src/workflow-validator.ts (Zod schema for WorkflowDefinition, recursive StepNode validation, resource limit checks)
 - [x] T016 Implement output-interpolator in packages/workflow/src/output-interpolator.ts (resolve `{{stepId.output}}` templates from StepOutputContext)
 - [x] T017 Implement step-executor in packages/workflow/src/step-executor.ts (execute single action step via processMessage, capture output, handle errors per onError policy)
 - [x] T018 Implement condition-evaluator in packages/workflow/src/condition-evaluator.ts (send condition + context to processMessage, parse boolean result)
 - [x] T019 Implement execution-recorder in packages/workflow/src/execution-recorder.ts (create ExecutionRecord, append StepResult, finalize with status/duration/completedAt)
 - [x] T020 Implement progress-reporter in packages/workflow/src/progress-reporter.ts (format "[Step N/M: label] Running...", update LiveMessage, finalize with summary)
-- [x] T021 Implement workflow-store in packages/workflow/src/workflow-store.ts (save definitions as both JSON and human-readable YAML in ~/.closeclaw/workflows/definitions/, execution history as JSON in history/, one-shot execution records in history/_oneshot/, atomic writes)
+- [x] T021 Implement workflow-store in packages/workflow/src/workflow-store.ts (save definitions as both JSON and human-readable YAML in ~/.closeclaw/workflows/definitions/, execution history as JSON in history/, one-shot execution records in history/\_oneshot/, atomic writes)
 - [x] T022 Update packages/workflow/src/index.ts with all new exports
 
 **Checkpoint**: Foundation ready — all core modules tested and passing, user story implementation can begin
@@ -101,11 +101,11 @@
 
 ### Tests for User Story 2
 
-- [x] T036 [P] [US2] Test one-shot execution path in tests/unit/gateway/gateway-agent-handler-workflow.test.ts (WorkflowPlanRef with oneShot=true triggers immediate execution, no store.saveWorkflow called, execution record IS saved to history/_oneshot/, results delivered)
+- [x] T036 [P] [US2] Test one-shot execution path in tests/unit/gateway/gateway-agent-handler-workflow.test.ts (WorkflowPlanRef with oneShot=true triggers immediate execution, no store.saveWorkflow called, execution record IS saved to history/\_oneshot/, results delivered)
 
 ### Implementation for User Story 2
 
-- [x] T037 [US2] Extend gateway-agent-handler.ts WorkflowPlanRef handling to detect oneShot flag and execute immediately via workflow-runner without saving definition, but persist execution record to history/_oneshot/ in packages/gateway/src/gateway-agent-handler.ts
+- [x] T037 [US2] Extend gateway-agent-handler.ts WorkflowPlanRef handling to detect oneShot flag and execute immediately via workflow-runner without saving definition, but persist execution record to history/\_oneshot/ in packages/gateway/src/gateway-agent-handler.ts
 - [x] T038 [US2] Extend create-workflow-tool to pass oneShot flag from AI schema in packages/ai-agent/src/tools/create-workflow-tool.ts
 - [x] T039 [US2] Update WORKFLOW_GUIDANCE in system-prompt-builder.ts to instruct AI on when to use oneShot vs reusable in packages/ai-agent/src/system-prompt-builder.ts
 

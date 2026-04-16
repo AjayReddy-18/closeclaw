@@ -25,17 +25,20 @@ export function createProgressReporter(
     reportStepStart: (stepId, label) => {
       currentStep++;
       stepLabels.set(stepId, { index: currentStep, label });
-      onProgress(`[Step ${String(currentStep)}/${String(totalSteps)}: ${label}] Running...`);
+      onProgress(
+        `[Step ${String(currentStep)}/${String(totalSteps)}: ${label}] Running...`,
+      );
     },
     reportStepComplete: (stepId, outcome) => {
       const info = stepLabels.get(stepId);
       if (!info) return;
       outcomes.push({ label: info.label, outcome });
       const tag = STATUS_LABELS[outcome] ?? outcome;
-      onProgress(`[Step ${String(info.index)}/${String(totalSteps)}: ${info.label}] ${tag}`);
+      onProgress(
+        `[Step ${String(info.index)}/${String(totalSteps)}: ${info.label}] ${tag}`,
+      );
     },
-    buildSummary: (finalStatus) =>
-      buildSummaryText(finalStatus, outcomes),
+    buildSummary: (finalStatus) => buildSummaryText(finalStatus, outcomes),
   };
 }
 
@@ -45,7 +48,5 @@ function buildSummaryText(
 ): string {
   const total = outcomes.length;
   const succeeded = outcomes.filter((o) => o.outcome === "success").length;
-  return (
-    `Workflow ${finalStatus}: ${String(succeeded)}/${String(total)} steps succeeded.`
-  );
+  return `Workflow ${finalStatus}: ${String(succeeded)}/${String(total)} steps succeeded.`;
 }

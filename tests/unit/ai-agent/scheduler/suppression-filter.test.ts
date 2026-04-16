@@ -38,10 +38,19 @@ describe("evaluateResponse", () => {
       expect(result.reason).toBe("structured-prefix-failed");
     });
 
-    it("suppresses TASK_IN_PROGRESS", () => {
+    it("suppresses TASK_IN_PROGRESS when recently delivered", () => {
       const result = evaluateResponse(
         "TASK_IN_PROGRESS: Still checking",
         recentContext,
+      );
+      expect(result.suppressed).toBe(true);
+      expect(result.reason).toBe("structured-prefix-in-progress");
+    });
+
+    it("suppresses TASK_IN_PROGRESS even when safety valve expired", () => {
+      const result = evaluateResponse(
+        "TASK_IN_PROGRESS: Still checking",
+        expiredContext,
       );
       expect(result.suppressed).toBe(true);
       expect(result.reason).toBe("structured-prefix-in-progress");
@@ -62,6 +71,18 @@ describe("evaluateResponse", () => {
       const result = evaluateResponse("Here are the results", recentContext);
       expect(result.suppressed).toBe(false);
     });
+
+    it("delivers CI/CD responses with passed/triggered keywords", () => {
+      expect(
+        evaluateResponse("Build passed! Tag: v1.0", recentContext).suppressed,
+      ).toBe(false);
+      expect(
+        evaluateResponse("SIT deploy triggered", recentContext).suppressed,
+      ).toBe(false);
+      expect(
+        evaluateResponse("Docker image published", recentContext).suppressed,
+      ).toBe(false);
+    });
   });
 
   describe("keyword heuristics - suppression", () => {
@@ -75,17 +96,41 @@ describe("evaluateResponse", () => {
       const result = evaluateResponse("No change detected", recentContext);
       expect(result.suppressed).toBe(true);
     });
+
+    it("suppression wins when both suppression and delivery keywords match", () => {
+      const result = evaluateResponse(
+        "(24% — already alerted. Silent.)",
+        recentContext,
+      );
+      expect(result.suppressed).toBe(true);
+      expect(result.reason).toBe("keyword-suppression-signal");
+    });
+
+    it("suppresses 'still above' monitoring responses", () => {
+      const result = evaluateResponse(
+        "Battery at 27%, still above 25%. Monitoring continues.",
+        recentContext,
+      );
+      expect(result.suppressed).toBe(true);
+    });
+
+    it("suppresses 'condition not met' responses", () => {
+      const result = evaluateResponse(
+        "Condition not met, no action needed",
+        recentContext,
+      );
+      expect(result.suppressed).toBe(true);
+    });
   });
 
   describe("safety valve", () => {
-    it("delivers suppressed response when safety valve expired", () => {
+    it("keeps keyword-suppressed responses suppressed even when safety valve expired", () => {
       const result = evaluateResponse(
         "Still running the check",
         expiredContext,
       );
-      expect(result.suppressed).toBe(false);
-      expect(result.reason).toBe("safety-valve-expired");
-      expect(result.cleanedResponse).toContain("Status update:");
+      expect(result.suppressed).toBe(true);
+      expect(result.reason).toBe("keyword-suppression-signal");
     });
 
     it("delivers ambiguous response when safety valve expired", () => {
@@ -94,7 +139,7 @@ describe("evaluateResponse", () => {
       expect(result.reason).toBe("ambiguous-safety-valve");
     });
 
-    it("delivers when lastDeliveredAt is undefined", () => {
+    it("delivers ambiguous response when lastDeliveredAt is undefined", () => {
       const result = evaluateResponse("hmm ok", neverDelivered);
       expect(result.suppressed).toBe(false);
     });
@@ -112,11 +157,11 @@ describe("evaluateResponse", () => {
       expect(result.suppressed).toBe(true);
     });
 
-    it("delivers substantial content over 200 chars", () => {
+    it("suppresses long ambiguous response within safety valve", () => {
       const longResponse = "x".repeat(250);
       const result = evaluateResponse(longResponse, recentContext);
-      expect(result.suppressed).toBe(false);
-      expect(result.reason).toBe("substantial-content");
+      expect(result.suppressed).toBe(true);
+      expect(result.reason).toBe("ambiguous-default-suppress");
     });
 
     it("suppresses short ambiguous response within safety valve", () => {

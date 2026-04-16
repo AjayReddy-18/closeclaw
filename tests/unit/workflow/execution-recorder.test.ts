@@ -3,9 +3,7 @@ import type { StepResult } from "@closeclaw/workflow";
 
 describe("ExecutionRecorder", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/execution-recorder.js"
-    );
+    return import("../../../packages/workflow/src/execution-recorder.js");
   }
 
   function makeStepResult(overrides?: Partial<StepResult>): StepResult {

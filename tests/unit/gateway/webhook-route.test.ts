@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("Webhook Route Handler", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/gateway/src/webhook-handler.js"
-    );
+    return import("../../../packages/gateway/src/webhook-handler.js");
   }
 
   function makeStore() {

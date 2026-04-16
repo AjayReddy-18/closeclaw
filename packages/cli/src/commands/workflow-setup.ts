@@ -1,6 +1,10 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { createWorkflowStore, type WorkflowStore } from "@closeclaw/workflow";
+import {
+  createWorkflowStore,
+  type WorkflowStore,
+  type WorkflowDefinition,
+} from "@closeclaw/workflow";
 import { createWorkflowTool, type WorkflowPlanRef } from "@closeclaw/ai-agent";
 import {
   createWorkflowScheduler,
@@ -13,19 +17,39 @@ export interface WorkflowAssembly {
   scheduler: WorkflowScheduler;
   planRef: WorkflowPlanRef;
   tools: Record<string, unknown>;
+  runWorkflow: (workflow: {
+    id: string;
+    status: string;
+    trigger: { type: string; value: string };
+  }) => Promise<void>;
+  runWorkflowDefinition: (workflow: WorkflowDefinition) => Promise<void>;
 }
 
 export function setupWorkflowSystem(
-  runWorkflowFn: WorkflowRunnerFn,
+  executeFn: WorkflowRunnerFn,
 ): WorkflowAssembly {
   const baseDir = join(homedir(), ".closeclaw", "workflows");
   const store = createWorkflowStore(baseDir);
   const scheduler = createWorkflowScheduler(async (workflow) => {
-    await runWorkflowFn(workflow);
+    await executeFn(workflow);
   });
   const planRef: WorkflowPlanRef = { plan: null };
-  const tools = {
+  const tools: Record<string, unknown> = {
     create_workflow: createWorkflowTool(planRef),
   };
-  return { store, scheduler, planRef, tools };
+  const placeholder: WorkflowAssembly["runWorkflow"] = async () => {
+    throw new Error("Workflow executor not yet wired");
+  };
+  const placeholderDef: WorkflowAssembly["runWorkflowDefinition"] =
+    async () => {
+      throw new Error("Workflow executor not yet wired");
+    };
+  return {
+    store,
+    scheduler,
+    planRef,
+    tools,
+    runWorkflow: placeholder,
+    runWorkflowDefinition: placeholderDef,
+  };
 }

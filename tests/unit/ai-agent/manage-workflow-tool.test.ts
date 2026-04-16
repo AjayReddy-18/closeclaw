@@ -2,16 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("manageWorkflowTool", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/ai-agent/src/tools/manage-workflow-tool.js"
-    );
+    return import("../../../packages/ai-agent/src/tools/manage-workflow-tool.js");
   }
 
   function makeStore() {
     return {
-      listWorkflows: vi.fn().mockReturnValue([
-        { id: "wf-1", name: "test", status: "active" },
-      ]),
+      listWorkflows: vi
+        .fn()
+        .mockReturnValue([{ id: "wf-1", name: "test", status: "active" }]),
       getWorkflow: vi.fn().mockReturnValue({ id: "wf-1", status: "active" }),
       updateWorkflow: vi.fn(),
       deleteWorkflow: vi.fn().mockReturnValue(true),

@@ -32,8 +32,12 @@ describe("createTaskExecutor", () => {
     expect(processMessage).toHaveBeenCalledWith(
       "telegram",
       "123",
-      "Do the thing",
+      expect.stringContaining("Do the thing"),
     );
+    const actualPrompt = processMessage.mock.calls[0][2];
+    expect(actualPrompt).toContain("[SCHEDULED TASK");
+    expect(actualPrompt).toContain("TASK_COMPLETE:");
+    expect(actualPrompt).toContain("TASK_IN_PROGRESS:");
   });
 
   it("returns failure run on error", async () => {

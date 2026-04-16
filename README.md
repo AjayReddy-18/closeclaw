@@ -13,6 +13,7 @@ An automation tool that connects AI models to messaging platforms like Telegram 
 - **Cursor CLI Delegation** — Delegate coding tasks to Cursor's headless agent with real-time progress and interactive approval
 - **Live Progress Streaming** — Single live-updating message per response instead of multiple progress notifications
 - **Multi-Agent Orchestration** — Decompose complex requests into parallel subtasks for faster execution with per-subtask live progress
+- **Workflow Engine** — Create multi-step automations via chat or YAML with conditional branching, parallel execution, loops, approval pauses, and cron/webhook/keyword triggers
 - **Network Resilience** — DNS-over-HTTPS for reliable connectivity behind VPNs
 
 ## Prerequisites
@@ -271,6 +272,7 @@ Detailed docs for each feature are in the `docs/` directory:
 - [MCP Integration](docs/mcp-integration.md)
 - [Cursor Agent](docs/cursor-agent.md)
 - [Live Progress](docs/live-progress.md)
+- [Workflow Engine](docs/workflows.md)
 
 ## License
 

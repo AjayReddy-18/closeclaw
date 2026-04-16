@@ -37,6 +37,7 @@ function makeStore(initial: ScheduledTask[] = []): TaskStore {
     }),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   };
 }
 
@@ -197,6 +198,86 @@ describe("task-scheduler post-execution paths", () => {
     scheduler.stop();
   });
 
+  it("auto-completes recurring task when response has TASK_COMPLETE prefix", async () => {
+    vi.useFakeTimers();
+    const task = sampleTask({
+      id: "monitor-pr",
+      scheduleType: "cron",
+      scheduleValue: "*/5 * * * *",
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
+    const store = makeStore([task]);
+    const completeRun: TaskRun = {
+      taskId: "monitor-pr",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      response: "TASK_COMPLETE: PR #304 has been merged!",
+      durationMs: 50,
+      delivered: true,
+    };
+    const executor: TaskExecutor = {
+      executeTask: vi.fn(async () => completeRun),
+    };
+    const deliver = vi.fn().mockResolvedValue(undefined);
+    const scheduler = createTaskScheduler(store, executor, deliver);
+
+    scheduler.scheduleTask(task);
+    vi.advanceTimersByTime(200);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(store.updateTask).toHaveBeenCalledWith(
+      "monitor-pr",
+      expect.objectContaining({ status: "completed" }),
+    );
+    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock
+      .calls;
+    const nextRunUpdate = updateCalls.find(
+      ([, u]: [string, Partial<ScheduledTask>]) => u.nextRunAt !== undefined,
+    );
+    expect(nextRunUpdate).toBeUndefined();
+    scheduler.stop();
+  });
+
+  it("keeps recurring when response has TASK_IN_PROGRESS prefix", async () => {
+    vi.useFakeTimers();
+    const task = sampleTask({
+      id: "still-polling",
+      scheduleType: "cron",
+      scheduleValue: "*/5 * * * *",
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
+    const store = makeStore([task]);
+    const inProgressRun: TaskRun = {
+      taskId: "still-polling",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      response: "TASK_IN_PROGRESS: PR still open",
+      durationMs: 50,
+      delivered: true,
+    };
+    const executor: TaskExecutor = {
+      executeTask: vi.fn(async () => inProgressRun),
+    };
+    const deliver = vi.fn().mockResolvedValue(undefined);
+    const scheduler = createTaskScheduler(store, executor, deliver);
+
+    scheduler.scheduleTask(task);
+    vi.advanceTimersByTime(200);
+    await vi.advanceTimersByTimeAsync(0);
+
+    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock
+      .calls;
+    const completedUpdate = updateCalls.find(
+      ([, u]: [string, Partial<ScheduledTask>]) => u.status === "completed",
+    );
+    expect(completedUpdate).toBeUndefined();
+    const nextRunUpdate = updateCalls.find(
+      ([, u]: [string, Partial<ScheduledTask>]) => u.nextRunAt !== undefined,
+    );
+    expect(nextRunUpdate).toBeDefined();
+    scheduler.stop();
+  });
+
   it("skips execution when task is no longer active at fire time", async () => {
     vi.useFakeTimers();
     const task = sampleTask({
@@ -215,6 +296,41 @@ describe("task-scheduler post-execution paths", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(executor.executeTask).not.toHaveBeenCalled();
+    scheduler.stop();
+  });
+
+  it("reschedules recurring task even when executeTask throws", async () => {
+    vi.useFakeTimers();
+    const task = sampleTask({
+      id: "err-task",
+      scheduleType: "cron",
+      scheduleValue: "*/5 * * * *",
+      nextRunAt: new Date(Date.now() + 100).toISOString(),
+    });
+    const store = makeStore([task]);
+    const executor: TaskExecutor = {
+      executeTask: vi.fn(async () => {
+        throw new Error("AI API timeout");
+      }),
+    };
+    const deliver = vi.fn().mockResolvedValue(undefined);
+    const consoleSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const scheduler = createTaskScheduler(store, executor, deliver);
+
+    scheduler.scheduleTask(task);
+    vi.advanceTimersByTime(200);
+    await vi.advanceTimersByTimeAsync(0);
+
+    const updateCalls = (store.updateTask as ReturnType<typeof vi.fn>).mock
+      .calls;
+    const nextRunUpdate = updateCalls.find(
+      ([, u]: [string, Partial<ScheduledTask>]) => u.nextRunAt !== undefined,
+    );
+    expect(nextRunUpdate).toBeDefined();
+
+    consoleSpy.mockRestore();
     scheduler.stop();
   });
 });

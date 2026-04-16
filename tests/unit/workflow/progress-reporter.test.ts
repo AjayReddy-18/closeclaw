@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("ProgressReporter", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/progress-reporter.js"
-    );
+    return import("../../../packages/workflow/src/progress-reporter.js");
   }
 
   it("formats step progress message", async () => {
@@ -34,9 +32,7 @@ describe("ProgressReporter", () => {
     const reporter = createProgressReporter(2, onProgress);
     reporter.reportStepStart("s1", "Check");
     reporter.reportStepComplete("s1", "success");
-    expect(onProgress).toHaveBeenLastCalledWith(
-      "[Step 1/2: Check] Done",
-    );
+    expect(onProgress).toHaveBeenLastCalledWith("[Step 1/2: Check] Done");
   });
 
   it("reports step failure", async () => {
@@ -45,9 +41,7 @@ describe("ProgressReporter", () => {
     const reporter = createProgressReporter(2, onProgress);
     reporter.reportStepStart("s1", "Deploy");
     reporter.reportStepComplete("s1", "failed");
-    expect(onProgress).toHaveBeenLastCalledWith(
-      "[Step 1/2: Deploy] Failed",
-    );
+    expect(onProgress).toHaveBeenLastCalledWith("[Step 1/2: Deploy] Failed");
   });
 
   it("builds finalize summary", async () => {
@@ -71,5 +65,24 @@ describe("ProgressReporter", () => {
     reporter.reportStepComplete("s1", "failed");
     const summary = reporter.buildSummary("failed");
     expect(summary).toContain("failed");
+  });
+
+  it("ignores reportStepComplete for unknown stepId", async () => {
+    const { createProgressReporter } = await loadModule();
+    const onProgress = vi.fn();
+    const reporter = createProgressReporter(2, onProgress);
+    reporter.reportStepComplete("unknown-id", "success");
+    expect(onProgress).not.toHaveBeenCalled();
+  });
+
+  it("falls back to raw outcome when status label is unknown", async () => {
+    const { createProgressReporter } = await loadModule();
+    const onProgress = vi.fn();
+    const reporter = createProgressReporter(1, onProgress);
+    reporter.reportStepStart("s1", "Test");
+    reporter.reportStepComplete("s1", "custom-status" as "success");
+    expect(onProgress).toHaveBeenLastCalledWith(
+      "[Step 1/1: Test] custom-status",
+    );
   });
 });

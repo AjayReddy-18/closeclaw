@@ -12,6 +12,7 @@ function makeDeps() {
     updateTask: vi.fn(),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   };
   const scheduler: TaskScheduler = {
     start: vi.fn(),

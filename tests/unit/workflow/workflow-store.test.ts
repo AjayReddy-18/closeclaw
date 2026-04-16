@@ -2,10 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type {
-  WorkflowDefinition,
-  ExecutionRecord,
-} from "@closeclaw/workflow";
+import type { WorkflowDefinition, ExecutionRecord } from "@closeclaw/workflow";
 
 describe("WorkflowStore", () => {
   let baseDir: string;
@@ -153,10 +150,7 @@ describe("WorkflowStore", () => {
     store.addExecution(exec);
     const oneshotDir = join(baseDir, "history", "_oneshot");
     expect(existsSync(oneshotDir)).toBe(true);
-    const files = readFileSync(
-      join(oneshotDir, "oneshot-1.json"),
-      "utf-8",
-    );
+    const files = readFileSync(join(oneshotDir, "oneshot-1.json"), "utf-8");
     expect(files).toContain("oneshot-1");
   });
 
@@ -172,5 +166,34 @@ describe("WorkflowStore", () => {
     store1.saveWorkflow(makeDefinition({ id: "persist-1" }));
     const store2 = createWorkflowStore(baseDir);
     expect(store2.getWorkflow("persist-1")).toBeDefined();
+  });
+
+  it("generates webhook secret for webhook-triggered workflows", async () => {
+    const { createWorkflowStore } = await loadModule();
+    const store = createWorkflowStore(baseDir);
+    const def = makeDefinition({
+      id: "wh-1",
+      trigger: { type: "webhook" as const, value: "/deploy" },
+    });
+    store.saveWorkflow(def);
+    const saved = store.getWorkflow("wh-1");
+    expect(saved?.trigger.webhookSecret).toBeDefined();
+    expect(saved!.trigger.webhookSecret!.length).toBeGreaterThan(0);
+  });
+
+  it("preserves existing webhook secret on save", async () => {
+    const { createWorkflowStore } = await loadModule();
+    const store = createWorkflowStore(baseDir);
+    const def = makeDefinition({
+      id: "wh-2",
+      trigger: {
+        type: "webhook" as const,
+        value: "/deploy",
+        webhookSecret: "existing-secret",
+      },
+    });
+    store.saveWorkflow(def);
+    const saved = store.getWorkflow("wh-2");
+    expect(saved?.trigger.webhookSecret).toBe("existing-secret");
   });
 });

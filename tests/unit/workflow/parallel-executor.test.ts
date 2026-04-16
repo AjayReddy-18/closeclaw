@@ -3,9 +3,7 @@ import type { StepNode, StepOutputContext } from "@closeclaw/workflow";
 
 describe("ParallelExecutor", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/parallel-executor.js"
-    );
+    return import("../../../packages/workflow/src/parallel-executor.js");
   }
 
   function makeActionStep(id: string): StepNode {
@@ -80,8 +78,47 @@ describe("ParallelExecutor", () => {
     ]);
     const deps = makeDeps(["ok"]);
     const context: StepOutputContext = {};
-    await expect(
-      executeParallel(branches, deps, context),
-    ).rejects.toThrow();
+    await expect(executeParallel(branches, deps, context)).rejects.toThrow();
+  });
+
+  it("captures failed step result when processMessage rejects", async () => {
+    const { executeParallel } = await loadModule();
+    const branches: StepNode[][] = [
+      [makeActionStep("a1")],
+      [makeActionStep("a2")],
+    ];
+    const deps = makeDeps([]);
+    deps.processMessage
+      .mockResolvedValueOnce("ok")
+      .mockRejectedValueOnce(new Error("branch fail"));
+    const context: StepOutputContext = {};
+    const results = await executeParallel(branches, deps, context);
+    const failed = results.find(
+      (r: { status: string }) => r.status === "failed",
+    );
+    expect(failed).toBeDefined();
+    expect(failed!.stepId).toBe("a2");
+    expect(failed!.error).toBe("branch fail");
+  });
+
+  it("skips non-action steps in branches", async () => {
+    const { executeParallel } = await loadModule();
+    const branches: StepNode[][] = [
+      [
+        {
+          id: "cond",
+          type: "condition",
+          label: "Cond",
+          condition: "check",
+          thenSteps: [],
+          elseSteps: [],
+        } as StepNode,
+      ],
+    ];
+    const deps = makeDeps([]);
+    const context: StepOutputContext = {};
+    const results = await executeParallel(branches, deps, context);
+    expect(results).toHaveLength(0);
+    expect(deps.processMessage).not.toHaveBeenCalled();
   });
 });

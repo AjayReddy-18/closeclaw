@@ -29,6 +29,10 @@ import {
   createHeartbeatDeps,
 } from "./commands/heartbeat-registry.js";
 import { registerMcpCommands, createMcpDeps } from "./commands/mcp-registry.js";
+import {
+  registerWorkflowCommands,
+  createWorkflowStoreDeps,
+} from "./commands/workflow-registry.js";
 import { runCursorSessions } from "./commands/cursor-sessions-command.js";
 
 export async function runCli(argv: string[]): Promise<number> {
@@ -80,6 +84,7 @@ export async function runCli(argv: string[]): Promise<number> {
   registerCronCommands(program, createCronStoreDeps());
   registerHeartbeatCommands(program, createHeartbeatDeps());
   registerMcpCommands(program, createMcpDeps());
+  registerWorkflowCommands(program, createWorkflowStoreDeps());
   const cursor = program.command("cursor");
   cursor
     .command("sessions")

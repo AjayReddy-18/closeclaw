@@ -1,4 +1,10 @@
-import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  mkdirSync,
+  statSync,
+} from "node:fs";
 import { dirname } from "node:path";
 import type { ScheduledTask, TaskRun, TaskStoreData } from "./task-types.js";
 import { TASK_STORE_VERSION, MAX_RUNS_PER_TASK } from "./task-types.js";
@@ -11,6 +17,7 @@ export interface TaskStore {
   updateTask(id: string, updates: Partial<ScheduledTask>): void;
   addRun(run: TaskRun): void;
   getRunsForTask(taskId: string, limit?: number): TaskRun[];
+  pruneOrphanedRuns(): number;
 }
 
 function emptyStore(): TaskStoreData {
@@ -42,24 +49,53 @@ function pruneRuns(runs: TaskRun[], taskId: string): TaskRun[] {
   return [...other, ...forTask.slice(forTask.length - MAX_RUNS_PER_TASK)];
 }
 
+function getFileMtime(path: string): number {
+  try {
+    return statSync(path).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
+
 export function createTaskStore(path: string): TaskStore {
   let data = readStore(path);
+  let lastMtime = getFileMtime(path);
+
+  function reloadIfChanged(): void {
+    const currentMtime = getFileMtime(path);
+    if (currentMtime !== lastMtime) {
+      const fresh = readStore(path);
+      if (fresh.tasks.length > 0 || data.tasks.length === 0) {
+        data = fresh;
+      }
+      lastMtime = currentMtime;
+    }
+  }
 
   function persist(): void {
     writeStore(path, data);
+    lastMtime = getFileMtime(path);
   }
 
   return {
-    listTasks: () => [...data.tasks],
+    listTasks() {
+      reloadIfChanged();
+      return [...data.tasks];
+    },
 
-    getTask: (id) => data.tasks.find((t) => t.id === id),
+    getTask(id) {
+      reloadIfChanged();
+      return data.tasks.find((t) => t.id === id);
+    },
 
     addTask(task) {
+      reloadIfChanged();
       data.tasks.push(task);
       persist();
     },
 
     removeTask(id) {
+      reloadIfChanged();
       const idx = data.tasks.findIndex((t) => t.id === id);
       if (idx === -1) return false;
       data.tasks.splice(idx, 1);
@@ -69,6 +105,7 @@ export function createTaskStore(path: string): TaskStore {
     },
 
     updateTask(id, updates) {
+      reloadIfChanged();
       const task = data.tasks.find((t) => t.id === id);
       if (!task) return;
       Object.assign(task, updates);
@@ -76,14 +113,26 @@ export function createTaskStore(path: string): TaskStore {
     },
 
     addRun(run) {
+      reloadIfChanged();
       data.runs.push(run);
       data.runs = pruneRuns(data.runs, run.taskId);
       persist();
     },
 
-    getRunsForTask: (taskId, limit) => {
+    getRunsForTask(taskId, limit) {
+      reloadIfChanged();
       const runs = data.runs.filter((r) => r.taskId === taskId);
       return limit ? runs.slice(-limit) : runs;
+    },
+
+    pruneOrphanedRuns() {
+      reloadIfChanged();
+      const taskIds = new Set(data.tasks.map((t) => t.id));
+      const before = data.runs.length;
+      data.runs = data.runs.filter((r) => taskIds.has(r.taskId));
+      const removed = before - data.runs.length;
+      if (removed > 0) persist();
+      return removed;
     },
   };
 }

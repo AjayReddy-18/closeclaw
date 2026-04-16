@@ -8,6 +8,7 @@ import {
   existsSync,
 } from "node:fs";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { stringify as yamlStringify } from "yaml";
 import type { WorkflowDefinition, ExecutionRecord } from "./types.js";
 
@@ -17,6 +18,7 @@ export interface WorkflowStore {
   getWorkflow(id: string): WorkflowDefinition | undefined;
   saveWorkflow(workflow: WorkflowDefinition): void;
   listWorkflows(platform: string, senderId: string): WorkflowDefinition[];
+  listAll(): WorkflowDefinition[];
   updateWorkflow(id: string, updates: Partial<WorkflowDefinition>): void;
   deleteWorkflow(id: string): boolean;
   addExecution(record: ExecutionRecord): void;
@@ -35,6 +37,7 @@ export function createWorkflowStore(baseDir: string): WorkflowStore {
     saveWorkflow: (wf) => saveDefinition(wf, defsDir, workflows),
     listWorkflows: (platform, senderId) =>
       filterByOwner(workflows, platform, senderId),
+    listAll: () => [...workflows.values()],
     updateWorkflow: (id, updates) =>
       applyUpdate(id, updates, defsDir, workflows),
     deleteWorkflow: (id) => removeDefinition(id, defsDir, workflows),
@@ -58,6 +61,9 @@ function saveDefinition(
   defsDir: string,
   cache: Map<string, WorkflowDefinition>,
 ): void {
+  if (wf.trigger.type === "webhook" && !wf.trigger.webhookSecret) {
+    wf.trigger.webhookSecret = randomUUID().replace(/-/g, "");
+  }
   cache.set(wf.id, wf);
   atomicWriteJson(join(defsDir, `${wf.id}.json`), wf);
   writeYamlCopy(wf, defsDir);
@@ -88,7 +94,11 @@ function applyUpdate(
 ): void {
   const existing = cache.get(id);
   if (!existing) return;
-  const updated = { ...existing, ...updates, updatedAt: new Date().toISOString() };
+  const updated = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
   saveDefinition(updated, defsDir, cache);
 }
 
@@ -137,14 +147,12 @@ function loadExecutions(
     .sort()
     .reverse();
   const sliced = limit ? files.slice(0, limit) : files;
-  return sliced.map((f) =>
-    JSON.parse(readFileSync(join(dir, f), "utf-8")) as ExecutionRecord,
+  return sliced.map(
+    (f) => JSON.parse(readFileSync(join(dir, f), "utf-8")) as ExecutionRecord,
   );
 }
 
-function loadAllDefinitions(
-  defsDir: string,
-): Map<string, WorkflowDefinition> {
+function loadAllDefinitions(defsDir: string): Map<string, WorkflowDefinition> {
   const map = new Map<string, WorkflowDefinition>();
   if (!existsSync(defsDir)) return map;
   for (const file of readdirSync(defsDir)) {

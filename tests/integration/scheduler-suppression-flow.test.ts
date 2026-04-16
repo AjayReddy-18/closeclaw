@@ -25,14 +25,25 @@ describe("Scheduler suppression flow", () => {
     expect(delivered[0]).toContain("Pipeline finished successfully");
   });
 
-  it("safety valve triggers after extended silence", () => {
+  it("keeps keyword-suppressed responses suppressed regardless of safety valve", () => {
     const oldTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
     const context = {
       lastDeliveredAt: oldTime,
       safetyValveMs: 30 * 60 * 1000,
     };
     const result = evaluateResponse("Still running the check", context);
+    expect(result.suppressed).toBe(true);
+    expect(result.reason).toBe("keyword-suppression-signal");
+  });
+
+  it("safety valve delivers ambiguous responses after extended silence", () => {
+    const oldTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    const context = {
+      lastDeliveredAt: oldTime,
+      safetyValveMs: 30 * 60 * 1000,
+    };
+    const result = evaluateResponse("something happened", context);
     expect(result.suppressed).toBe(false);
-    expect(result.cleanedResponse).toContain("Status update:");
+    expect(result.reason).toBe("ambiguous-safety-valve");
   });
 });

@@ -1,13 +1,16 @@
 import type {
   WorkflowDefinition,
   ExecutionRecord,
+  ExecutionStatus,
   StepNode,
   StepOutputContext,
+  StepResult,
   ConditionStep,
   ParallelStep,
   LoopStep,
   ProcessMessageFn,
   ProgressCallback,
+  ApprovalCallback,
 } from "./types.js";
 import { executeStep, type StepExecutorDeps } from "./step-executor.js";
 import { evaluateCondition } from "./condition-evaluator.js";
@@ -22,6 +25,37 @@ export interface WorkflowRunnerDeps {
   platform: string;
   senderId: string;
   onProgress?: ProgressCallback;
+  approvalCallback?: ApprovalCallback;
+}
+
+interface RunContext {
+  conditionUnmet: boolean;
+}
+
+const NEGATIVE_OUTPUT_PREFIXES = [
+  "TASK_IN_PROGRESS:",
+  "TASK_FAILED:",
+];
+
+function hasNegativeSignal(results: StepResult[]): boolean {
+  return results.some((r) => {
+    if (!r.output) return false;
+    const trimmed = r.output.trimStart();
+    return NEGATIVE_OUTPUT_PREFIXES.some((p) => trimmed.startsWith(p));
+  });
+}
+
+function resolveStatus(
+  failed: boolean,
+  definition: WorkflowDefinition,
+  runCtx: RunContext,
+  stepResults: StepResult[],
+): ExecutionStatus {
+  if (failed) return "failed";
+  if (!definition.retireOnSuccess) return "completed";
+  if (runCtx.conditionUnmet) return "condition_unmet";
+  if (hasNegativeSignal(stepResults)) return "condition_unmet";
+  return "completed";
 }
 
 export async function runWorkflow(
@@ -45,7 +79,9 @@ export async function runWorkflow(
     processMessage: deps.processMessage,
     platform: deps.platform,
     senderId: deps.senderId,
+    approvalCallback: deps.approvalCallback,
   };
+  const runCtx: RunContext = { conditionUnmet: false };
 
   const failed = await executeStepList(
     definition.steps,
@@ -54,8 +90,14 @@ export async function runWorkflow(
     context,
     recorder,
     progress,
+    runCtx,
   );
-  const status = failed ? "failed" : "completed";
+  const status = resolveStatus(
+    failed,
+    definition,
+    runCtx,
+    recorder.getStepResults(),
+  );
   return recorder.finalize(status);
 }
 
@@ -66,6 +108,7 @@ async function executeStepList(
   context: StepOutputContext,
   recorder: ReturnType<typeof createExecutionRecorder>,
   progress: ReturnType<typeof createProgressReporter>,
+  runCtx: RunContext,
 ): Promise<boolean> {
   for (const step of steps) {
     const failed = await dispatchStep(
@@ -75,6 +118,7 @@ async function executeStepList(
       context,
       recorder,
       progress,
+      runCtx,
     );
     if (failed) return true;
   }
@@ -88,6 +132,7 @@ async function dispatchStep(
   context: StepOutputContext,
   recorder: ReturnType<typeof createExecutionRecorder>,
   progress: ReturnType<typeof createProgressReporter>,
+  runCtx: RunContext,
 ): Promise<boolean> {
   if (step.type === "action") {
     return handleActionStep(step, execDeps, context, recorder, progress);
@@ -100,6 +145,7 @@ async function dispatchStep(
       context,
       recorder,
       progress,
+      runCtx,
     );
   }
   if (step.type === "parallel") {
@@ -135,8 +181,13 @@ async function handleConditionStep(
   context: StepOutputContext,
   recorder: ReturnType<typeof createExecutionRecorder>,
   progress: ReturnType<typeof createProgressReporter>,
+  runCtx: RunContext,
 ): Promise<boolean> {
-  const condResult = await evaluateCondition(step.condition, execDeps, context);
+  const condResult = await evaluateCondition(
+    step.condition,
+    execDeps,
+    context,
+  );
   recorder.addStepResult({
     stepId: step.id,
     stepLabel: step.label,
@@ -146,8 +197,19 @@ async function handleConditionStep(
     completedAt: new Date().toISOString(),
     durationMs: 0,
   });
+  if (!condResult) {
+    runCtx.conditionUnmet = true;
+  }
   const branch = condResult ? step.thenSteps : step.elseSteps;
-  return executeStepList(branch, execDeps, runnerDeps, context, recorder, progress);
+  return executeStepList(
+    branch,
+    execDeps,
+    runnerDeps,
+    context,
+    recorder,
+    progress,
+    runCtx,
+  );
 }
 
 async function handleParallelStep(

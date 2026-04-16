@@ -4,7 +4,10 @@ import type { TaskStore } from "./task-store.js";
 import type { TaskExecutor } from "./task-executor.js";
 import { parseDuration } from "./duration-parser.js";
 import { nextCronOccurrence } from "./cron-utils.js";
-import { evaluateResponse } from "./suppression-filter.js";
+import {
+  evaluateResponse,
+  DEFAULT_SAFETY_VALVE_MS,
+} from "./suppression-filter.js";
 
 export interface TaskScheduler {
   start(): void;
@@ -54,28 +57,58 @@ export function createTaskScheduler(
   deliver: DeliverFn,
 ): TaskScheduler {
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
+  const activeTaskIds = new Set<string>();
   let executing = false;
   const queue: ScheduledTask[] = [];
 
   async function processQueue(): Promise<void> {
     if (executing) return;
     executing = true;
-    while (queue.length > 0) {
-      const task = queue.shift()!;
-      await executeAndRecord(task);
+    try {
+      while (queue.length > 0) {
+        const task = queue.shift()!;
+        if (activeTaskIds.has(task.id)) continue;
+        activeTaskIds.add(task.id);
+        try {
+          await executeAndRecord(task);
+        } catch {
+          safeReschedule(task);
+        } finally {
+          activeTaskIds.delete(task.id);
+        }
+      }
+    } finally {
+      executing = false;
     }
-    executing = false;
+  }
+
+  function safeReschedule(task: ScheduledTask): void {
+    try {
+      rescheduleRecurring(task);
+    } catch (err: unknown) {
+      console.error(`[scheduler] reschedule failed for ${task.id}:`, err);
+    }
   }
 
   async function executeAndRecord(task: ScheduledTask): Promise<void> {
-    const run = await executor.executeTask(task);
+    let run: TaskRun;
+    try {
+      run = await executor.executeTask(task);
+    } catch (err: unknown) {
+      console.error(`[scheduler] AI call failed for task ${task.id}:`, err);
+      throw err;
+    }
     store.addRun(run);
     store.updateTask(task.id, {
       lastRunAt: run.ranAt,
       runCount: task.runCount + 1,
     });
-    if (run.outcome === "success" && run.response) {
-      await attemptDelivery(task, run.response);
+    try {
+      if (run.outcome === "success" && run.response) {
+        await attemptDelivery(task, run.response);
+      }
+    } catch (err: unknown) {
+      console.error(`[scheduler] delivery error for task ${task.id}:`, err);
     }
     handlePostExecution(task, run);
   }
@@ -86,7 +119,7 @@ export function createTaskScheduler(
   ): Promise<void> {
     const context = {
       lastDeliveredAt: task.lastDeliveredAt,
-      safetyValveMs: 30 * 60 * 1000,
+      safetyValveMs: DEFAULT_SAFETY_VALVE_MS,
     };
     const result = evaluateResponse(response, context);
     if (result.suppressed) {
@@ -107,6 +140,11 @@ export function createTaskScheduler(
     }
   }
 
+  function isConditionMet(run: TaskRun): boolean {
+    if (!run.response) return false;
+    return run.response.trimStart().startsWith("TASK_COMPLETE:");
+  }
+
   function handlePostExecution(task: ScheduledTask, run: TaskRun): void {
     if (task.scheduleType === "at") {
       store.removeTask(task.id);
@@ -114,6 +152,11 @@ export function createTaskScheduler(
     }
     if (run.outcome === "failure" && task.runCount + 1 >= task.maxRetries) {
       store.updateTask(task.id, { status: "failed" });
+      return;
+    }
+    if (isConditionMet(run)) {
+      store.updateTask(task.id, { status: "completed" });
+      clearExistingTimer(task.id);
       return;
     }
     rescheduleRecurring(task);
@@ -137,6 +180,9 @@ export function createTaskScheduler(
   function scheduleTimer(task: ScheduledTask): void {
     clearExistingTimer(task.id);
     const delay = computeDelayMs(task);
+    console.log(
+      `[scheduler] armed ${task.id} in ${String(Math.round(delay / 1000))}s`,
+    );
     const timer = setTimeout(() => {
       timers.delete(task.id);
       const current = store.getTask(task.id);
@@ -145,8 +191,12 @@ export function createTaskScheduler(
         scheduleTimer(current);
         return;
       }
+      console.log(`[scheduler] firing ${current.id}`);
       queue.push(current);
-      void processQueue();
+      processQueue().catch((err: unknown) => {
+        console.error("[scheduler] processQueue crashed:", err);
+        executing = false;
+      });
     }, delay);
     timers.set(task.id, timer);
   }
@@ -161,6 +211,10 @@ export function createTaskScheduler(
 
   return {
     start() {
+      const pruned = store.pruneOrphanedRuns();
+      if (pruned > 0) {
+        console.log(`[scheduler] pruned ${String(pruned)} orphaned run records`);
+      }
       for (const task of store.listTasks()) {
         if (task.status === "active") scheduleTimer(task);
       }

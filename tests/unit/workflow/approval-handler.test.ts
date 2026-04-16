@@ -3,16 +3,12 @@ import type { ApprovalDecision } from "@closeclaw/workflow";
 
 describe("ApprovalHandler", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/approval-handler.js"
-    );
+    return import("../../../packages/workflow/src/approval-handler.js");
   }
 
   it("returns approved when callback approves", async () => {
     const { requestApproval } = await loadModule();
-    const callback = vi
-      .fn()
-      .mockResolvedValue("approved" as ApprovalDecision);
+    const callback = vi.fn().mockResolvedValue("approved" as ApprovalDecision);
     const result = await requestApproval("Deploy?", callback);
     expect(result).toBe("approved");
     expect(callback).toHaveBeenCalledWith("Deploy?");
@@ -20,18 +16,14 @@ describe("ApprovalHandler", () => {
 
   it("returns denied when callback denies", async () => {
     const { requestApproval } = await loadModule();
-    const callback = vi
-      .fn()
-      .mockResolvedValue("denied" as ApprovalDecision);
+    const callback = vi.fn().mockResolvedValue("denied" as ApprovalDecision);
     const result = await requestApproval("Run?", callback);
     expect(result).toBe("denied");
   });
 
   it("returns timeout when callback times out", async () => {
     const { requestApproval } = await loadModule();
-    const callback = vi
-      .fn()
-      .mockResolvedValue("timeout" as ApprovalDecision);
+    const callback = vi.fn().mockResolvedValue("timeout" as ApprovalDecision);
     const result = await requestApproval("Approve?", callback);
     expect(result).toBe("timeout");
   });

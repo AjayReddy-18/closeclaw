@@ -71,8 +71,9 @@ export function setupScheduler(
 function buildDeliveryFn(
   adapters: BotAdapter[],
 ): (platform: string, senderId: string, text: string) => Promise<void> {
-  return async (_platform, senderId, text) => {
-    const adapter = adapters[0];
+  return async (platform, senderId, text) => {
+    const adapter =
+      adapters.find((a) => a.platform === platform) ?? adapters[0];
     if (!adapter) return;
     if (adapter.editMessage) {
       const live = createLiveMessage({

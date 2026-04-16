@@ -2,9 +2,7 @@ import { describe, it, expect } from "vitest";
 
 describe("createWorkflowTool", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/ai-agent/src/tools/create-workflow-tool.js"
-    );
+    return import("../../../packages/ai-agent/src/tools/create-workflow-tool.js");
   }
 
   it("returns a tool object with description and execute", async () => {

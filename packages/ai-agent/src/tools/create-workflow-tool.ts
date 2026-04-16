@@ -35,6 +35,19 @@ export const workflowToolSchema = z.object({
     .max(MAX_WORKFLOW_STEPS)
     .describe("Workflow steps"),
   oneShot: z.boolean().optional().describe("Run once without saving"),
+  maxRuns: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Auto-disable after this many runs."),
+  retireOnSuccess: z
+    .boolean()
+    .optional()
+    .describe(
+      "Auto-disable after the workflow completes successfully. " +
+        "Use for polling workflows like 'when build passes, do X'.",
+    ),
 });
 
 export type WorkflowPlan = z.infer<typeof workflowToolSchema>;
@@ -48,6 +61,7 @@ export function createWorkflowTool(planRef: WorkflowPlanRef) {
     description:
       "Create a workflow from a user's request. Define the trigger, " +
       "steps, and flow. For one-shot workflows set oneShot=true. " +
+      "For polling workflows that should stop after success, set retireOnSuccess=true. " +
       "For reusable workflows, provide a cron/webhook/chat_keyword trigger.",
     inputSchema: workflowToolSchema,
     execute: async (params) => {

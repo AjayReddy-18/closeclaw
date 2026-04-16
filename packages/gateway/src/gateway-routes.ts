@@ -3,6 +3,7 @@ import type { BotAdapter } from "@closeclaw/bot-adapters";
 import { checkHealth } from "./health-checker.js";
 import type { PairingManager } from "./pairing-manager.js";
 import type { GatewayServerConfig } from "./gateway-server.js";
+import { handleWebhook } from "./webhook-handler.js";
 
 function writeJsonData(
   res: ServerResponse,
@@ -153,6 +154,11 @@ async function routeHealthOrPairing(
   return pairingAuthedRoutes(method, path, req, res, authToken, pairingManager);
 }
 
+export interface WebhookRouteConfig {
+  store?: GatewayServerConfig["workflowStore"];
+  onTrigger?: (workflow: unknown) => Promise<void>;
+}
+
 export async function routeRequest(
   method: string | undefined,
   path: string,
@@ -162,6 +168,7 @@ export async function routeRequest(
   pairingManager: PairingManager | undefined,
   req: IncomingMessage,
   conversationStore: GatewayServerConfig["conversationStore"],
+  webhookConfig?: WebhookRouteConfig,
 ): Promise<void> {
   if (
     await routeAgentConversations(
@@ -174,6 +181,7 @@ export async function routeRequest(
     )
   )
     return;
+  if (await routeWebhook(method, path, req, res, webhookConfig)) return;
   if (
     await routeHealthOrPairing(
       method,
@@ -187,4 +195,34 @@ export async function routeRequest(
   )
     return;
   notFound(res);
+}
+
+async function routeWebhook(
+  method: string | undefined,
+  path: string,
+  req: IncomingMessage,
+  res: ServerResponse,
+  config?: WebhookRouteConfig,
+): Promise<boolean> {
+  if (method !== "POST" || !path.startsWith("/webhook/")) return false;
+  if (!config?.store) {
+    notFound(res);
+    return true;
+  }
+  const workflowId = path.slice("/webhook/".length);
+  const secret = req.headers["x-webhook-secret"];
+  await handleWebhook(
+    workflowId,
+    typeof secret === "string" ? secret : "",
+    config.store,
+    res,
+    config.onTrigger as
+      | ((wf: {
+          id: string;
+          status: string;
+          trigger: { type: string; webhookSecret?: string };
+        }) => Promise<void>)
+      | undefined,
+  );
+  return true;
 }

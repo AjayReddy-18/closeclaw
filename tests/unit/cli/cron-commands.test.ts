@@ -14,6 +14,7 @@ function makeStore(): TaskStore {
     updateTask: vi.fn(),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   };
 }
 

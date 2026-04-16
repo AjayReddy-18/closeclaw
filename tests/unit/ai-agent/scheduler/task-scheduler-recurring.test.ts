@@ -31,6 +31,7 @@ function makeStore(): TaskStore {
     }),
     addRun: vi.fn(),
     getRunsForTask: vi.fn(() => []),
+    pruneOrphanedRuns: vi.fn(() => 0),
   };
 }
 

@@ -74,7 +74,7 @@ export async function initAgent(
     ...mcpTools.tools,
     ...cursorTools,
     ...parallelTool,
-    ...(workflowTools ?? {}),
+    ...workflowTools,
   };
   const mcpToolNames = Object.keys(mcpTools.tools);
   const hasWorkflows = workflowTools !== undefined;

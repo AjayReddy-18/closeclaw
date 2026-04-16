@@ -32,3 +32,9 @@ export {
   type WorkflowPlanRef,
   type WorkflowPlanCallbacks,
 } from "./workflow-plan-handler.js";
+export {
+  matchKeywordWorkflow,
+  type KeywordTriggerCallback,
+} from "./keyword-trigger.js";
+export { extractYamlBlock } from "./yaml-workflow-detector.js";
+export { handleWebhook } from "./webhook-handler.js";

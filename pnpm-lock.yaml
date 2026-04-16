@@ -132,6 +132,9 @@ importers:
 
   packages/gateway:
     dependencies:
+      '@closeclaw/ai-agent':
+        specifier: workspace:*
+        version: link:../ai-agent
       '@closeclaw/bot-adapters':
         specifier: workspace:*
         version: link:../bot-adapters

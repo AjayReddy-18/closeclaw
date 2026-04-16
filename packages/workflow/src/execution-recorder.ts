@@ -8,6 +8,7 @@ import type {
 
 export interface ExecutionRecorder {
   getRecord(): ExecutionRecord;
+  getStepResults(): StepResult[];
   addStepResult(result: StepResult): void;
   finalize(status: ExecutionStatus, abortReason?: string): ExecutionRecord;
 }
@@ -31,6 +32,7 @@ export function createExecutionRecorder(
 
   return {
     getRecord: () => ({ ...record, stepResults: [...record.stepResults] }),
+    getStepResults: () => [...record.stepResults],
     addStepResult: (result) => record.stepResults.push(result),
     finalize: (status, abortReason) =>
       finalizeRecord(record, status, abortReason),

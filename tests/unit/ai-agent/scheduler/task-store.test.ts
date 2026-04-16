@@ -123,4 +123,51 @@ describe("createTaskStore", () => {
     const store = createTaskStore(path);
     expect(store.listTasks()).toEqual([]);
   });
+
+  it("pruneOrphanedRuns removes runs for deleted tasks", () => {
+    const path = join(dir, "tasks.json");
+    const store = createTaskStore(path);
+    store.addTask(sampleTask({ id: "alive" }));
+    store.addRun({
+      taskId: "alive",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      durationMs: 50,
+      delivered: true,
+    });
+    store.addRun({
+      taskId: "dead-task",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      durationMs: 50,
+      delivered: true,
+    });
+    store.addRun({
+      taskId: "another-dead",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      durationMs: 50,
+      delivered: true,
+    });
+
+    const removed = store.pruneOrphanedRuns();
+    expect(removed).toBe(2);
+    expect(store.getRunsForTask("alive")).toHaveLength(1);
+    expect(store.getRunsForTask("dead-task")).toHaveLength(0);
+    expect(store.getRunsForTask("another-dead")).toHaveLength(0);
+  });
+
+  it("pruneOrphanedRuns returns 0 when no orphans exist", () => {
+    const path = join(dir, "tasks.json");
+    const store = createTaskStore(path);
+    store.addTask(sampleTask({ id: "t1" }));
+    store.addRun({
+      taskId: "t1",
+      ranAt: new Date().toISOString(),
+      outcome: "success",
+      durationMs: 50,
+      delivered: true,
+    });
+    expect(store.pruneOrphanedRuns()).toBe(0);
+  });
 });

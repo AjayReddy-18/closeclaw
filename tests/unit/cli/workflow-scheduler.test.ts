@@ -3,9 +3,7 @@ import type { WorkflowDefinition } from "@closeclaw/workflow";
 
 describe("WorkflowScheduler", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/cli/src/commands/workflow-scheduler.js"
-    );
+    return import("../../../packages/cli/src/commands/workflow-scheduler.js");
   }
 
   function makeDefinition(
@@ -98,6 +96,26 @@ describe("WorkflowScheduler", () => {
     const onExecute = vi.fn().mockResolvedValue(undefined);
     const scheduler = createWorkflowScheduler(onExecute);
     scheduler.start([makeDefinition({ status: "disabled" })]);
+    expect(scheduler.isArmed("wf-1")).toBe(false);
+  });
+
+  it("does not reschedule after disarmWorkflow is called during execution", async () => {
+    const { createWorkflowScheduler } = await loadModule();
+    let executeCb: (() => void) | undefined;
+    const onExecute = vi.fn().mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          executeCb = resolve;
+        }),
+    );
+    const scheduler = createWorkflowScheduler(onExecute);
+    scheduler.armWorkflow(makeDefinition());
+    expect(scheduler.isArmed("wf-1")).toBe(true);
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+    expect(onExecute).toHaveBeenCalledOnce();
+    scheduler.disarmWorkflow("wf-1");
+    executeCb!();
+    await vi.advanceTimersByTimeAsync(100);
     expect(scheduler.isArmed("wf-1")).toBe(false);
   });
 });

@@ -105,7 +105,10 @@ export interface ExecutionRecord {
 export type StepOutputContext = Record<string, string>;
 
 export interface WorkflowStore {
-  listWorkflows(ownerPlatform: BotPlatform, ownerSenderId: string): WorkflowDefinition[];
+  listWorkflows(
+    ownerPlatform: BotPlatform,
+    ownerSenderId: string,
+  ): WorkflowDefinition[];
   getWorkflow(id: string): WorkflowDefinition | undefined;
   saveWorkflow(workflow: WorkflowDefinition): void;
   updateWorkflow(id: string, updates: Partial<WorkflowDefinition>): void;

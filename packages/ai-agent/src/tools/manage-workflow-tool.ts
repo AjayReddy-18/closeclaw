@@ -25,8 +25,7 @@ export function createManageWorkflowTool(
     description:
       "Manage saved workflows: list, enable, disable, delete, or view history.",
     inputSchema: manageSchema,
-    execute: async (params) =>
-      dispatch(params, store, platform, senderId),
+    execute: async (params) => dispatch(params, store, platform, senderId),
   });
 }
 
@@ -46,10 +45,7 @@ async function dispatch(
     case "delete":
       return handleDelete(store, params.workflowId);
     case "history":
-      return store.getExecutions(
-        params.workflowId ?? "",
-        params.limit ?? 10,
-      );
+      return store.getExecutions(params.workflowId ?? "", params.limit ?? 10);
   }
 }
 

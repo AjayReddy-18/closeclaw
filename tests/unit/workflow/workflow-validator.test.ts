@@ -3,9 +3,7 @@ import type { WorkflowDefinition } from "@closeclaw/workflow";
 
 describe("validateWorkflowDefinition", () => {
   async function loadModule() {
-    return import(
-      "../../../packages/workflow/src/workflow-validator.js"
-    );
+    return import("../../../packages/workflow/src/workflow-validator.js");
   }
 
   function validDefinition(): WorkflowDefinition {
@@ -222,5 +220,33 @@ describe("validateWorkflowDefinition", () => {
     const result = validateWorkflowDefinition({ id: "x" });
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  it("accepts definition with optional maxRuns", async () => {
+    const { validateWorkflowDefinition } = await loadModule();
+    const def = { ...validDefinition(), maxRuns: 5 };
+    const result = validateWorkflowDefinition(def);
+    expect(result.valid).toBe(true);
+  });
+
+  it("rejects maxRuns of 0", async () => {
+    const { validateWorkflowDefinition } = await loadModule();
+    const def = { ...validDefinition(), maxRuns: 0 };
+    const result = validateWorkflowDefinition(def);
+    expect(result.valid).toBe(false);
+  });
+
+  it("rejects fractional maxRuns", async () => {
+    const { validateWorkflowDefinition } = await loadModule();
+    const def = { ...validDefinition(), maxRuns: 1.5 };
+    const result = validateWorkflowDefinition(def);
+    expect(result.valid).toBe(false);
+  });
+
+  it("accepts definition with retireOnSuccess", async () => {
+    const { validateWorkflowDefinition } = await loadModule();
+    const def = { ...validDefinition(), retireOnSuccess: true };
+    const result = validateWorkflowDefinition(def);
+    expect(result.valid).toBe(true);
   });
 });

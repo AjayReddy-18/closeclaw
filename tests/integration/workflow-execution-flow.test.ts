@@ -139,4 +139,122 @@ describe("Workflow Execution Flow (Integration)", () => {
     expect(record.completedAt).toBeDefined();
     expect(record.stepResults[0].durationMs).toBeGreaterThanOrEqual(0);
   });
+
+  it("returns condition_unmet when a condition is false on retireOnSuccess workflow", async () => {
+    const { runWorkflow } = await loadRunner();
+    const def = makeDefinition({
+      retireOnSuccess: true,
+      steps: [
+        {
+          id: "poll",
+          type: "condition",
+          label: "Build passed?",
+          condition: "Has the build passed?",
+          thenSteps: [
+            {
+              id: "deploy",
+              type: "action",
+              label: "Deploy",
+              prompt: "Trigger deploy",
+              onError: "stop",
+            },
+          ],
+          elseSteps: [],
+        },
+      ],
+    });
+    const processMessage = vi.fn().mockResolvedValueOnce("false");
+    const record = await runWorkflow(def, {
+      processMessage,
+      platform: "telegram",
+      senderId: "user-1",
+    });
+    expect(record.status).toBe("condition_unmet");
+    const ids = record.stepResults.map((r) => r.stepId);
+    expect(ids).not.toContain("deploy");
+  });
+
+  it("returns completed when condition is true on retireOnSuccess workflow", async () => {
+    const { runWorkflow } = await loadRunner();
+    const def = makeDefinition({
+      retireOnSuccess: true,
+      steps: [
+        {
+          id: "poll",
+          type: "condition",
+          label: "Build passed?",
+          condition: "Has the build passed?",
+          thenSteps: [
+            {
+              id: "deploy",
+              type: "action",
+              label: "Deploy",
+              prompt: "Trigger deploy",
+              onError: "stop",
+            },
+          ],
+          elseSteps: [],
+        },
+      ],
+    });
+    const processMessage = vi
+      .fn()
+      .mockResolvedValueOnce("true")
+      .mockResolvedValueOnce("Deployed!");
+    const record = await runWorkflow(def, {
+      processMessage,
+      platform: "telegram",
+      senderId: "user-1",
+    });
+    expect(record.status).toBe("completed");
+    expect(record.stepResults.map((r) => r.stepId)).toContain("deploy");
+  });
+
+  it("returns condition_unmet when step output has TASK_IN_PROGRESS prefix on retireOnSuccess", async () => {
+    const { runWorkflow } = await loadRunner();
+    const def = makeDefinition({
+      retireOnSuccess: true,
+      steps: [
+        {
+          id: "check",
+          type: "action",
+          label: "Check build",
+          prompt: "Check if build passed",
+          onError: "stop",
+        },
+      ],
+    });
+    const processMessage = vi
+      .fn()
+      .mockResolvedValue("TASK_IN_PROGRESS: build still running");
+    const record = await runWorkflow(def, {
+      processMessage,
+      platform: "telegram",
+      senderId: "user-1",
+    });
+    expect(record.status).toBe("condition_unmet");
+  });
+
+  it("returns completed for non-retireOnSuccess workflow even with false condition", async () => {
+    const { runWorkflow } = await loadRunner();
+    const def = makeDefinition({
+      steps: [
+        {
+          id: "poll",
+          type: "condition",
+          label: "Check",
+          condition: "Is it ready?",
+          thenSteps: [],
+          elseSteps: [],
+        },
+      ],
+    });
+    const processMessage = vi.fn().mockResolvedValueOnce("false");
+    const record = await runWorkflow(def, {
+      processMessage,
+      platform: "telegram",
+      senderId: "user-1",
+    });
+    expect(record.status).toBe("completed");
+  });
 });

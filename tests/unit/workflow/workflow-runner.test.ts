@@ -169,9 +169,7 @@ describe("WorkflowRunner", () => {
     const deps = makeDeps(["data", "true", "good result"]);
     const record = await runWorkflow(def, deps);
     expect(record.status).toBe("completed");
-    const stepIds = record.stepResults.map(
-      (r: { stepId: string }) => r.stepId,
-    );
+    const stepIds = record.stepResults.map((r: { stepId: string }) => r.stepId);
     expect(stepIds).toContain("then-1");
     expect(stepIds).not.toContain("else-1");
   });
@@ -208,9 +206,7 @@ describe("WorkflowRunner", () => {
     });
     const deps = makeDeps(["false", "else result"]);
     const record = await runWorkflow(def, deps);
-    const stepIds = record.stepResults.map(
-      (r: { stepId: string }) => r.stepId,
-    );
+    const stepIds = record.stepResults.map((r: { stepId: string }) => r.stepId);
     expect(stepIds).toContain("else-1");
     expect(stepIds).not.toContain("then-1");
   });
@@ -225,5 +221,126 @@ describe("WorkflowRunner", () => {
     const deps = makeDeps(["OK"]);
     await runWorkflow(def, deps);
     expect(deps.onProgress).toHaveBeenCalled();
+  });
+
+  it("executes parallel steps", async () => {
+    const { runWorkflow } = await loadModule();
+    const def = makeDefinition({
+      steps: [
+        {
+          id: "par",
+          type: "parallel" as const,
+          label: "Parallel",
+          branches: [
+            [
+              {
+                id: "b1",
+                type: "action" as const,
+                label: "B1",
+                prompt: "branch1",
+                onError: "stop" as const,
+              },
+            ],
+            [
+              {
+                id: "b2",
+                type: "action" as const,
+                label: "B2",
+                prompt: "branch2",
+                onError: "stop" as const,
+              },
+            ],
+          ],
+        },
+      ],
+    });
+    const deps = makeDeps(["r1", "r2"]);
+    const record = await runWorkflow(def, deps);
+    expect(record.status).toBe("completed");
+    expect(record.stepResults).toHaveLength(2);
+  });
+
+  it("marks failed when a parallel branch fails", async () => {
+    const { runWorkflow } = await loadModule();
+    const def = makeDefinition({
+      steps: [
+        {
+          id: "par",
+          type: "parallel" as const,
+          label: "Parallel",
+          branches: [
+            [
+              {
+                id: "b1",
+                type: "action" as const,
+                label: "B1",
+                prompt: "ok",
+                onError: "stop" as const,
+              },
+            ],
+            [
+              {
+                id: "b2",
+                type: "action" as const,
+                label: "B2",
+                prompt: "fail",
+                onError: "stop" as const,
+              },
+            ],
+          ],
+        },
+      ],
+    });
+    const deps = makeDeps([]);
+    deps.processMessage
+      .mockResolvedValueOnce("ok")
+      .mockRejectedValueOnce(new Error("boom"));
+    const record = await runWorkflow(def, deps);
+    expect(record.status).toBe("failed");
+  });
+
+  it("executes loop steps", async () => {
+    const { runWorkflow } = await loadModule();
+    const def = makeDefinition({
+      steps: [
+        {
+          id: "loop-1",
+          type: "loop" as const,
+          label: "Poll",
+          untilCondition: "Done?",
+          maxIterations: 3,
+          delaySeconds: 0,
+          steps: [
+            {
+              id: "check",
+              type: "action" as const,
+              label: "Check",
+              prompt: "check",
+              onError: "continue" as const,
+            },
+          ],
+        },
+      ],
+    });
+    const deps = makeDeps(["pending", "true"]);
+    const record = await runWorkflow(def, deps);
+    expect(record.status).toBe("completed");
+    expect(record.stepResults.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("runs with no onProgress callback", async () => {
+    const { runWorkflow } = await loadModule();
+    const def = makeDefinition({
+      steps: [
+        { id: "s1", type: "action", label: "A", prompt: "a", onError: "stop" },
+      ],
+    });
+    const deps = {
+      processMessage: vi.fn().mockResolvedValue("OK"),
+      platform: "telegram",
+      senderId: "user-1",
+    };
+    const record = await runWorkflow(def, deps);
+    expect(record.status).toBe("completed");
   });
 });

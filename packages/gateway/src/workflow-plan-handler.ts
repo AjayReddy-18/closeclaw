@@ -1,14 +1,7 @@
 import type { BotAdapter } from "@closeclaw/bot-adapters";
+import type { WorkflowPlanRef } from "@closeclaw/ai-agent";
 
-export interface WorkflowPlanRef {
-  plan: {
-    name: string;
-    trigger: { type: string; value: string; timezone?: string };
-    steps: unknown[];
-    oneShot?: boolean;
-    description?: string;
-  } | null;
-}
+export type { WorkflowPlanRef };
 
 export interface WorkflowPlanCallbacks {
   onSave: (plan: NonNullable<WorkflowPlanRef["plan"]>) => Promise<void>;
@@ -50,9 +43,7 @@ async function confirmAndSave(
   await onSave(plan);
 }
 
-function formatPlanSummary(
-  plan: NonNullable<WorkflowPlanRef["plan"]>,
-): string {
+function formatPlanSummary(plan: NonNullable<WorkflowPlanRef["plan"]>): string {
   const steps = plan.steps.length;
   return (
     `**Workflow: ${plan.name}**\n` +

@@ -23,15 +23,15 @@ Build a lean, in-process workflow engine that lets users create multi-step autom
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. TDD | PASS | All modules built test-first; unit tests for every public function, integration tests for execution flows, contract tests for YAML schema and AI tool schemas |
-| II. Clean Code | PASS | No comments, functions <= 20 lines, files <= 200 lines. StepNode discriminated union keeps types clean |
-| III. Design Principles | PASS | Composition over inheritance (factory functions, not classes). All deps injected and mockable. KISS: AI evaluates conditions instead of custom expression engine. YAGNI: no checkpointing/resume for v1 |
-| IV. Atomic Commits | PASS | Phases decompose into independently committable units |
-| V. Automation-First | PASS | The entire feature IS automation. Idempotent re-execution for saved workflows |
-| VI. Modular Architecture | PASS | New `packages/workflow/` package with explicit boundaries. No circular deps. Contracts defined in `contracts/` |
-| VII. Living Documentation | PASS | `docs/workflows.md` created as part of implementation |
+| Principle                 | Status | Notes                                                                                                                                                                                                   |
+| ------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. TDD                    | PASS   | All modules built test-first; unit tests for every public function, integration tests for execution flows, contract tests for YAML schema and AI tool schemas                                           |
+| II. Clean Code            | PASS   | No comments, functions <= 20 lines, files <= 200 lines. StepNode discriminated union keeps types clean                                                                                                  |
+| III. Design Principles    | PASS   | Composition over inheritance (factory functions, not classes). All deps injected and mockable. KISS: AI evaluates conditions instead of custom expression engine. YAGNI: no checkpointing/resume for v1 |
+| IV. Atomic Commits        | PASS   | Phases decompose into independently committable units                                                                                                                                                   |
+| V. Automation-First       | PASS   | The entire feature IS automation. Idempotent re-execution for saved workflows                                                                                                                           |
+| VI. Modular Architecture  | PASS   | New `packages/workflow/` package with explicit boundaries. No circular deps. Contracts defined in `contracts/`                                                                                          |
+| VII. Living Documentation | PASS   | `docs/workflows.md` created as part of implementation                                                                                                                                                   |
 
 **Post-Phase 1 re-check**: PASS. No violations introduced by data model or contract design. StepNode union type with discriminated `type` field keeps the model clean without inheritance.
 
@@ -172,16 +172,16 @@ Trigger fires → WorkflowScheduler → WorkflowRunner.execute(definition)
 
 ### Reuse of Existing Primitives
 
-| Existing Primitive | Reused For | How |
-|--------------------|------------|-----|
-| `processMessage` | Step execution | Each step is a prompt through the full AI agent pipeline |
-| `createLiveMessage` | Per-workflow progress | Single live message per execution, updated per step |
-| `createApprovalQueue` | Approval pauses | Serialize approval prompts across concurrent workflows |
-| `createTaskScheduler` pattern | Cron triggers | Similar timer-based scheduling, adapted for workflow definitions |
-| `routeRequest` | Webhook triggers | New route branch in gateway-routes.ts |
-| `OrchestrationPlanRef` pattern | `WorkflowPlanRef` | Signal tool pattern for create_workflow |
-| `Promise.allSettled` | Parallel steps | Same pattern as orchestrator for concurrent branches |
-| Atomic JSON write | Persistence | Same `writeFileSync(tmp) → renameSync` pattern as task-store |
+| Existing Primitive             | Reused For            | How                                                              |
+| ------------------------------ | --------------------- | ---------------------------------------------------------------- |
+| `processMessage`               | Step execution        | Each step is a prompt through the full AI agent pipeline         |
+| `createLiveMessage`            | Per-workflow progress | Single live message per execution, updated per step              |
+| `createApprovalQueue`          | Approval pauses       | Serialize approval prompts across concurrent workflows           |
+| `createTaskScheduler` pattern  | Cron triggers         | Similar timer-based scheduling, adapted for workflow definitions |
+| `routeRequest`                 | Webhook triggers      | New route branch in gateway-routes.ts                            |
+| `OrchestrationPlanRef` pattern | `WorkflowPlanRef`     | Signal tool pattern for create_workflow                          |
+| `Promise.allSettled`           | Parallel steps        | Same pattern as orchestrator for concurrent branches             |
+| Atomic JSON write              | Persistence           | Same `writeFileSync(tmp) → renameSync` pattern as task-store     |
 
 ## Complexity Tracking
 
